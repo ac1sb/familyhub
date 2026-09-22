@@ -40,3 +40,11 @@ export function setThemeSettings({ theme_mode, dark_start, dark_end }) {
   if (dark_start !== undefined) setSetting('dark_start', dark_start);
   if (dark_end !== undefined) setSetting('dark_end', dark_end);
 }
+
+export function getMenuImportUrl() {
+  return getSetting('menu_import_url') || '';
+}
+
+export function setMenuImportUrl(url) {
+  setSetting('menu_import_url', url);
+}

@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { usePolling } from '../../hooks/usePolling.js';
 import { api } from '../../api.js';
 import { formatMonthLabel, monthGridDays, toISODate, WEEKDAY_SHORT } from '../../lib/week.js';
@@ -7,6 +7,14 @@ export default function LunchCalendar({ childName }) {
   const now = new Date();
   const [year, setYear] = useState(now.getFullYear());
   const [monthIndex, setMonthIndex] = useState(now.getMonth());
+  const [menuUrl, setMenuUrl] = useState('');
+  const [syncing, setSyncing] = useState(false);
+  const [syncResult, setSyncResult] = useState(null);
+  const [showDetails, setShowDetails] = useState(false);
+
+  useEffect(() => {
+    api.lunchImportSettings().then((r) => setMenuUrl(r.url || '')).catch(() => {});
+  }, []);
 
   const monthStart = toISODate(new Date(year, monthIndex, 1));
   const monthEnd = toISODate(new Date(year, monthIndex + 1, 1));
@@ -46,6 +54,22 @@ export default function LunchCalendar({ childName }) {
     updateDay(date, { status: currentStatus === 'school' ? 'home' : 'school' });
   }
 
+  async function handleSync() {
+    if (!menuUrl.trim()) return;
+    setSyncing(true);
+    setSyncResult(null);
+    setShowDetails(false);
+    try {
+      const result = await api.importLunchMenu(menuUrl.trim());
+      setSyncResult(result);
+      if (result.success) refresh();
+    } catch (err) {
+      setSyncResult({ success: false, error: err.message });
+    } finally {
+      setSyncing(false);
+    }
+  }
+
   return (
     <section className="widget-card">
       <div className="widget-header">
@@ -56,6 +80,40 @@ export default function LunchCalendar({ childName }) {
           <button className="btn-icon" onClick={() => goMonth(1)}>&rarr;</button>
         </div>
       </div>
+
+      <div className="lunch-import-row">
+        <input
+          type="text"
+          placeholder="School menu URL (e.g. Health-e Pro link)"
+          value={menuUrl}
+          onChange={(e) => setMenuUrl(e.target.value)}
+        />
+        <button className="btn btn-secondary" onClick={handleSync} disabled={syncing || !menuUrl.trim()}>
+          {syncing ? 'Syncing…' : 'Sync Menu'}
+        </button>
+      </div>
+      {syncResult && (
+        <div className={`lunch-import-result${syncResult.success ? ' success' : ' error'}`}>
+          {syncResult.success ? (
+            <span>✅ Imported {syncResult.imported} day{syncResult.imported === 1 ? '' : 's'} of menu items.</span>
+          ) : (
+            <>
+              <span>⚠️ {syncResult.error}</span>
+              {(syncResult.htmlPreview || syncResult.scriptBlocksFound !== undefined) && (
+                <button className="see-all" onClick={() => setShowDetails((v) => !v)}>
+                  {showDetails ? 'Hide details' : 'Show details'}
+                </button>
+              )}
+              {showDetails && (
+                <pre className="lunch-import-preview">
+                  {syncResult.scriptBlocksFound !== undefined && `Embedded JSON blocks found: ${syncResult.scriptBlocksFound}\n\n`}
+                  {syncResult.htmlPreview}
+                </pre>
+              )}
+            </>
+          )}
+        </div>
+      )}
 
       <div className="lunch-cal-weekdays">
         {WEEKDAY_SHORT.map((w) => (

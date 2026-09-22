@@ -43,6 +43,8 @@ export const api = {
 
   lunchRange: (start, end) => request(`/lunch?start=${start}&end=${end}`),
   setLunchDay: (date, data) => request(`/lunch/${date}`, { method: 'PUT', body: JSON.stringify(data) }),
+  lunchImportSettings: () => request('/lunch/import-settings'),
+  importLunchMenu: (url) => request('/lunch/import', { method: 'POST', body: JSON.stringify({ url }) }),
 
   shopping: () => request('/shopping'),
   addShoppingItem: (name) => request('/shopping', { method: 'POST', body: JSON.stringify({ name }) }),

@@ -501,6 +501,40 @@ button {
 .meal-slot.dragging { box-shadow: 0 6px 16px rgba(0,0,0,0.15); }
 
 /* ---------- Lunch calendar (full month view) ---------- */
+.lunch-import-row {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+.lunch-import-row input {
+  flex: 1;
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  padding: 10px 12px;
+  min-height: 40px;
+  font-size: 0.85rem;
+}
+.lunch-import-result {
+  border-radius: 10px;
+  padding: 8px 12px;
+  margin-bottom: 10px;
+  font-size: 0.85rem;
+}
+.lunch-import-result.success { background: #e4f2ec; color: var(--color-primary-dark); }
+.lunch-import-result.error { background: #fdf2e9; color: var(--color-primary-dark); }
+.lunch-import-preview {
+  margin-top: 8px;
+  max-height: 240px;
+  overflow: auto;
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  padding: 8px;
+  font-size: 0.7rem;
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+
 .lunch-cal-weekdays {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
