@@ -42,13 +42,15 @@ browser on the network.
 ## Project layout
 
 ```
-server/   Express API + SQLite database (better-sqlite3) + OCR + Google OAuth
+server/   Express API + SQLite database (Node's built-in node:sqlite) + OCR + Google OAuth
 client/   React (Vite) touchscreen UI
 ```
 
 ## Requirements
 
-- Node.js 18+ (Node 22 recommended; this is what it was built/tested with)
+- Node.js **22.5+** (needed for the built-in `node:sqlite` module — no native
+  compiler/build tools required, so this installs cleanly on Windows, macOS,
+  Linux, and a Raspberry Pi with just Node itself)
 - A US zip code for weather (Open-Meteo + Zippopotam.us, both free, no keys)
 - Optional: a Google Cloud OAuth client if you want Google Calendar sync
 
@@ -127,8 +129,9 @@ needs internet access at least once.
 
 ## Running on a Raspberry Pi as a kiosk
 
-1. Install Node.js 18+ on the Pi (via [nvm](https://github.com/nvm-sh/nvm)
-   or NodeSource).
+1. Install Node.js 22.5+ on the Pi (via [nvm](https://github.com/nvm-sh/nvm)
+   or NodeSource — the Node version in Raspberry Pi OS's own package
+   repository is usually too old, so don't rely on `apt install nodejs`).
 2. Copy this project to the Pi, run `npm run install:all`, `npm run build`,
    configure `server/.env`, then `npm start` (or run it under `pm2` /
    a `systemd` service so it survives reboots).
@@ -160,3 +163,10 @@ however you'd back up any other file on the Pi.
 - No authentication yet — anyone with network access to the app can view and
   edit everything. Fine for a home network; put it behind a VPN or reverse
   proxy with auth if you expose it to the internet.
+- The database uses Node's built-in `node:sqlite` module, which Node still
+  labels "experimental" (you may see a startup warning on some Node
+  versions) even though its API is stable enough for this app. This was
+  chosen specifically over `better-sqlite3` to avoid native-module compiling
+  — which needs a C++ toolchain and fails on newer/less common Node builds
+  (this is what broke the first Windows install) and would otherwise need
+  to be cross-compiled again for the Raspberry Pi's ARM chip.

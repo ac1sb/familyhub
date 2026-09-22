@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import db from '../db.js';
+import db, { withTransaction } from '../db.js';
 import { weekStartParam } from '../lib/week.js';
 
 const router = Router();
@@ -10,12 +10,11 @@ function ensureWeekRows(week_start) {
 
   const byDay = new Map(existing.map((r) => [r.day_of_week, r]));
   const insert = db.prepare('INSERT INTO lunch (week_start, day_of_week, status) VALUES (?, ?, ?)');
-  const tx = db.transaction(() => {
+  withTransaction(() => {
     for (let d = 0; d < 5; d++) {
       if (!byDay.has(d)) insert.run(week_start, d, 'home');
     }
   });
-  tx();
   return db.prepare('SELECT * FROM lunch WHERE week_start = ? ORDER BY day_of_week ASC').all(week_start);
 }
 
