@@ -2,13 +2,14 @@ import { useMemo, useState } from 'react';
 import { usePolling } from '../../hooks/usePolling.js';
 import { api } from '../../api.js';
 import AddEventModal from '../modals/AddEventModal.jsx';
-import { addDays, currentWeekStart, formatTime, toISODate } from '../../lib/week.js';
+import { addDays, currentWeekStart, formatTime, startOfWeek, toISODate } from '../../lib/week.js';
 
 const MEMBER_KEYS = ['member_1', 'member_2', 'member_3'];
 
 export default function CalendarAgenda({ members, compact = false, onExpand }) {
   const [weekStart, setWeekStart] = useState(currentWeekStart());
   const [modalMember, setModalMember] = useState(null);
+  const [confirmation, setConfirmation] = useState(null);
   const { data, refresh } = usePolling(() => api.events(weekStart), [weekStart], 20000);
 
   const days = useMemo(() => {
@@ -37,6 +38,22 @@ export default function CalendarAgenda({ members, compact = false, onExpand }) {
     setWeekStart(toISODate(addDays(new Date(weekStart), offset * 7)));
   }
 
+  function handleEventSaved(created) {
+    if (created?.start_datetime) {
+      const eventDate = new Date(created.start_datetime);
+      const eventWeekStart = toISODate(startOfWeek(eventDate));
+      // A scanned flyer or a manually-picked date can easily land outside the
+      // week currently on screen; jump there so the new event is immediately
+      // visible instead of silently landing on a week nobody is looking at.
+      if (eventWeekStart !== weekStart) setWeekStart(eventWeekStart);
+      setConfirmation(
+        `Added "${created.title}" for ${eventDate.toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' })}`
+      );
+      setTimeout(() => setConfirmation(null), 6000);
+    }
+    refresh();
+  }
+
   return (
     <section className={`widget-card${compact ? ' compact' : ''}`}>
       <div className="widget-header">
@@ -51,6 +68,8 @@ export default function CalendarAgenda({ members, compact = false, onExpand }) {
           </div>
         )}
       </div>
+
+      {confirmation && <div className="agenda-confirmation">✅ {confirmation}</div>}
 
       <div className="agenda-columns-header">
         <div />
@@ -95,7 +114,7 @@ export default function CalendarAgenda({ members, compact = false, onExpand }) {
           members={members}
           defaultMember={modalMember}
           onClose={() => setModalMember(null)}
-          onSaved={refresh}
+          onSaved={handleEventSaved}
         />
       )}
     </section>

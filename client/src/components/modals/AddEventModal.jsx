@@ -55,7 +55,7 @@ export default function AddEventModal({ members, defaultMember, onClose, onSaved
     setSaving(true);
     setError(null);
     try {
-      await api.createEvent({
+      const created = await api.createEvent({
         title: title.trim(),
         description,
         location,
@@ -65,7 +65,7 @@ export default function AddEventModal({ members, defaultMember, onClose, onSaved
         recurrence_days: recurring ? recurrenceDays : [],
         photo_path: photoPath,
       });
-      onSaved?.();
+      onSaved?.(created);
       onClose();
     } catch (err) {
       setError(err.message);

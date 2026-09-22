@@ -17,6 +17,16 @@ import flyerRouter from './routes/flyer.js';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
 
+// This runs unattended on a shared household display, so a single bad request
+// (e.g. a flaky download inside a library like tesseract.js) should never take
+// the whole dashboard offline. Log it and keep serving everything else.
+process.on('uncaughtException', (err) => {
+  console.error('Uncaught exception (server is still running):', err);
+});
+process.on('unhandledRejection', (err) => {
+  console.error('Unhandled rejection (server is still running):', err);
+});
+
 app.use(cors());
 app.use(morgan('dev'));
 app.use(express.json({ limit: '5mb' }));
