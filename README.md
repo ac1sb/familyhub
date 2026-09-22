@@ -105,6 +105,27 @@ npm start             # Express serves the API + the built client on one port
 
 Then visit `http://<host>:4000/` from any device on the network.
 
+### Updating to the latest version
+
+Once it's set up, pulling and running new changes is one command from the
+repo root:
+
+```bash
+npm run update
+```
+
+This runs `git pull`, reinstalls any new/changed dependencies in both
+`server/` and `client/`, rebuilds the client, and starts the server - the
+same four steps you'd otherwise run by hand. Stop the currently running
+server first (Ctrl+C) if one's already up, since this starts a new one at
+the end.
+
+The one thing it can't do automatically: if a future update adds a new
+dependency that npm's install-scripts safety check blocks (the same kind of
+prompt `esbuild` triggered during setup), `npm run update` will pause with
+that warning instead of finishing. Run `npm install-scripts approve
+<package-name>` as it tells you to, then run `npm run update` again.
+
 ## Configuring household members & weather
 
 Open the app's **Settings → General** tab to rename the three household
