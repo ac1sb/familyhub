@@ -42,6 +42,10 @@ export default function LunchCalendar({ childName }) {
     refresh();
   }
 
+  function toggleStatus(date, currentStatus) {
+    updateDay(date, { status: currentStatus === 'school' ? 'home' : 'school' });
+  }
+
   return (
     <section className="widget-card">
       <div className="widget-header">
@@ -66,41 +70,38 @@ export default function LunchCalendar({ childName }) {
           const dayNum = Number(date.slice(-2));
           const isToday = date === todayKey;
 
+          const statusClass = day.no_school ? 'no-school' : `status-${day.status}`;
+
           return (
-            <div className={`lunch-cal-day${isToday ? ' today' : ''}${day.no_school ? ' no-school' : ''}`} key={date}>
-              <div className="lunch-cal-daynum">{dayNum}</div>
-              {day.no_school ? (
-                <button className="lunch-cal-noschool-tag" onClick={() => updateDay(date, { no_school: false })}>
-                  No School
+            <div
+              className={`lunch-cal-day ${statusClass}${isToday ? ' today' : ''}`}
+              key={date}
+              onClick={() => !day.no_school && toggleStatus(date, day.status)}
+              title={day.no_school ? undefined : day.status === 'school' ? 'Tap to switch to Pack from home' : 'Tap to switch to School lunch'}
+            >
+              <div className="lunch-cal-day-top">
+                <span className="lunch-cal-daynum">{dayNum}</span>
+                <button
+                  className="lunch-cal-noschool-btn"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    updateDay(date, { no_school: !day.no_school });
+                  }}
+                  title={day.no_school ? 'Mark as a school day' : 'Mark as no school'}
+                >
+                  {day.no_school ? '↩' : '🚫'}
                 </button>
+              </div>
+              {day.no_school ? (
+                <div className="lunch-cal-noschool-label">No School</div>
               ) : (
-                <>
-                  <div className="lunch-cal-toggle-row">
-                    <button
-                      className={`lunch-cal-toggle school${day.status === 'school' ? ' active' : ''}`}
-                      onClick={() => updateDay(date, { status: 'school' })}
-                      title="School lunch"
-                    >
-                      🏫
-                    </button>
-                    <button
-                      className={`lunch-cal-toggle home${day.status === 'home' ? ' active' : ''}`}
-                      onClick={() => updateDay(date, { status: 'home' })}
-                      title="Pack from home"
-                    >
-                      🎒
-                    </button>
-                  </div>
-                  <input
-                    className="lunch-cal-menu"
-                    placeholder="Menu…"
-                    value={day.menu_item}
-                    onChange={(e) => updateDay(date, { menu_item: e.target.value })}
-                  />
-                  <button className="lunch-cal-noschool-link" onClick={() => updateDay(date, { no_school: true })}>
-                    No school
-                  </button>
-                </>
+                <input
+                  className="lunch-cal-menu"
+                  placeholder="Menu…"
+                  value={day.menu_item}
+                  onClick={(e) => e.stopPropagation()}
+                  onChange={(e) => updateDay(date, { menu_item: e.target.value })}
+                />
               )}
             </div>
           );

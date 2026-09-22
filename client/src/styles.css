@@ -54,6 +54,15 @@ button, input, select, textarea {
   font-size: 1rem;
 }
 
+/* Without this, inputs keep the browser's default white background while
+   inheriting the theme's text color - invisible (light-on-white) text in
+   dark mode. Scoped to actual text-entry types so buttons/checkboxes keep
+   their own styling untouched. */
+input[type=text], input[type=datetime-local], input[type=time], input[type=number], select, textarea {
+  background: var(--color-surface);
+  color: var(--color-text);
+}
+
 button {
   cursor: pointer;
   touch-action: manipulation;
@@ -518,48 +527,48 @@ button {
   display: flex;
   flex-direction: column;
   gap: 4px;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
 }
-.lunch-cal-day.empty { background: transparent; border: none; }
+.lunch-cal-day.empty { background: transparent; border: none; cursor: default; }
 .lunch-cal-day.today { border-color: var(--color-primary); border-width: 2px; }
-.lunch-cal-day.no-school { background: var(--color-border); opacity: 0.7; }
-.lunch-cal-daynum { font-weight: 700; font-size: 0.85rem; }
-.lunch-cal-toggle-row { display: flex; gap: 4px; }
-.lunch-cal-toggle {
-  flex: 1;
-  border: 1px solid var(--color-border);
-  border-radius: 6px;
-  background: var(--color-surface);
-  padding: 4px 0;
-  font-size: 0.95rem;
-  min-height: 32px;
+.lunch-cal-day.no-school { background: var(--color-border); opacity: 0.6; cursor: default; }
+/* Fixed (non-theme) colors with alpha so the tint reads as red/green in both
+   light and dark mode, and the menu text sitting on top stays legible. */
+.lunch-cal-day.status-home { background: rgba(197, 68, 60, 0.28); }
+.lunch-cal-day.status-school { background: rgba(63, 145, 90, 0.28); }
+.lunch-cal-day-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
-.lunch-cal-toggle.active.school { background: var(--color-accent); border-color: var(--color-accent); }
-.lunch-cal-toggle.active.home { background: var(--color-primary); border-color: var(--color-primary); }
+.lunch-cal-daynum { font-weight: 700; font-size: 0.85rem; }
+.lunch-cal-noschool-btn {
+  background: none;
+  border: none;
+  font-size: 0.8rem;
+  padding: 2px 4px;
+  min-height: auto;
+  min-width: auto;
+  line-height: 1;
+  opacity: 0.7;
+}
+.lunch-cal-noschool-label {
+  flex: 1;
+  color: var(--color-text-muted);
+  font-size: 0.72rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
 .lunch-cal-menu {
   border: 1px solid var(--color-border);
   border-radius: 6px;
   padding: 3px 4px;
   font-size: 0.7rem;
   min-height: 28px;
-}
-.lunch-cal-noschool-link {
-  background: none;
-  border: none;
-  color: var(--color-text-muted);
-  font-size: 0.68rem;
-  padding: 2px 0;
-  text-decoration: underline;
-}
-.lunch-cal-noschool-tag {
-  flex: 1;
-  background: none;
-  border: none;
-  color: var(--color-text-muted);
-  font-size: 0.75rem;
-  font-weight: 700;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  cursor: text;
 }
 
 /* ---------- Lunch today card (dashboard) ---------- */
