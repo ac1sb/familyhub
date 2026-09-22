@@ -41,9 +41,8 @@ export const api = {
   setMeal: (week, day, name) => request(`/meals/${day}?week=${week}`, { method: 'PUT', body: JSON.stringify({ name }) }),
   reorderMeals: (week, names) => request(`/meals?week=${week}`, { method: 'PUT', body: JSON.stringify({ names }) }),
 
-  lunch: (week) => request(`/lunch?week=${week}`),
-  setLunch: (week, day, status) =>
-    request(`/lunch/${day}?week=${week}`, { method: 'PUT', body: JSON.stringify({ status }) }),
+  lunchRange: (start, end) => request(`/lunch?start=${start}&end=${end}`),
+  setLunchDay: (date, data) => request(`/lunch/${date}`, { method: 'PUT', body: JSON.stringify(data) }),
 
   shopping: () => request('/shopping'),
   addShoppingItem: (name) => request('/shopping', { method: 'POST', body: JSON.stringify({ name }) }),

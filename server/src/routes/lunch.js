@@ -1,43 +1,76 @@
 import { Router } from 'express';
-import db, { withTransaction } from '../db.js';
-import { weekStartParam } from '../lib/week.js';
+import db from '../db.js';
 
 const router = Router();
 
-function ensureWeekRows(week_start) {
-  const existing = db.prepare('SELECT * FROM lunch WHERE week_start = ? ORDER BY day_of_week ASC').all(week_start);
-  if (existing.length === 5) return existing;
-
-  const byDay = new Map(existing.map((r) => [r.day_of_week, r]));
-  const insert = db.prepare('INSERT INTO lunch (week_start, day_of_week, status) VALUES (?, ?, ?)');
-  withTransaction(() => {
-    for (let d = 0; d < 5; d++) {
-      if (!byDay.has(d)) insert.run(week_start, d, 'home');
-    }
-  });
-  return db.prepare('SELECT * FROM lunch WHERE week_start = ? ORDER BY day_of_week ASC').all(week_start);
+function isWeekend(dateStr) {
+  const day = new Date(`${dateStr}T00:00:00`).getDay();
+  return day === 0 || day === 6;
 }
 
-// GET /api/lunch?week=YYYY-MM-DD -> Mon-Fri status for the single child tracked
+function addDaysStr(dateStr, n) {
+  const d = new Date(`${dateStr}T00:00:00`);
+  d.setDate(d.getDate() + n);
+  return d.toISOString().slice(0, 10);
+}
+
+function ensureDay(date) {
+  const existing = db.prepare('SELECT * FROM lunch_days WHERE date = ?').get(date);
+  if (existing) return existing;
+  // Weekends default to "no school" since there's usually no lunch to pack;
+  // still editable per-day for the rare weekend school event.
+  const no_school = isWeekend(date) ? 1 : 0;
+  db.prepare('INSERT INTO lunch_days (date, status, no_school, menu_item) VALUES (?, ?, ?, ?)').run(
+    date,
+    'home',
+    no_school,
+    ''
+  );
+  return db.prepare('SELECT * FROM lunch_days WHERE date = ?').get(date);
+}
+
+// GET /api/lunch?start=YYYY-MM-DD&end=YYYY-MM-DD (end exclusive) -> one row per date,
+// auto-creating any missing days in the range with sensible defaults.
 router.get('/', (req, res) => {
-  const week_start = weekStartParam(req.query);
-  const rows = ensureWeekRows(week_start);
-  res.json({ week_start, days: rows });
+  const { start, end } = req.query;
+  if (!start || !end || !/^\d{4}-\d{2}-\d{2}$/.test(start) || !/^\d{4}-\d{2}-\d{2}$/.test(end)) {
+    return res.status(400).json({ error: 'start and end are required as YYYY-MM-DD' });
+  }
+
+  const days = [];
+  let cursor = start;
+  let guard = 0;
+  while (cursor < end && guard < 400) {
+    days.push(ensureDay(cursor));
+    cursor = addDaysStr(cursor, 1);
+    guard += 1;
+  }
+
+  res.json({ days: days.map((d) => ({ ...d, no_school: !!d.no_school })) });
 });
 
-// PUT /api/lunch/:day_of_week  { status: 'school' | 'home' }
-router.put('/:day_of_week', (req, res) => {
-  const week_start = weekStartParam(req.query);
-  const day_of_week = Number(req.params.day_of_week);
-  const { status } = req.body;
-  if (day_of_week < 0 || day_of_week > 4) return res.status(400).json({ error: 'day_of_week must be 0-4 (Mon-Fri)' });
-  if (!['school', 'home'].includes(status)) return res.status(400).json({ error: "status must be 'school' or 'home'" });
+// PUT /api/lunch/:date  { status?, no_school?, menu_item? }
+router.put('/:date', (req, res) => {
+  const { date } = req.params;
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) return res.status(400).json({ error: 'date must be YYYY-MM-DD' });
 
-  ensureWeekRows(week_start);
-  db.prepare('UPDATE lunch SET status = ? WHERE week_start = ? AND day_of_week = ?').run(status, week_start, day_of_week);
+  const existing = ensureDay(date);
+  const merged = {
+    status: req.body.status !== undefined ? req.body.status : existing.status,
+    no_school: req.body.no_school !== undefined ? (req.body.no_school ? 1 : 0) : existing.no_school,
+    menu_item: req.body.menu_item !== undefined ? req.body.menu_item : existing.menu_item,
+  };
+  if (!['school', 'home'].includes(merged.status)) {
+    return res.status(400).json({ error: "status must be 'school' or 'home'" });
+  }
 
-  const rows = db.prepare('SELECT * FROM lunch WHERE week_start = ? ORDER BY day_of_week ASC').all(week_start);
-  res.json({ week_start, days: rows });
+  db.prepare('UPDATE lunch_days SET status=@status, no_school=@no_school, menu_item=@menu_item WHERE date=@date').run({
+    ...merged,
+    date,
+  });
+
+  const row = db.prepare('SELECT * FROM lunch_days WHERE date = ?').get(date);
+  res.json({ ...row, no_school: !!row.no_school });
 });
 
 export default router;

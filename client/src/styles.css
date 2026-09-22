@@ -489,34 +489,109 @@ button {
 }
 .meal-slot.dragging { box-shadow: 0 6px 16px rgba(0,0,0,0.15); }
 
-/* ---------- Lunch tracker ---------- */
-.lunch-grid {
+/* ---------- Lunch calendar (full month view) ---------- */
+.lunch-cal-weekdays {
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  gap: 10px;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 6px;
+  margin-bottom: 6px;
 }
-.lunch-day {
+.lunch-cal-weekday {
+  text-align: center;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--color-text-muted);
+}
+.lunch-cal-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 6px;
+}
+.lunch-cal-day {
   background: var(--color-bg);
   border: 1px solid var(--color-border);
-  border-radius: 12px;
-  padding: 12px 8px;
-  text-align: center;
+  border-radius: 10px;
+  padding: 6px;
+  min-height: 96px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
-.lunch-day .day-name { font-weight: 700; margin-bottom: 8px; }
-.lunch-option {
+.lunch-cal-day.empty { background: transparent; border: none; }
+.lunch-cal-day.today { border-color: var(--color-primary); border-width: 2px; }
+.lunch-cal-day.no-school { background: var(--color-border); opacity: 0.7; }
+.lunch-cal-daynum { font-weight: 700; font-size: 0.85rem; }
+.lunch-cal-toggle-row { display: flex; gap: 4px; }
+.lunch-cal-toggle {
+  flex: 1;
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  background: var(--color-surface);
+  padding: 4px 0;
+  font-size: 0.95rem;
+  min-height: 32px;
+}
+.lunch-cal-toggle.active.school { background: var(--color-accent); border-color: var(--color-accent); }
+.lunch-cal-toggle.active.home { background: var(--color-primary); border-color: var(--color-primary); }
+.lunch-cal-menu {
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  padding: 3px 4px;
+  font-size: 0.7rem;
+  min-height: 28px;
+}
+.lunch-cal-noschool-link {
+  background: none;
+  border: none;
+  color: var(--color-text-muted);
+  font-size: 0.68rem;
+  padding: 2px 0;
+  text-decoration: underline;
+}
+.lunch-cal-noschool-tag {
+  flex: 1;
+  background: none;
+  border: none;
+  color: var(--color-text-muted);
+  font-size: 0.75rem;
+  font-weight: 700;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
-  padding: 10px 4px;
-  border-radius: 8px;
-  margin-bottom: 6px;
-  font-size: 0.85rem;
-  font-weight: 600;
-  border: 1px solid var(--color-border);
 }
-.lunch-option.active.school { background: var(--color-accent); color: #fff; border-color: var(--color-accent); }
-.lunch-option.active.home { background: var(--color-primary); color: #fff; border-color: var(--color-primary); }
+
+/* ---------- Lunch today card (dashboard) ---------- */
+.lunch-today-focus {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+}
+.lunch-today-label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+}
+.lunch-today-status { font-size: 1.05rem; font-weight: 700; }
+.lunch-today-status.no-school { color: var(--color-text-muted); }
+.lunch-today-menu { font-size: 0.8rem; color: var(--color-text-muted); }
+.lunch-today-strip {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 6px;
+}
+.lunch-today-chip {
+  background: var(--color-bg);
+  border-radius: 8px;
+  padding: 6px 2px;
+  text-align: center;
+  font-size: 0.75rem;
+}
+.lunch-today-chip.is-today { border: 2px solid var(--color-primary); }
+.lunch-today-chip .lts-day { font-weight: 700; color: var(--color-text-muted); }
+.lunch-today-chip .lts-icon { font-size: 1.1rem; margin-top: 2px; }
 
 /* ---------- Weather ---------- */
 .weather-current { display: flex; align-items: center; gap: 14px; margin-bottom: 12px; }

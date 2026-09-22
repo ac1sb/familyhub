@@ -37,3 +37,25 @@ export function formatTime(iso) {
   const d = new Date(iso);
   return d.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' });
 }
+
+export function todayISO() {
+  return toISODate(new Date());
+}
+
+// Days for a month-grid: leading blanks (nulls) so the 1st lines up under its
+// real weekday (Mon-first), followed by every date in that month.
+export function monthGridDays(year, monthIndex) {
+  const first = new Date(year, monthIndex, 1);
+  const firstWeekday = (first.getDay() + 6) % 7; // 0=Mon..6=Sun
+  const daysInMonth = new Date(year, monthIndex + 1, 0).getDate();
+
+  const cells = Array(firstWeekday).fill(null);
+  for (let day = 1; day <= daysInMonth; day++) {
+    cells.push(toISODate(new Date(year, monthIndex, day)));
+  }
+  return cells;
+}
+
+export function formatMonthLabel(year, monthIndex) {
+  return new Date(year, monthIndex, 1).toLocaleDateString(undefined, { month: 'long', year: 'numeric' });
+}

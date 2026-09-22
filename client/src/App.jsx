@@ -4,7 +4,7 @@ import Dashboard from './components/Dashboard.jsx';
 import CalendarAgenda from './components/widgets/CalendarAgenda.jsx';
 import ChoreList from './components/widgets/ChoreList.jsx';
 import MealPlanner from './components/widgets/MealPlanner.jsx';
-import LunchTracker from './components/widgets/LunchTracker.jsx';
+import LunchCalendar from './components/widgets/LunchCalendar.jsx';
 import WeatherWidget from './components/widgets/WeatherWidget.jsx';
 import ShoppingList from './components/widgets/ShoppingList.jsx';
 import SettingsPanel from './components/widgets/SettingsPanel.jsx';
@@ -67,7 +67,7 @@ export default function App() {
           {active === 'calendar' && <CalendarAgenda members={members} />}
           {active === 'chores' && <ChoreList members={members} />}
           {active === 'meals' && <MealPlanner />}
-          {active === 'lunch' && <LunchTracker childName={members.member_3} />}
+          {active === 'lunch' && <LunchCalendar childName={members.member_3} />}
           {active === 'weather' && <WeatherWidget zip={zip} />}
           {active === 'shopping' && <ShoppingList />}
           {active === 'settings' && (

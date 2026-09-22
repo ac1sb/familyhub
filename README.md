@@ -6,32 +6,53 @@ display, while staying reachable from phones/laptops on the same network (or
 the internet, if you deploy it that way) so anyone can add to the calendar or
 shopping list from another device.
 
-## What v1 includes
+## What's included
 
+- **Home dashboard** — a full-height weekly calendar alongside today's
+  weather, today/tomorrow's lunch status, chores, dinner menu, and shopping
+  list, all in one glance. Any flagged reminder (see below) shows as a big
+  banner across the top.
 - **Built-in calendar** with an **agenda view**: three tappable columns for
-  the household members (Mom / Dad / Child by default — rename via `.env`).
+  the household members (Mom / Dad / Child by default — rename in Settings).
   Tapping a member's name opens **Add Event**, preselected for that person.
 - **Google Calendar** read-only sync — connected events show up merged into
   the same agenda, alongside the built-in events.
 - **Recurring events** — a "Repeats weekly" checkbox plus day-of-week chips,
   for anything that happens multiple times a week or the same day every week.
+- **Big reminder banners** — flag any event as an "important reminder" and
+  it shows as a large, hard-to-miss banner on the dashboard the day it's due
+  (e.g. "Band Practice — bring your instrument!").
 - **Flyer/poster scanning** — snap a photo of a flyer, printed schedule, or
   paper calendar page from the Add Event form; the server OCRs it, guesses a
   title/date/time/location with `chrono-node`, and lets you review/edit
   before saving. The photo itself is kept and attached to the event.
-- **Chore list** for the week, assignable to a household member.
+- **Chore list** for the week, assignable to a household member, plus
+  **recurring chores** set up once in Settings → Chore Setup that
+  automatically reappear (unchecked) every week.
 - **Weekly dinner menu** — type in meal names, then drag the handle to
   reorder which meal lands on which day (the days themselves always stay in
   Monday→Sunday order).
-- **Lunch tracker** for one child, Monday–Friday, simple School/From-Home
-  toggles (no "add child" step — it's scoped to a single child by design).
+- **Lunch calendar** for one child — a full monthly view (tap a day to toggle
+  School/Pack-from-home, mark no-school days, jot the menu item), plus a
+  dashboard card that shows *today's* status until 3pm and then flips to
+  *tomorrow's*, so packing a lunch is never a last-minute scramble.
 - **Shopping list**, editable from any device.
-- **Weather widget** — current conditions + 7-day forecast, geocoded from a
-  US zip code (defaults to `05255`) via Open-Meteo (no API key required).
-- **Left sidebar navigation** — one button per widget. Tapping a button
-  shows a large, focused view of that widget, keeping the default screen
-  uncluttered and leaving room to add more sidebar entries later.
-- **Multi-device sync** — every screen polls the API every 10–20s, so an
+- **Weather** — a "Today" card (high/low, precipitation chance, a
+  morning/afternoon/evening timeline, and a clothing hint) on the dashboard,
+  plus a full 7-day forecast on its own sidebar tab. Geocoded from a US zip
+  code via Open-Meteo (no API key required).
+- **Day/night theme** — switches automatically on a schedule you set in
+  Settings → Appearance (or pin it to always-light/always-dark).
+- **Screensaver** — per-device (Settings → Screensaver): idle timeout, photo
+  interval, and theme (landscapes/mountains/waterfalls/lakes/forests), with
+  a clock/date/weather overlay and a Preview button. Off by default on every
+  device; turn it on for the wall display only.
+- **Editable Settings** — rename household members, change the weather zip,
+  and set the day/night schedule, all from the app (no `.env` editing or
+  restart required after first setup).
+- **Left sidebar navigation** — one button per widget for a large, focused
+  view of just that widget.
+- **Multi-device sync** — every screen polls the API every 10–30s, so an
   event/chore/list item added from a phone shows up on the Pi display
   shortly after, and vice versa.
 

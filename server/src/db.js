@@ -61,12 +61,21 @@ CREATE TABLE IF NOT EXISTS meals (
   UNIQUE(week_start, day_of_week)
 );
 
+-- Superseded by lunch_days below (monthly calendar instead of a fixed Mon-Fri
+-- week); kept as-is rather than dropped so nothing errors on an older DB file.
 CREATE TABLE IF NOT EXISTS lunch (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   week_start TEXT NOT NULL,
   day_of_week INTEGER NOT NULL, -- 0-4 Mon-Fri
   status TEXT NOT NULL DEFAULT 'home', -- 'school' | 'home'
   UNIQUE(week_start, day_of_week)
+);
+
+CREATE TABLE IF NOT EXISTS lunch_days (
+  date TEXT PRIMARY KEY, -- YYYY-MM-DD
+  status TEXT NOT NULL DEFAULT 'home', -- 'school' | 'home'
+  no_school INTEGER NOT NULL DEFAULT 0,
+  menu_item TEXT NOT NULL DEFAULT ''
 );
 
 CREATE TABLE IF NOT EXISTS shopping_items (
