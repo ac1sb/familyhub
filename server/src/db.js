@@ -23,6 +23,7 @@ CREATE TABLE IF NOT EXISTS events (
   all_day INTEGER NOT NULL DEFAULT 0,
   recurring INTEGER NOT NULL DEFAULT 0,
   recurrence_days TEXT DEFAULT '[]', -- JSON array of 0-6 (Mon=0)
+  is_reminder INTEGER NOT NULL DEFAULT 0, -- show as a big banner on the dashboard the day it's due
   source TEXT NOT NULL DEFAULT 'local', -- local | google
   google_event_id TEXT,
   photo_path TEXT,
@@ -86,6 +87,11 @@ CREATE TABLE IF NOT EXISTS settings (
 // IF NOT EXISTS above won't add a column to an already-existing chores table.
 try {
   db.exec('ALTER TABLE chores ADD COLUMN template_id INTEGER REFERENCES chore_templates(id)');
+} catch {
+  // column already exists
+}
+try {
+  db.exec('ALTER TABLE events ADD COLUMN is_reminder INTEGER NOT NULL DEFAULT 0');
 } catch {
   // column already exists
 }

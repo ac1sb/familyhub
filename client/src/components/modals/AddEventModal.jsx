@@ -16,6 +16,7 @@ export default function AddEventModal({ members, defaultMember, onClose, onSaved
   const [start, setStart] = useState(toLocalInputValue(new Date()));
   const [recurring, setRecurring] = useState(false);
   const [recurrenceDays, setRecurrenceDays] = useState([]);
+  const [isReminder, setIsReminder] = useState(false);
   const [photoPath, setPhotoPath] = useState(null);
   const [scanning, setScanning] = useState(false);
   const [scanError, setScanError] = useState(null);
@@ -64,6 +65,7 @@ export default function AddEventModal({ members, defaultMember, onClose, onSaved
         recurring,
         recurrence_days: recurring ? recurrenceDays : [],
         photo_path: photoPath,
+        is_reminder: isReminder,
       });
       onSaved?.(created);
       onClose();
@@ -159,6 +161,20 @@ export default function AddEventModal({ members, defaultMember, onClose, onSaved
               ))}
             </div>
           )}
+        </div>
+
+        <div className="field">
+          <div className="checkbox-row">
+            <input
+              id="ev-reminder"
+              type="checkbox"
+              checked={isReminder}
+              onChange={(e) => setIsReminder(e.target.checked)}
+            />
+            <label htmlFor="ev-reminder" style={{ margin: 0 }}>
+              🔔 Show as a big reminder banner on the dashboard the day it's due
+            </label>
+          </div>
         </div>
 
         {error && <p style={{ color: 'var(--color-danger)' }}>{error}</p>}

@@ -13,6 +13,7 @@ function rowToEvent(row) {
     ...row,
     all_day: !!row.all_day,
     recurring: !!row.recurring,
+    is_reminder: !!row.is_reminder,
     recurrence_days: JSON.parse(row.recurrence_days || '[]'),
   };
 }
@@ -49,6 +50,7 @@ router.post('/', (req, res) => {
     recurring = false,
     recurrence_days = [],
     photo_path = null,
+    is_reminder = false,
   } = req.body;
 
   if (!title || !start_datetime) {
@@ -59,8 +61,8 @@ router.post('/', (req, res) => {
   }
 
   const stmt = db.prepare(`
-    INSERT INTO events (title, description, location, member, start_datetime, end_datetime, all_day, recurring, recurrence_days, photo_path)
-    VALUES (@title, @description, @location, @member, @start_datetime, @end_datetime, @all_day, @recurring, @recurrence_days, @photo_path)
+    INSERT INTO events (title, description, location, member, start_datetime, end_datetime, all_day, recurring, recurrence_days, photo_path, is_reminder)
+    VALUES (@title, @description, @location, @member, @start_datetime, @end_datetime, @all_day, @recurring, @recurrence_days, @photo_path, @is_reminder)
   `);
   const info = stmt.run({
     title,
@@ -73,6 +75,7 @@ router.post('/', (req, res) => {
     recurring: recurring ? 1 : 0,
     recurrence_days: JSON.stringify(recurrence_days),
     photo_path,
+    is_reminder: is_reminder ? 1 : 0,
   });
 
   const row = db.prepare('SELECT * FROM events WHERE id = ?').get(info.lastInsertRowid);
@@ -94,12 +97,13 @@ router.put('/:id', (req, res) => {
     recurring: req.body.recurring !== undefined ? (req.body.recurring ? 1 : 0) : existing.recurring,
     recurrence_days: req.body.recurrence_days ? JSON.stringify(req.body.recurrence_days) : existing.recurrence_days,
     photo_path: req.body.photo_path ?? existing.photo_path,
+    is_reminder: req.body.is_reminder !== undefined ? (req.body.is_reminder ? 1 : 0) : existing.is_reminder,
   };
 
   db.prepare(`
     UPDATE events SET title=@title, description=@description, location=@location, member=@member,
       start_datetime=@start_datetime, end_datetime=@end_datetime, all_day=@all_day, recurring=@recurring,
-      recurrence_days=@recurrence_days, photo_path=@photo_path, updated_at=datetime('now')
+      recurrence_days=@recurrence_days, photo_path=@photo_path, is_reminder=@is_reminder, updated_at=datetime('now')
     WHERE id=@id
   `).run({ ...merged, id: req.params.id });
 

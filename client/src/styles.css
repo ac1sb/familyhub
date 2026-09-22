@@ -191,7 +191,12 @@ button {
 
 .dash-calendar {
   display: flex;
+  flex-direction: column;
+  gap: 8px;
   min-height: 0;
+}
+.dash-calendar > .widget-card.fill-height {
+  flex: 1;
 }
 
 .dash-side {
@@ -636,4 +641,33 @@ button {
   font-size: 0.8rem;
   color: rgba(255,255,255,0.75);
   text-shadow: 0 1px 4px rgba(0,0,0,0.6);
+}
+
+/* ---------- Reminder banner ---------- */
+.reminder-banner-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex-shrink: 0;
+}
+.reminder-banner {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 16px;
+  border-radius: 12px;
+  color: #fff;
+  animation: reminder-pulse 2.4s ease-in-out infinite;
+}
+.reminder-banner.family { background: var(--color-accent); }
+.reminder-banner.member_1 { background: var(--color-member-1); }
+.reminder-banner.member_2 { background: var(--color-member-2); }
+.reminder-banner.member_3 { background: var(--color-member-3); }
+.reminder-banner-icon { font-size: 1.8rem; flex-shrink: 0; }
+.reminder-banner-title { font-size: 1.15rem; font-weight: 800; }
+.reminder-banner-desc { font-size: 0.9rem; opacity: 0.95; font-weight: 600; }
+
+@keyframes reminder-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(0,0,0,0.12); }
+  50% { box-shadow: 0 0 0 6px rgba(0,0,0,0); }
 }
