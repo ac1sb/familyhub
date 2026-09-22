@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 import { usePolling } from '../../hooks/usePolling.js';
 import { api } from '../../api.js';
 import AddEventModal from '../modals/AddEventModal.jsx';
+import EventDetailModal from '../modals/EventDetailModal.jsx';
 import { addDays, currentWeekStart, formatTime, startOfWeek, toISODate } from '../../lib/week.js';
 
 const MEMBER_KEYS = ['member_1', 'member_2', 'member_3'];
@@ -9,6 +10,7 @@ const MEMBER_KEYS = ['member_1', 'member_2', 'member_3'];
 export default function CalendarAgenda({ members, compact = false, onExpand, fillHeight = false }) {
   const [weekStart, setWeekStart] = useState(currentWeekStart());
   const [modalMember, setModalMember] = useState(null);
+  const [selectedEvent, setSelectedEvent] = useState(null);
   const [confirmation, setConfirmation] = useState(null);
   const { data, refresh } = usePolling(() => api.events(weekStart), [weekStart], 20000);
 
@@ -97,6 +99,7 @@ export default function CalendarAgenda({ members, compact = false, onExpand, fil
                     key={`${ev.id}-${ev.occurrence_start}`}
                     className={`event-pill ${ev.member}${ev.recurring ? ' recurring' : ''}`}
                     title={ev.description || ''}
+                    onClick={() => setSelectedEvent(ev)}
                   >
                     <span className="time">{ev.all_day ? 'All day' : formatTime(ev.occurrence_start)}</span>
                     {ev.title}
@@ -115,6 +118,19 @@ export default function CalendarAgenda({ members, compact = false, onExpand, fil
           defaultMember={modalMember}
           onClose={() => setModalMember(null)}
           onSaved={handleEventSaved}
+        />
+      )}
+
+      {selectedEvent && (
+        <EventDetailModal
+          event={selectedEvent}
+          members={members}
+          onClose={() => setSelectedEvent(null)}
+          onChanged={(saved) => {
+            setSelectedEvent(null);
+            if (saved) handleEventSaved(saved);
+            else refresh();
+          }}
         />
       )}
     </section>

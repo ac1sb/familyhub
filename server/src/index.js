@@ -16,6 +16,7 @@ import googleRouter from './routes/google.js';
 import flyerRouter from './routes/flyer.js';
 import settingsRouter from './routes/settings.js';
 import { getMemberNames, getWeatherZip, getThemeSettings } from './lib/appConfig.js';
+import { uploadsDir } from './lib/paths.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
@@ -33,7 +34,7 @@ process.on('unhandledRejection', (err) => {
 app.use(cors());
 app.use(morgan('dev'));
 app.use(express.json({ limit: '5mb' }));
-app.use('/uploads', express.static(path.join(__dirname, '..', 'uploads')));
+app.use('/uploads', express.static(uploadsDir));
 
 app.get('/api/config', (req, res) => {
   res.json({ members: getMemberNames(), weather_zip: getWeatherZip(), theme: getThemeSettings() });

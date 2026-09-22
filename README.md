@@ -15,6 +15,8 @@ shopping list from another device.
 - **Built-in calendar** with an **agenda view**: three tappable columns for
   the household members (Mom / Dad / Child by default — rename in Settings).
   Tapping a member's name opens **Add Event**, preselected for that person.
+  Tapping an existing event opens its full details (including its saved
+  flyer photo, if it has one), with Edit and Delete right there.
 - **Google Calendar** read-only sync — connected events show up merged into
   the same agenda, alongside the built-in events.
 - **Recurring events** — a "Repeats weekly" checkbox plus day-of-week chips,
@@ -176,9 +178,23 @@ seconds.
 
 ## Data & backups
 
-All data lives in a single SQLite file at `server/data/familyhub.sqlite3`.
-Back that file up (and the `server/uploads/` folder, for flyer photos)
-however you'd back up any other file on the Pi.
+All data lives in a single SQLite file at `server/data/familyhub.sqlite3`,
+alongside saved flyer photos in `server/uploads/`. Both are gitignored, which
+means:
+
+- **`git pull` on an existing checkout never touches them.** Git only ever
+  updates files it tracks; it cannot see or remove untracked/ignored files,
+  so pulling the latest code is always safe for your data.
+- **A fresh `git clone` starts empty**, since there's nothing to bring over -
+  this is what happens when you set up a new machine, or reinstall. If you
+  want data to carry over automatically in that situation, set `DB_PATH` and
+  `UPLOADS_DIR` in `server/.env` to a location *outside* the repo folder
+  (see `server/.env.example`) - then re-cloning the code next to that folder
+  leaves your data untouched no matter what.
+
+Either way, back up `server/data/familyhub.sqlite3` and `server/uploads/`
+(or wherever `DB_PATH`/`UPLOADS_DIR` point) the same way you'd back up any
+other file on the Pi.
 
 ## Known limitations (v1)
 

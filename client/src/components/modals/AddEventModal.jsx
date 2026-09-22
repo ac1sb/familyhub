@@ -8,22 +8,27 @@ function toLocalInputValue(date) {
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
 }
 
-export default function AddEventModal({ members, defaultMember, onClose, onSaved }) {
-  const [title, setTitle] = useState('');
-  const [location, setLocation] = useState('');
-  const [description, setDescription] = useState('');
-  const [member, setMember] = useState(defaultMember || 'family');
-  const [start, setStart] = useState(toLocalInputValue(new Date()));
-  const [recurring, setRecurring] = useState(false);
-  const [recurrenceDays, setRecurrenceDays] = useState([]);
-  const [isReminder, setIsReminder] = useState(false);
-  const [photoPath, setPhotoPath] = useState(null);
+export default function AddEventModal({ members, defaultMember, existingEvent, onClose, onSaved }) {
+  const isEditing = !!existingEvent;
+  const [title, setTitle] = useState(existingEvent?.title || '');
+  const [location, setLocation] = useState(existingEvent?.location || '');
+  const [description, setDescription] = useState(existingEvent?.description || '');
+  const [member, setMember] = useState(existingEvent?.member || defaultMember || 'family');
+  const [start, setStart] = useState(toLocalInputValue(existingEvent?.start_datetime || new Date()));
+  const [recurring, setRecurring] = useState(existingEvent?.recurring || false);
+  const [recurrenceDays, setRecurrenceDays] = useState(existingEvent?.recurrence_days || []);
+  const [isReminder, setIsReminder] = useState(existingEvent?.is_reminder || false);
+  const [photoPath, setPhotoPath] = useState(existingEvent?.photo_path || null);
   const [scanning, setScanning] = useState(false);
   const [scanError, setScanError] = useState(null);
   const [saving, setSaving] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const [error, setError] = useState(null);
 
-  useEffect(() => setMember(defaultMember || 'family'), [defaultMember]);
+  useEffect(() => {
+    if (!isEditing) setMember(defaultMember || 'family');
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [defaultMember]);
 
   function toggleDay(idx) {
     setRecurring(true);
@@ -55,19 +60,20 @@ export default function AddEventModal({ members, defaultMember, onClose, onSaved
     }
     setSaving(true);
     setError(null);
+    const payload = {
+      title: title.trim(),
+      description,
+      location,
+      member,
+      start_datetime: new Date(start).toISOString(),
+      recurring,
+      recurrence_days: recurring ? recurrenceDays : [],
+      photo_path: photoPath,
+      is_reminder: isReminder,
+    };
     try {
-      const created = await api.createEvent({
-        title: title.trim(),
-        description,
-        location,
-        member,
-        start_datetime: new Date(start).toISOString(),
-        recurring,
-        recurrence_days: recurring ? recurrenceDays : [],
-        photo_path: photoPath,
-        is_reminder: isReminder,
-      });
-      onSaved?.(created);
+      const saved = isEditing ? await api.updateEvent(existingEvent.id, payload) : await api.createEvent(payload);
+      onSaved?.(saved);
       onClose();
     } catch (err) {
       setError(err.message);
@@ -76,10 +82,27 @@ export default function AddEventModal({ members, defaultMember, onClose, onSaved
     }
   }
 
+  async function handleDelete() {
+    const confirmMsg = recurring
+      ? 'Delete this event? Since it repeats, this removes it for every week, not just this one.'
+      : 'Delete this event?';
+    if (!window.confirm(confirmMsg)) return;
+    setDeleting(true);
+    setError(null);
+    try {
+      await api.deleteEvent(existingEvent.id);
+      onSaved?.(null);
+      onClose();
+    } catch (err) {
+      setError(err.message);
+      setDeleting(false);
+    }
+  }
+
   return (
     <div className="modal-backdrop" onClick={onClose}>
       <div className="modal-panel" onClick={(e) => e.stopPropagation()}>
-        <h3 className="modal-title">Add Calendar Event</h3>
+        <h3 className="modal-title">{isEditing ? 'Edit Calendar Event' : 'Add Calendar Event'}</h3>
 
         <div className="field">
           <label>Scan a flyer, poster, or paper calendar</label>
@@ -180,9 +203,14 @@ export default function AddEventModal({ members, defaultMember, onClose, onSaved
         {error && <p style={{ color: 'var(--color-danger)' }}>{error}</p>}
 
         <div className="modal-actions">
+          {isEditing && (
+            <button className="btn btn-danger" onClick={handleDelete} disabled={deleting || saving} style={{ marginRight: 'auto' }}>
+              {deleting ? 'Deleting…' : 'Delete'}
+            </button>
+          )}
           <button className="btn btn-secondary" onClick={onClose}>Cancel</button>
-          <button className="btn btn-primary" onClick={handleSave} disabled={saving}>
-            {saving ? 'Saving…' : 'Add Event'}
+          <button className="btn btn-primary" onClick={handleSave} disabled={saving || deleting}>
+            {saving ? 'Saving…' : isEditing ? 'Save Changes' : 'Add Event'}
           </button>
         </div>
       </div>

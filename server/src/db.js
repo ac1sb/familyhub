@@ -4,10 +4,19 @@ import fs from 'node:fs';
 import { fileURLToPath } from 'node:url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const dataDir = path.join(__dirname, '..', 'data');
+
+// DB_PATH lets the database file live outside the repo checkout entirely
+// (e.g. DB_PATH=/home/pi/familyhub-data/familyhub.sqlite3) so it survives a
+// fresh `git clone` or a rebuild untouched. Without it, the file lives in
+// server/data/, which is gitignored - safe from `git pull` on an existing
+// checkout, but a brand new clone naturally starts with no data folder at all.
+const dbPath = process.env.DB_PATH
+  ? path.resolve(process.env.DB_PATH)
+  : path.join(__dirname, '..', 'data', 'familyhub.sqlite3');
+const dataDir = path.dirname(dbPath);
 if (!fs.existsSync(dataDir)) fs.mkdirSync(dataDir, { recursive: true });
 
-const db = new DatabaseSync(path.join(dataDir, 'familyhub.sqlite3'));
+const db = new DatabaseSync(dbPath);
 db.exec('PRAGMA journal_mode = WAL');
 db.exec('PRAGMA foreign_keys = ON');
 
