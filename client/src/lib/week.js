@@ -59,3 +59,19 @@ export function monthGridDays(year, monthIndex) {
 export function formatMonthLabel(year, monthIndex) {
   return new Date(year, monthIndex, 1).toLocaleDateString(undefined, { month: 'long', year: 'numeric' });
 }
+
+// Same as monthGridDays, but skips Saturday/Sunday entirely (a 5-column
+// Mon-Fri grid) instead of including them as filler cells.
+export function weekdayGridDays(year, monthIndex) {
+  const first = new Date(year, monthIndex, 1);
+  const firstWeekday = (first.getDay() + 6) % 7; // 0=Mon..6=Sun
+  const daysInMonth = new Date(year, monthIndex + 1, 0).getDate();
+
+  const cells = firstWeekday <= 4 ? Array(firstWeekday).fill(null) : [];
+  for (let day = 1; day <= daysInMonth; day++) {
+    const date = new Date(year, monthIndex, day);
+    const weekday = (date.getDay() + 6) % 7;
+    if (weekday <= 4) cells.push(toISODate(date));
+  }
+  return cells;
+}

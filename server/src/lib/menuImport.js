@@ -82,14 +82,34 @@ function pickEntree(items) {
 }
 
 export async function fetchMenuItems(url) {
-  const resp = await fetch(url, {
-    headers: {
-      'User-Agent':
-        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36',
-      Accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-      'Accept-Language': 'en-US,en;q=0.9',
-    },
-  });
+  // node-fetch has no default timeout, so a slow/unresponsive site (or one
+  // that silently drops the connection instead of rejecting it) would hang
+  // this request forever - the same mistake already found and fixed for the
+  // flyer OCR scan. A hard timeout means "Sync Menu" always finishes with a
+  // clear result instead of appearing to do nothing.
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 20000);
+
+  let resp;
+  try {
+    resp = await fetch(url, {
+      signal: controller.signal,
+      headers: {
+        'User-Agent':
+          'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36',
+        Accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+        'Accept-Language': 'en-US,en;q=0.9',
+      },
+    });
+  } catch (err) {
+    if (err.name === 'AbortError') {
+      return { success: false, error: 'Timed out reaching the menu site after 20 seconds.', htmlPreview: null };
+    }
+    return { success: false, error: `Could not reach the menu site: ${err.message}`, htmlPreview: null };
+  } finally {
+    clearTimeout(timeoutId);
+  }
+
   if (!resp.ok) {
     return { success: false, error: `Menu site responded with ${resp.status}`, htmlPreview: null };
   }

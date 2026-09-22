@@ -1,7 +1,9 @@
 import { useEffect, useMemo, useState } from 'react';
 import { usePolling } from '../../hooks/usePolling.js';
 import { api } from '../../api.js';
-import { formatMonthLabel, monthGridDays, toISODate, WEEKDAY_SHORT } from '../../lib/week.js';
+import { formatMonthLabel, weekdayGridDays, toISODate, WEEKDAY_SHORT } from '../../lib/week.js';
+
+const WEEKDAYS_ONLY = WEEKDAY_SHORT.slice(0, 5);
 
 export default function LunchCalendar({ childName }) {
   const now = new Date();
@@ -30,7 +32,7 @@ export default function LunchCalendar({ childName }) {
     return map;
   }, [data]);
 
-  const cells = useMemo(() => monthGridDays(year, monthIndex), [year, monthIndex]);
+  const cells = useMemo(() => weekdayGridDays(year, monthIndex), [year, monthIndex]);
   const todayKey = toISODate(now);
 
   function goMonth(offset) {
@@ -116,7 +118,7 @@ export default function LunchCalendar({ childName }) {
       )}
 
       <div className="lunch-cal-weekdays">
-        {WEEKDAY_SHORT.map((w) => (
+        {WEEKDAYS_ONLY.map((w) => (
           <div key={w} className="lunch-cal-weekday">{w}</div>
         ))}
       </div>

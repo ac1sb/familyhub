@@ -572,7 +572,7 @@ button {
 
 .lunch-cal-weekdays {
   display: grid;
-  grid-template-columns: repeat(7, 1fr);
+  grid-template-columns: repeat(5, 1fr);
   gap: 6px;
   margin-bottom: 6px;
 }
@@ -584,7 +584,7 @@ button {
 }
 .lunch-cal-grid {
   display: grid;
-  grid-template-columns: repeat(7, 1fr);
+  grid-template-columns: repeat(5, 1fr);
   gap: 6px;
 }
 .lunch-cal-day {
@@ -641,37 +641,30 @@ button {
 }
 
 /* ---------- Lunch today card (dashboard) ---------- */
-.lunch-today-focus {
+.lunch-today-list {
   display: flex;
-  align-items: baseline;
-  gap: 8px;
-  flex-wrap: wrap;
-  margin-bottom: 8px;
-}
-.lunch-today-label {
-  font-size: 0.75rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  color: var(--color-text-muted);
-}
-.lunch-today-status { font-size: 1.05rem; font-weight: 700; }
-.lunch-today-status.no-school { color: var(--color-text-muted); }
-.lunch-today-menu { font-size: 0.8rem; color: var(--color-text-muted); }
-.lunch-today-strip {
-  display: grid;
-  grid-template-columns: repeat(5, 1fr);
+  flex-direction: column;
   gap: 6px;
 }
-.lunch-today-chip {
-  background: var(--color-bg);
-  border-radius: 8px;
-  padding: 6px 2px;
-  text-align: center;
-  font-size: 0.75rem;
+.lunch-today-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  padding: 8px 12px;
+  font-size: 0.9rem;
+  text-align: left;
+  color: var(--color-text);
+  transition: background-color 0.15s ease;
 }
-.lunch-today-chip.is-today { border: 2px solid var(--color-primary); }
-.lunch-today-chip .lts-day { font-weight: 700; color: var(--color-text-muted); }
-.lunch-today-chip .lts-icon { font-size: 1.1rem; margin-top: 2px; }
+.lunch-today-row.is-today { border-color: var(--color-primary); border-width: 2px; }
+.lunch-today-row.status-home { background: rgba(197, 68, 60, 0.28); }
+.lunch-today-row.status-school { background: rgba(63, 145, 90, 0.28); }
+.lunch-today-row.no-school { background: var(--color-border); color: var(--color-text-muted); opacity: 0.7; }
+.lunch-today-row .ltr-day { font-weight: 700; min-width: 34px; }
+.lunch-today-row .ltr-meal { flex: 1; }
 
 /* ---------- Weather ---------- */
 .weather-current { display: flex; align-items: center; gap: 14px; margin-bottom: 12px; }
