@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import fetch from 'node-fetch';
+import { getWeatherZip } from '../lib/appConfig.js';
 
 const router = Router();
 
@@ -48,7 +49,7 @@ async function geocodeZip(zip, country) {
 }
 
 router.get('/', async (req, res) => {
-  const zip = req.query.zip || process.env.WEATHER_ZIP || '05255';
+  const zip = req.query.zip || getWeatherZip();
   const country = (req.query.country || process.env.WEATHER_COUNTRY || 'us').toLowerCase();
   const cacheKey = `${zip}-${country}`;
 

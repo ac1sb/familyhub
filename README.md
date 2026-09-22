@@ -84,17 +84,23 @@ Then visit `http://<host>:4000/` from any device on the network.
 
 ## Configuring household members & weather
 
-Edit `server/.env`:
+Open the app's **Settings → General** tab to rename the three household
+members or change the weather zip code — changes save immediately and take
+effect across the app (agenda columns, lunch tracker, chore assignment) with
+no restart needed.
 
-```
-MEMBER_1_NAME=Mom
-MEMBER_2_NAME=Dad
-MEMBER_3_NAME=Child
-WEATHER_ZIP=05255
-WEATHER_COUNTRY=us
-```
+The `MEMBER_1_NAME` / `MEMBER_2_NAME` / `MEMBER_3_NAME` / `WEATHER_ZIP`
+values in `server/.env` are only the *first-run defaults*; once anything is
+saved from Settings, the database value takes over and the `.env` value is
+ignored from then on.
 
-Restart the server after changing these.
+## Recurring chores
+
+Chores you add from the Chores widget's "Add a one-time chore" field are
+just that — one-time. For a chore that should reappear every week already
+unchecked (trash day, feeding a pet, etc.), add it once in **Settings →
+Chore Setup**. Toggle a chore off there to pause it without losing its
+setup, or delete it to remove it for good.
 
 ## Connecting Google Calendar
 

@@ -1,11 +1,38 @@
 import { Router } from 'express';
-import db from '../db.js';
+import db, { withTransaction } from '../db.js';
 import { weekStartParam } from '../lib/week.js';
 
 const router = Router();
 
+// Recurring chores are managed as templates (Settings > Chore Setup). Whenever
+// a week's chore list is requested, make sure every active template has a
+// fresh, unchecked instance for that week — carrying a chore forward every
+// week without ever duplicating one that's already there.
+function ensureWeekChores(week_start) {
+  const templates = db.prepare('SELECT * FROM chore_templates WHERE active = 1 ORDER BY sort_order ASC, id ASC').all();
+  if (templates.length === 0) return;
+
+  const existingTemplateIds = new Set(
+    db
+      .prepare('SELECT template_id FROM chores WHERE week_start = ? AND template_id IS NOT NULL')
+      .all(week_start)
+      .map((r) => r.template_id)
+  );
+  const missing = templates.filter((t) => !existingTemplateIds.has(t.id));
+  if (missing.length === 0) return;
+
+  const maxOrder = db.prepare('SELECT COALESCE(MAX(sort_order), -1) as m FROM chores WHERE week_start = ?').get(week_start).m;
+  const insert = db.prepare(
+    'INSERT INTO chores (title, assigned_to, recurring, template_id, week_start, sort_order) VALUES (?, ?, 1, ?, ?, ?)'
+  );
+  withTransaction(() => {
+    missing.forEach((t, i) => insert.run(t.title, t.assigned_to, t.id, week_start, maxOrder + 1 + i));
+  });
+}
+
 router.get('/', (req, res) => {
   const week_start = weekStartParam(req.query);
+  ensureWeekChores(week_start);
   const rows = db
     .prepare('SELECT * FROM chores WHERE week_start = ? ORDER BY sort_order ASC, id ASC')
     .all(week_start)
@@ -15,7 +42,7 @@ router.get('/', (req, res) => {
 
 router.post('/', (req, res) => {
   const week_start = weekStartParam(req.query);
-  const { title, assigned_to = 'family', recurring = true, day_of_week = null } = req.body;
+  const { title, assigned_to = 'family', recurring = false, day_of_week = null } = req.body;
   if (!title) return res.status(400).json({ error: 'title is required' });
 
   const maxOrder = db.prepare('SELECT COALESCE(MAX(sort_order), -1) as m FROM chores WHERE week_start = ?').get(week_start).m;

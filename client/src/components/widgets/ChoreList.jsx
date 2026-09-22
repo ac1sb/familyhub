@@ -20,7 +20,7 @@ export default function ChoreList({ members, compact = false, onExpand }) {
 
   async function addChore() {
     if (!newTitle.trim()) return;
-    await api.createChore(weekStart, { title: newTitle.trim(), assigned_to: assignedTo, recurring: true });
+    await api.createChore(weekStart, { title: newTitle.trim(), assigned_to: assignedTo });
     setNewTitle('');
     refresh();
   }
@@ -42,7 +42,10 @@ export default function ChoreList({ members, compact = false, onExpand }) {
       {(data?.chores || []).map((chore) => (
         <div className="chore-row" key={chore.id}>
           <input type="checkbox" checked={chore.done} onChange={() => toggleDone(chore)} />
-          <span className={`chore-title${chore.done ? ' done' : ''}`}>{chore.title}</span>
+          <span className={`chore-title${chore.done ? ' done' : ''}`}>
+            {chore.template_id && <span title="Repeats every week">🔁 </span>}
+            {chore.title}
+          </span>
           <span className={`chore-tag ${chore.assigned_to}`}>{allMembers[chore.assigned_to] || chore.assigned_to}</span>
           <button className="btn-icon" onClick={() => removeChore(chore.id)}>✕</button>
         </div>
@@ -52,7 +55,7 @@ export default function ChoreList({ members, compact = false, onExpand }) {
       <div className="add-row">
         <input
           type="text"
-          placeholder="Add a chore…"
+          placeholder="Add a one-time chore…"
           value={newTitle}
           onChange={(e) => setNewTitle(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && addChore()}
@@ -64,6 +67,11 @@ export default function ChoreList({ members, compact = false, onExpand }) {
         </select>
         <button className="btn btn-primary" onClick={addChore}>Add</button>
       </div>
+      {!compact && (
+        <p style={{ color: 'var(--color-text-muted)', fontSize: '0.8rem', marginTop: 10, marginBottom: 0 }}>
+          Want a chore to repeat every week? Set it up once in Settings &rarr; Chore Setup.
+        </p>
+      )}
     </section>
   );
 }

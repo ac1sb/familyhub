@@ -30,6 +30,15 @@ CREATE TABLE IF NOT EXISTS events (
   updated_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
 
+CREATE TABLE IF NOT EXISTS chore_templates (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  title TEXT NOT NULL,
+  assigned_to TEXT NOT NULL DEFAULT 'family',
+  active INTEGER NOT NULL DEFAULT 1,
+  sort_order INTEGER NOT NULL DEFAULT 0,
+  created_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+
 CREATE TABLE IF NOT EXISTS chores (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   title TEXT NOT NULL,
@@ -39,6 +48,7 @@ CREATE TABLE IF NOT EXISTS chores (
   done INTEGER NOT NULL DEFAULT 0,
   week_start TEXT NOT NULL,
   sort_order INTEGER NOT NULL DEFAULT 0,
+  template_id INTEGER REFERENCES chore_templates(id), -- set when auto-generated from a recurring template
   created_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
 
@@ -71,6 +81,14 @@ CREATE TABLE IF NOT EXISTS settings (
   value TEXT
 );
 `);
+
+// Migration for databases created before chore_templates existed: CREATE TABLE
+// IF NOT EXISTS above won't add a column to an already-existing chores table.
+try {
+  db.exec('ALTER TABLE chores ADD COLUMN template_id INTEGER REFERENCES chore_templates(id)');
+} catch {
+  // column already exists
+}
 
 // node:sqlite's DatabaseSync has no built-in transaction() helper (unlike better-sqlite3),
 // so batch writes (e.g. reordering a whole week of meals) use this instead.

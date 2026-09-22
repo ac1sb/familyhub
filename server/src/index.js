@@ -7,12 +7,15 @@ import { fileURLToPath } from 'node:url';
 
 import eventsRouter from './routes/events.js';
 import choresRouter from './routes/chores.js';
+import choreTemplatesRouter from './routes/choreTemplates.js';
 import mealsRouter from './routes/meals.js';
 import lunchRouter from './routes/lunch.js';
 import shoppingRouter from './routes/shopping.js';
 import weatherRouter from './routes/weather.js';
 import googleRouter from './routes/google.js';
 import flyerRouter from './routes/flyer.js';
+import settingsRouter from './routes/settings.js';
+import { getMemberNames, getWeatherZip } from './lib/appConfig.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
@@ -33,24 +36,19 @@ app.use(express.json({ limit: '5mb' }));
 app.use('/uploads', express.static(path.join(__dirname, '..', 'uploads')));
 
 app.get('/api/config', (req, res) => {
-  res.json({
-    members: {
-      member_1: process.env.MEMBER_1_NAME || 'Mom',
-      member_2: process.env.MEMBER_2_NAME || 'Dad',
-      member_3: process.env.MEMBER_3_NAME || 'Child',
-    },
-    weather_zip: process.env.WEATHER_ZIP || '05255',
-  });
+  res.json({ members: getMemberNames(), weather_zip: getWeatherZip() });
 });
 
 app.use('/api/events', eventsRouter);
 app.use('/api/chores', choresRouter);
+app.use('/api/chore-templates', choreTemplatesRouter);
 app.use('/api/meals', mealsRouter);
 app.use('/api/lunch', lunchRouter);
 app.use('/api/shopping', shoppingRouter);
 app.use('/api/weather', weatherRouter);
 app.use('/api/google', googleRouter);
 app.use('/api/flyer', flyerRouter);
+app.use('/api/settings', settingsRouter);
 
 // Serve the built client in production (npm run build in /client outputs to /client/dist).
 const clientDist = path.join(__dirname, '..', '..', 'client', 'dist');

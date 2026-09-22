@@ -32,6 +32,11 @@ export const api = {
   updateChore: (id, data) => request(`/chores/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
   deleteChore: (id) => request(`/chores/${id}`, { method: 'DELETE' }),
 
+  choreTemplates: () => request('/chore-templates'),
+  createChoreTemplate: (data) => request('/chore-templates', { method: 'POST', body: JSON.stringify(data) }),
+  updateChoreTemplate: (id, data) => request(`/chore-templates/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
+  deleteChoreTemplate: (id) => request(`/chore-templates/${id}`, { method: 'DELETE' }),
+
   meals: (week) => request(`/meals?week=${week}`),
   setMeal: (week, day, name) => request(`/meals/${day}?week=${week}`, { method: 'PUT', body: JSON.stringify({ name }) }),
   reorderMeals: (week, names) => request(`/meals?week=${week}`, { method: 'PUT', body: JSON.stringify({ names }) }),
@@ -46,6 +51,9 @@ export const api = {
   deleteShoppingItem: (id) => request(`/shopping/${id}`, { method: 'DELETE' }),
 
   weather: (zip) => request(`/weather${zip ? `?zip=${zip}` : ''}`),
+
+  settings: () => request('/settings'),
+  updateSettings: (data) => request('/settings', { method: 'PUT', body: JSON.stringify(data) }),
 
   googleStatus: () => request('/google/status'),
   googleAuthUrl: () => request('/google/auth-url'),

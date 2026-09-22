@@ -48,7 +48,7 @@ export default function App() {
           {active === 'lunch' && <LunchTracker childName={members.member_3} />}
           {active === 'weather' && <WeatherWidget zip={zip} />}
           {active === 'shopping' && <ShoppingList />}
-          {active === 'settings' && <SettingsPanel config={config} />}
+          {active === 'settings' && <SettingsPanel config={config} onConfigUpdated={setConfig} />}
         </main>
       </div>
     </div>
