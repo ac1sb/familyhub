@@ -40,7 +40,7 @@ export default function App() {
           </div>
           <WeatherWidget zip={zip} compact />
         </header>
-        <main className="main-content">
+        <main className={`main-content${active === 'dashboard' ? ' dashboard-mode' : ''}`}>
           {active === 'dashboard' && <Dashboard members={members} onNavigate={setActive} />}
           {active === 'calendar' && <CalendarAgenda members={members} />}
           {active === 'chores' && <ChoreList members={members} />}

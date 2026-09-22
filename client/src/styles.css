@@ -130,6 +130,16 @@ button {
   padding: 16px 20px 32px;
 }
 
+/* The dashboard manages its own internal scrolling per-column (calendar vs.
+   the side widgets) so it can make full use of the screen height between the
+   topbar and the bottom margin, instead of the whole page scrolling. */
+.main-content.dashboard-mode {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  padding-bottom: 16px;
+}
+
 /* ---------- Widget header (kept small per design request) ---------- */
 .widget-header {
   display: flex;
@@ -158,19 +168,41 @@ button {
   display: grid;
   grid-template-columns: 1fr;
   gap: 16px;
-  align-items: start;
+  flex: 1;
+  min-height: 0;
 }
 
-.dashboard-grid .dash-calendar { grid-column: 1 / -1; }
+.dash-calendar {
+  display: flex;
+  min-height: 0;
+}
+
+.dash-side {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-height: 0;
+}
+
+.dash-side .widget-card {
+  flex: 1;
+  min-height: 0;
+}
 
 .widget-card.compact {
   max-height: 380px;
   overflow-y: auto;
 }
 
-.dash-calendar .widget-card.compact {
-  max-height: 460px;
+.widget-card.fill-height {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
 }
+
+.widget-card.fill-height .agenda-day-row { flex-shrink: 0; }
 
 .see-all {
   background: none;
@@ -467,5 +499,5 @@ button {
 .shopping-row .name.checked { text-decoration: line-through; color: var(--color-text-muted); }
 
 @media (min-width: 900px) {
-  .dashboard-grid { grid-template-columns: repeat(3, 1fr); }
+  .dashboard-grid { grid-template-columns: 2fr 1fr; }
 }

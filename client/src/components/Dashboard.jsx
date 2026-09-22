@@ -7,11 +7,13 @@ export default function Dashboard({ members, onNavigate }) {
   return (
     <div className="dashboard-grid">
       <div className="dash-calendar">
-        <CalendarAgenda members={members} compact onExpand={() => onNavigate('calendar')} />
+        <CalendarAgenda members={members} fillHeight />
       </div>
-      <ChoreList members={members} compact onExpand={() => onNavigate('chores')} />
-      <MealPlanner compact onExpand={() => onNavigate('meals')} />
-      <ShoppingList compact onExpand={() => onNavigate('shopping')} />
+      <div className="dash-side">
+        <ChoreList members={members} compact onExpand={() => onNavigate('chores')} />
+        <MealPlanner compact onExpand={() => onNavigate('meals')} />
+        <ShoppingList compact onExpand={() => onNavigate('shopping')} />
+      </div>
     </div>
   );
 }

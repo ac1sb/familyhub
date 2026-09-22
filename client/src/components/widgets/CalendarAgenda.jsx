@@ -6,7 +6,7 @@ import { addDays, currentWeekStart, formatTime, startOfWeek, toISODate } from '.
 
 const MEMBER_KEYS = ['member_1', 'member_2', 'member_3'];
 
-export default function CalendarAgenda({ members, compact = false, onExpand }) {
+export default function CalendarAgenda({ members, compact = false, onExpand, fillHeight = false }) {
   const [weekStart, setWeekStart] = useState(currentWeekStart());
   const [modalMember, setModalMember] = useState(null);
   const [confirmation, setConfirmation] = useState(null);
@@ -55,7 +55,7 @@ export default function CalendarAgenda({ members, compact = false, onExpand }) {
   }
 
   return (
-    <section className={`widget-card${compact ? ' compact' : ''}`}>
+    <section className={`widget-card${compact ? ' compact' : ''}${fillHeight ? ' fill-height' : ''}`}>
       <div className="widget-header">
         <h2>{compact ? 'Calendar — Next Few Days' : 'Calendar — Agenda'}</h2>
         {compact ? (
