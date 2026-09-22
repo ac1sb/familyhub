@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { api } from '../../api.js';
 import ChoreSetup from './ChoreSetup.jsx';
+import ScreensaverSettings from './ScreensaverSettings.jsx';
 
 function GeneralSettings({ config, onConfigUpdated }) {
   const [names, setNames] = useState({ member_1: '', member_2: '', member_3: '' });
@@ -124,12 +125,91 @@ function GeneralSettings({ config, onConfigUpdated }) {
   );
 }
 
+function AppearanceSettings({ config, onConfigUpdated }) {
+  const [themeMode, setThemeMode] = useState('auto');
+  const [darkStart, setDarkStart] = useState('19:00');
+  const [darkEnd, setDarkEnd] = useState('07:00');
+  const [saving, setSaving] = useState(false);
+  const [saveMessage, setSaveMessage] = useState(null);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    if (config?.theme) {
+      setThemeMode(config.theme.theme_mode);
+      setDarkStart(config.theme.dark_start);
+      setDarkEnd(config.theme.dark_end);
+    }
+  }, [config]);
+
+  async function handleSave() {
+    setSaving(true);
+    setError(null);
+    setSaveMessage(null);
+    try {
+      const updated = await api.updateSettings({ theme_mode: themeMode, dark_start: darkStart, dark_end: darkEnd });
+      onConfigUpdated?.(updated);
+      setSaveMessage('Saved!');
+      setTimeout(() => setSaveMessage(null), 3000);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <>
+      <div className="field">
+        <label>Theme</label>
+        <div className="member-choice-row">
+          {[
+            { id: 'auto', label: 'Automatic (schedule)' },
+            { id: 'light', label: 'Always Light' },
+            { id: 'dark', label: 'Always Dark' },
+          ].map((opt) => (
+            <button
+              key={opt.id}
+              type="button"
+              className={`member-choice family${themeMode === opt.id ? ' selected' : ''}`}
+              onClick={() => setThemeMode(opt.id)}
+            >
+              {opt.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {themeMode === 'auto' && (
+        <>
+          <div className="field">
+            <label htmlFor="dark-start">Switch to dark at</label>
+            <input id="dark-start" type="time" value={darkStart} onChange={(e) => setDarkStart(e.target.value)} />
+          </div>
+          <div className="field">
+            <label htmlFor="dark-end">Switch back to light at</label>
+            <input id="dark-end" type="time" value={darkEnd} onChange={(e) => setDarkEnd(e.target.value)} />
+          </div>
+        </>
+      )}
+
+      {error && <p style={{ color: 'var(--color-danger)' }}>{error}</p>}
+      {saveMessage && <p style={{ color: 'var(--color-primary)', fontWeight: 600 }}>{saveMessage}</p>}
+
+      <button className="btn btn-primary" onClick={handleSave} disabled={saving}>
+        {saving ? 'Saving…' : 'Save Changes'}
+      </button>
+    </>
+  );
+}
+
 const TABS = [
   { id: 'general', label: 'General' },
+  { id: 'appearance', label: 'Appearance' },
   { id: 'chores', label: 'Chore Setup' },
+  { id: 'screensaver', label: 'Screensaver' },
 ];
 
-export default function SettingsPanel({ config, onConfigUpdated }) {
+export default function SettingsPanel({ config, onConfigUpdated, screensaverSettings, onScreensaverSettingsChange }) {
   const [tab, setTab] = useState('general');
 
   return (
@@ -151,7 +231,11 @@ export default function SettingsPanel({ config, onConfigUpdated }) {
       </div>
 
       {tab === 'general' && <GeneralSettings config={config} onConfigUpdated={onConfigUpdated} />}
+      {tab === 'appearance' && <AppearanceSettings config={config} onConfigUpdated={onConfigUpdated} />}
       {tab === 'chores' && <ChoreSetup members={config?.members} />}
+      {tab === 'screensaver' && (
+        <ScreensaverSettings zip={config?.weather_zip} settings={screensaverSettings} onChange={onScreensaverSettingsChange} />
+      )}
     </section>
   );
 }

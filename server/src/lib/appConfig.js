@@ -24,3 +24,19 @@ export function getWeatherZip() {
 export function setWeatherZip(zip) {
   setSetting('weather_zip', zip);
 }
+
+// Day/night theme: 'auto' switches based on dark_start/dark_end (HH:MM, local
+// time on whatever device is viewing), 'light'/'dark' pin it regardless of time.
+export function getThemeSettings() {
+  return {
+    theme_mode: getSetting('theme_mode') || 'auto',
+    dark_start: getSetting('dark_start') || '19:00',
+    dark_end: getSetting('dark_end') || '07:00',
+  };
+}
+
+export function setThemeSettings({ theme_mode, dark_start, dark_end }) {
+  if (theme_mode !== undefined) setSetting('theme_mode', theme_mode);
+  if (dark_start !== undefined) setSetting('dark_start', dark_start);
+  if (dark_end !== undefined) setSetting('dark_end', dark_end);
+}

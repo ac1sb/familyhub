@@ -16,6 +16,23 @@
   font-size: 16px;
 }
 
+/* Night mode, applied via App.jsx setting data-theme based on the schedule
+   configured in Settings (or forced on/off), not the browser's own preference. */
+:root[data-theme="dark"] {
+  --color-bg: #1f1c17;
+  --color-surface: #2a261f;
+  --color-border: #3d382e;
+  --color-text: #f0ece2;
+  --color-text-muted: #a89f8d;
+  --color-primary: #5fa189;
+  --color-primary-dark: #3a6b5a;
+  --color-accent: #e8935f;
+  --color-member-1: #e08aa8;
+  --color-member-2: #6fa0d9;
+  --color-member-3: #e8bc63;
+  --color-danger: #d9645a;
+}
+
 * { box-sizing: border-box; }
 
 html, body, #root {
@@ -110,7 +127,7 @@ button {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 10px 20px;
+  padding: 5px 10px;
   background: var(--color-surface);
   border-bottom: 1px solid var(--color-border);
   flex-shrink: 0;
@@ -127,7 +144,7 @@ button {
 .main-content {
   flex: 1;
   overflow-y: auto;
-  padding: 16px 20px 32px;
+  padding: 8px 10px 16px;
 }
 
 /* The dashboard manages its own internal scrolling per-column (calendar vs.
@@ -137,7 +154,7 @@ button {
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  padding-bottom: 16px;
+  padding-bottom: 8px;
 }
 
 /* ---------- Widget header (kept small per design request) ---------- */
@@ -161,13 +178,13 @@ button {
   background: var(--color-surface);
   border: 1px solid var(--color-border);
   border-radius: var(--radius);
-  padding: 14px 16px;
+  padding: 7px 9px;
 }
 
 .dashboard-grid {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 16px;
+  gap: 8px;
   flex: 1;
   min-height: 0;
 }
@@ -180,11 +197,23 @@ button {
 .dash-side {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 8px;
   min-height: 0;
 }
 
-.dash-side .widget-card {
+.dash-side .weather-today {
+  flex: 0 0 auto;
+}
+
+.dash-side-flex {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex: 1;
+  min-height: 0;
+}
+
+.dash-side-flex .widget-card {
   flex: 1;
   min-height: 0;
 }
@@ -330,7 +359,7 @@ button {
 
 .field { margin-bottom: 14px; display: flex; flex-direction: column; gap: 6px; }
 .field label { font-size: 0.85rem; font-weight: 600; color: var(--color-text-muted); }
-.field input[type=text], .field input[type=datetime-local], .field textarea, .field select {
+.field input[type=text], .field input[type=datetime-local], .field input[type=time], .field textarea, .field select {
   border: 1px solid var(--color-border);
   border-radius: 10px;
   padding: 12px;
@@ -504,6 +533,50 @@ button {
 .weather-day .hi { font-weight: 700; }
 .weather-day .lo { color: var(--color-text-muted); }
 
+.weather-today-main {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.weather-today-icon { font-size: 2rem; }
+.weather-today-temp { font-size: 1.6rem; font-weight: 700; line-height: 1; }
+.weather-today-condition { font-size: 0.8rem; color: var(--color-text-muted); }
+.weather-today-hilo {
+  margin-left: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--color-text-muted);
+}
+.weather-today-timeline {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+  margin-top: 8px;
+}
+.weather-today-slot {
+  background: var(--color-bg);
+  border-radius: 10px;
+  padding: 6px 4px;
+  text-align: center;
+  font-size: 0.75rem;
+}
+.weather-today-slot .wt-label { font-weight: 700; color: var(--color-text-muted); }
+.weather-today-slot .wt-icon { font-size: 1.2rem; margin: 2px 0; }
+.weather-today-slot .wt-temp { font-weight: 700; }
+.weather-today-hint {
+  margin-top: 8px;
+  background: #fdf2e9;
+  color: var(--color-primary-dark);
+  border-radius: 8px;
+  padding: 6px 10px;
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
 /* ---------- Shopping list ---------- */
 .shopping-row {
   display: flex;
@@ -517,4 +590,50 @@ button {
 
 @media (min-width: 900px) {
   .dashboard-grid { grid-template-columns: 2fr 1fr; }
+}
+
+/* ---------- Screensaver ---------- */
+.screensaver-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 999;
+  background-color: #000;
+  background-size: cover;
+  background-position: center;
+  transition: background-image 1.2s ease-in-out;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: #fff;
+}
+.screensaver-scrim {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to bottom, rgba(0,0,0,0.35), rgba(0,0,0,0.15) 40%, rgba(0,0,0,0.5));
+}
+.screensaver-content {
+  position: relative;
+  text-align: center;
+  text-shadow: 0 2px 12px rgba(0,0,0,0.6);
+}
+.screensaver-time { font-size: 5rem; font-weight: 700; line-height: 1; }
+.screensaver-date { font-size: 1.4rem; margin-top: 8px; }
+.screensaver-weather { font-size: 1.3rem; margin-top: 14px; font-weight: 600; }
+.screensaver-credit {
+  position: absolute;
+  bottom: 16px;
+  left: 20px;
+  font-size: 0.75rem;
+  color: rgba(255,255,255,0.75);
+  text-shadow: 0 1px 4px rgba(0,0,0,0.6);
+}
+.screensaver-tap-hint {
+  position: absolute;
+  bottom: 16px;
+  right: 20px;
+  font-size: 0.8rem;
+  color: rgba(255,255,255,0.75);
+  text-shadow: 0 1px 4px rgba(0,0,0,0.6);
 }

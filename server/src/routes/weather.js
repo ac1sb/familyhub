@@ -33,6 +33,17 @@ const WEATHER_CODES = {
   99: { label: 'Thunderstorm w/ hail', icon: 'storm' },
 };
 
+const SNOW_CODES = new Set([71, 73, 75, 77, 85, 86]);
+const RAIN_CODES = new Set([51, 53, 55, 61, 63, 65, 66, 67, 80, 81, 82, 95, 96, 99]);
+
+function clothingHint(day) {
+  if (SNOW_CODES.has(day.code)) return '❄️ Snow likely — bundle up';
+  if (RAIN_CODES.has(day.code) || (day.precipitation_chance ?? 0) >= 40) return '☔ Bring an umbrella';
+  if (day.low <= 45) return '🧥 Jacket weather';
+  if (day.high >= 85) return '🥵 Hot — light clothes and water';
+  return '🙂 Nice day out';
+}
+
 let cache = { key: null, expires: 0, data: null };
 
 async function geocodeZip(zip, country) {
@@ -63,6 +74,7 @@ router.get('/', async (req, res) => {
     url.searchParams.set('latitude', lat);
     url.searchParams.set('longitude', lon);
     url.searchParams.set('daily', 'weathercode,temperature_2m_max,temperature_2m_min,precipitation_probability_max');
+    url.searchParams.set('hourly', 'temperature_2m,precipitation_probability,weathercode');
     url.searchParams.set('current_weather', 'true');
     url.searchParams.set('temperature_unit', 'fahrenheit');
     url.searchParams.set('timezone', 'auto');
@@ -82,6 +94,28 @@ router.get('/', async (req, res) => {
       precipitation_chance: raw.daily.precipitation_probability_max?.[i] ?? null,
     }));
 
+    const todayDate = raw.daily.time[0];
+    function pickHour(targetHour) {
+      const idx = raw.hourly.time.findIndex(
+        (t) => t.startsWith(todayDate) && Number(t.slice(11, 13)) === targetHour
+      );
+      if (idx === -1) return null;
+      const code = raw.hourly.weathercode[idx];
+      return {
+        time: raw.hourly.time[idx],
+        temperature: Math.round(raw.hourly.temperature_2m[idx]),
+        precipitation_chance: raw.hourly.precipitation_probability[idx],
+        icon: WEATHER_CODES[code]?.icon || 'cloud',
+      };
+    }
+    const timeline = [
+      { label: 'Morning', ...pickHour(9) },
+      { label: 'Afternoon', ...pickHour(14) },
+      { label: 'Evening', ...pickHour(19) },
+    ].filter((t) => t.temperature !== undefined);
+
+    const today = { ...daily[0], timeline, clothing_hint: clothingHint(daily[0]) };
+
     const data = {
       location: label,
       zip,
@@ -91,6 +125,7 @@ router.get('/', async (req, res) => {
         condition: WEATHER_CODES[raw.current_weather.weathercode]?.label || 'Unknown',
         icon: WEATHER_CODES[raw.current_weather.weathercode]?.icon || 'cloud',
       },
+      today,
       daily,
       updated_at: new Date().toISOString(),
     };
