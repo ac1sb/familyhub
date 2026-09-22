@@ -158,6 +158,29 @@ button {
   display: grid;
   grid-template-columns: 1fr;
   gap: 16px;
+  align-items: start;
+}
+
+.dashboard-grid .dash-calendar { grid-column: 1 / -1; }
+
+.widget-card.compact {
+  max-height: 380px;
+  overflow-y: auto;
+}
+
+.dash-calendar .widget-card.compact {
+  max-height: 460px;
+}
+
+.see-all {
+  background: none;
+  border: none;
+  color: var(--color-primary);
+  font-weight: 700;
+  font-size: 0.78rem;
+  padding: 6px 4px;
+  min-height: 32px;
+  flex-shrink: 0;
 }
 
 /* ---------- Buttons ---------- */
@@ -433,5 +456,5 @@ button {
 .shopping-row .name.checked { text-decoration: line-through; color: var(--color-text-muted); }
 
 @media (min-width: 900px) {
-  .dashboard-grid { grid-template-columns: 2fr 1fr; }
+  .dashboard-grid { grid-template-columns: repeat(3, 1fr); }
 }

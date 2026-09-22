@@ -1,4 +1,5 @@
 const WIDGETS = [
+  { id: 'dashboard', icon: '🏠', label: 'Home' },
   { id: 'calendar', icon: '📅', label: 'Calendar' },
   { id: 'chores', icon: '✅', label: 'Chores' },
   { id: 'meals', icon: '🍽️', label: 'Dinner' },

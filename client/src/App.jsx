@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import Sidebar from './components/Sidebar.jsx';
+import Dashboard from './components/Dashboard.jsx';
 import CalendarAgenda from './components/widgets/CalendarAgenda.jsx';
 import ChoreList from './components/widgets/ChoreList.jsx';
 import MealPlanner from './components/widgets/MealPlanner.jsx';
@@ -12,7 +13,7 @@ import { api } from './api.js';
 const DEFAULT_MEMBERS = { member_1: 'Mom', member_2: 'Dad', member_3: 'Child' };
 
 export default function App() {
-  const [active, setActive] = useState('calendar');
+  const [active, setActive] = useState('dashboard');
   const [config, setConfig] = useState(null);
   const [now, setNow] = useState(new Date());
 
@@ -40,6 +41,7 @@ export default function App() {
           <WeatherWidget zip={zip} compact />
         </header>
         <main className="main-content">
+          {active === 'dashboard' && <Dashboard members={members} onNavigate={setActive} />}
           {active === 'calendar' && <CalendarAgenda members={members} />}
           {active === 'chores' && <ChoreList members={members} />}
           {active === 'meals' && <MealPlanner />}

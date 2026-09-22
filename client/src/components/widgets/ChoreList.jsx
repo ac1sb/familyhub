@@ -3,7 +3,7 @@ import { usePolling } from '../../hooks/usePolling.js';
 import { api } from '../../api.js';
 import { currentWeekStart } from '../../lib/week.js';
 
-export default function ChoreList({ members }) {
+export default function ChoreList({ members, compact = false, onExpand }) {
   const weekStart = currentWeekStart();
   const { data, setData, refresh } = usePolling(() => api.chores(weekStart), [weekStart], 15000);
   const [newTitle, setNewTitle] = useState('');
@@ -33,9 +33,10 @@ export default function ChoreList({ members }) {
   const allMembers = { ...members, family: 'Family' };
 
   return (
-    <section className="widget-card">
+    <section className={`widget-card${compact ? ' compact' : ''}`}>
       <div className="widget-header">
         <h2>Chore List</h2>
+        {compact && onExpand && <button className="see-all" onClick={onExpand}>See all &rarr;</button>}
       </div>
 
       {(data?.chores || []).map((chore) => (

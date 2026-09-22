@@ -6,15 +6,16 @@ import { addDays, currentWeekStart, formatTime, toISODate } from '../../lib/week
 
 const MEMBER_KEYS = ['member_1', 'member_2', 'member_3'];
 
-export default function CalendarAgenda({ members }) {
+export default function CalendarAgenda({ members, compact = false, onExpand }) {
   const [weekStart, setWeekStart] = useState(currentWeekStart());
   const [modalMember, setModalMember] = useState(null);
   const { data, refresh } = usePolling(() => api.events(weekStart), [weekStart], 20000);
 
   const days = useMemo(() => {
     const start = new Date(weekStart);
-    return Array.from({ length: 7 }, (_, i) => addDays(start, i));
-  }, [weekStart]);
+    const count = compact ? 3 : 7;
+    return Array.from({ length: count }, (_, i) => addDays(start, i));
+  }, [weekStart, compact]);
 
   const eventsByDayAndMember = useMemo(() => {
     const map = {};
@@ -37,14 +38,18 @@ export default function CalendarAgenda({ members }) {
   }
 
   return (
-    <section className="widget-card">
+    <section className={`widget-card${compact ? ' compact' : ''}`}>
       <div className="widget-header">
-        <h2>Calendar &mdash; Agenda</h2>
-        <div style={{ display: 'flex', gap: 8 }}>
-          <button className="btn-icon" onClick={() => goWeek(-1)}>&larr;</button>
-          <button className="btn btn-secondary" onClick={() => setWeekStart(currentWeekStart())}>This Week</button>
-          <button className="btn-icon" onClick={() => goWeek(1)}>&rarr;</button>
-        </div>
+        <h2>{compact ? 'Calendar — Next Few Days' : 'Calendar — Agenda'}</h2>
+        {compact ? (
+          onExpand && <button className="see-all" onClick={onExpand}>Full week &rarr;</button>
+        ) : (
+          <div style={{ display: 'flex', gap: 8 }}>
+            <button className="btn-icon" onClick={() => goWeek(-1)}>&larr;</button>
+            <button className="btn btn-secondary" onClick={() => setWeekStart(currentWeekStart())}>This Week</button>
+            <button className="btn-icon" onClick={() => goWeek(1)}>&rarr;</button>
+          </div>
+        )}
       </div>
 
       <div className="agenda-columns-header">

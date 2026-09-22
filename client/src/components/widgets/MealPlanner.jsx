@@ -28,7 +28,7 @@ function SortableMealSlot({ id, dayIndex, name, onChange, onCommit }) {
   );
 }
 
-export default function MealPlanner() {
+export default function MealPlanner({ compact = false, onExpand }) {
   const weekStart = currentWeekStart();
   const { data, refresh } = usePolling(() => api.meals(weekStart), [weekStart], 15000);
   const [names, setNames] = useState(Array(7).fill(''));
@@ -68,13 +68,16 @@ export default function MealPlanner() {
   }
 
   return (
-    <section className="widget-card">
+    <section className={`widget-card${compact ? ' compact' : ''}`}>
       <div className="widget-header">
         <h2>Weekly Dinner Menu</h2>
+        {compact && onExpand && <button className="see-all" onClick={onExpand}>See all &rarr;</button>}
       </div>
-      <p style={{ color: 'var(--color-text-muted)', fontSize: '0.85rem', marginTop: 0 }}>
-        Type a meal name for each day, then drag the ⠿ handle to reorder which meal falls on which day.
-      </p>
+      {!compact && (
+        <p style={{ color: 'var(--color-text-muted)', fontSize: '0.85rem', marginTop: 0 }}>
+          Type a meal name for each day, then drag the ⠿ handle to reorder which meal falls on which day.
+        </p>
+      )}
       <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
         <SortableContext items={order} strategy={verticalListSortingStrategy}>
           {order.map((id, idx) => (
@@ -89,9 +92,11 @@ export default function MealPlanner() {
           ))}
         </SortableContext>
       </DndContext>
-      <button className="btn btn-primary" style={{ marginTop: 8 }} onClick={() => Promise.all(names.map((_, i) => commitName(i)))}>
-        Save Menu
-      </button>
+      {!compact && (
+        <button className="btn btn-primary" style={{ marginTop: 8 }} onClick={() => Promise.all(names.map((_, i) => commitName(i)))}>
+          Save Menu
+        </button>
+      )}
     </section>
   );
 }

@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { usePolling } from '../../hooks/usePolling.js';
 import { api } from '../../api.js';
 
-export default function ShoppingList() {
+export default function ShoppingList({ compact = false, onExpand }) {
   const { data, setData, refresh } = usePolling(() => api.shopping(), [], 10000);
   const [newItem, setNewItem] = useState('');
 
@@ -27,9 +27,10 @@ export default function ShoppingList() {
   }
 
   return (
-    <section className="widget-card">
+    <section className={`widget-card${compact ? ' compact' : ''}`}>
       <div className="widget-header">
         <h2>Shopping List</h2>
+        {compact && onExpand && <button className="see-all" onClick={onExpand}>See all &rarr;</button>}
       </div>
       {(data?.items || []).map((item) => (
         <div className="shopping-row" key={item.id}>
