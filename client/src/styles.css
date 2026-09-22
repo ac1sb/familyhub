@@ -181,59 +181,61 @@ button {
   padding: 7px 9px;
 }
 
-.dashboard-grid {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 8px;
-  flex: 1;
-  min-height: 0;
-}
-
-.dash-calendar {
+/* ---------- Dashboard (draggable/resizable widget grid) ---------- */
+.dashboard-wrap {
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  min-height: 0;
-}
-.dash-calendar > .widget-card.fill-height {
-  flex: 1;
-}
-
-.dash-side {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  min-height: 0;
-}
-
-.dash-side .weather-today {
-  flex: 0 0 auto;
-}
-
-.dash-side-flex {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
   flex: 1;
   min-height: 0;
-}
-
-.dash-side-flex .widget-card {
-  flex: 1;
-  min-height: 0;
-}
-
-.widget-card.compact {
-  max-height: 380px;
   overflow-y: auto;
 }
 
-.widget-card.fill-height {
-  flex: 1;
-  min-height: 0;
+.dashboard-toolbar {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 4px;
+}
+
+.dashboard-rgl {
+  position: relative;
+}
+
+/* The grid item itself gets an explicit pixel size from react-grid-layout;
+   make our card fill it completely instead of the old compact/fill-height
+   size caps, which were designed for the previous flexbox layout. */
+.dashboard-rgl .react-grid-item .widget-card {
+  height: 100%;
+  max-height: none;
   overflow-y: auto;
   display: flex;
   flex-direction: column;
+  margin: 0;
+}
+
+.dashboard-rgl .react-grid-item .widget-header {
+  cursor: grab;
+  touch-action: none;
+}
+.dashboard-rgl .react-grid-item.react-draggable-dragging .widget-header {
+  cursor: grabbing;
+}
+
+.dashboard-rgl .react-grid-item.react-grid-placeholder {
+  background: var(--color-primary);
+  opacity: 0.2;
+  border-radius: var(--radius);
+}
+
+/* Bigger than the library default so it's easy to grab with a finger. */
+.dashboard-rgl .react-resizable-handle {
+  width: 28px;
+  height: 28px;
+}
+.dashboard-rgl .react-resizable-handle::after {
+  width: 12px;
+  height: 12px;
+  border-right: 3px solid var(--color-text-muted);
+  border-bottom: 3px solid var(--color-text-muted);
 }
 
 .widget-card.fill-height .agenda-day-row { flex-shrink: 0; }
@@ -667,10 +669,6 @@ button {
 }
 .shopping-row input[type=checkbox] { width: 26px; height: 26px; }
 .shopping-row .name.checked { text-decoration: line-through; color: var(--color-text-muted); }
-
-@media (min-width: 900px) {
-  .dashboard-grid { grid-template-columns: 2fr 1fr; }
-}
 
 /* ---------- Screensaver ---------- */
 .screensaver-overlay {
