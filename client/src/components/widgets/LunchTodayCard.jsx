@@ -1,6 +1,7 @@
 import { usePolling } from '../../hooks/usePolling.js';
 import { api } from '../../api.js';
 import { addDays, toISODate } from '../../lib/week.js';
+import { stripDailyChoices } from '../../lib/lunchText.js';
 
 export default function LunchTodayCard({ childName, onExpand }) {
   const now = new Date();
@@ -49,7 +50,7 @@ export default function LunchTodayCard({ childName, onExpand }) {
               disabled={noSchool}
             >
               <span className="ltr-day">{label}</span>
-              <span className="ltr-meal">{noSchool ? 'No School' : day?.menu_item || 'No menu yet'}</span>
+              <span className="ltr-meal">{noSchool ? 'No School' : stripDailyChoices(day?.menu_item) || 'No menu yet'}</span>
             </button>
           );
         })}

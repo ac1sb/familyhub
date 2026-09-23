@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { usePolling } from '../../hooks/usePolling.js';
 import { api } from '../../api.js';
 import { formatMonthLabel, weekdayGridDays, toISODate, WEEKDAY_SHORT } from '../../lib/week.js';
+import { stripDailyChoices } from '../../lib/lunchText.js';
 
 const WEEKDAYS_ONLY = WEEKDAY_SHORT.slice(0, 5);
 
@@ -222,7 +223,7 @@ export default function LunchCalendar({ childName }) {
                 <div className="lunch-cal-noschool-label">No School</div>
               ) : (
                 <AutoGrowMenuInput
-                  value={day.menu_item}
+                  value={stripDailyChoices(day.menu_item)}
                   onClick={(e) => e.stopPropagation()}
                   onChange={(e) => updateDay(date, { menu_item: e.target.value })}
                 />

@@ -96,7 +96,21 @@ function findMenuDays(node, out, depth = 0) {
 function pickEntree(items) {
   const entreeItems = items.filter((item) => ENTREE_PATTERN.test(item.category));
   const pool = entreeItems.length > 0 ? entreeItems : items.slice(0, 1);
-  return pool.map((item) => item.name).join(' / ');
+  return cleanEntreeText(pool.map((item) => item.name).join(' / '));
+}
+
+// Many school menu sites list the day's actual entree first, then a
+// standing list of always-available alternatives ("Daily Choices: PB&J,
+// yogurt meal, salad bar...") right after it with no separator the scraper
+// can otherwise tell apart from the entree itself. Cut it and everything
+// after it, since it's not part of what's actually being served that day.
+const AFTER_ENTREE_MARKER = /\bdaily\s+choices?\s*:/i;
+
+function cleanEntreeText(text) {
+  if (!text) return text;
+  const match = text.match(AFTER_ENTREE_MARKER);
+  const trimmed = match ? text.slice(0, match.index) : text;
+  return trimmed.replace(/\s+/g, ' ').trim();
 }
 
 function findMenuDaysInJson(html) {
