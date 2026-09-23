@@ -12,12 +12,10 @@ import TodayWeatherCard from './widgets/TodayWeatherCard.jsx';
 import LunchTodayCard from './widgets/LunchTodayCard.jsx';
 import ReminderBanner from './ReminderBanner.jsx';
 import {
-  DEFAULT_LAYOUT,
   WIDGET_CATALOG,
   getDashboardLayout,
   setDashboardLayout,
   getEnabledWidgets,
-  setEnabledWidgets,
 } from '../lib/dashboardLayout.js';
 
 const AutoWidthGridLayout = WidthProvider(GridLayout);
@@ -29,11 +27,9 @@ const ROW_MARGIN = 8;
 // dashboard's height the way a short list widget should.
 const NO_AUTO_GROW = new Set(['calendar']);
 
-const ALL_WIDGET_IDS = new Set(WIDGET_CATALOG.map((w) => w.id));
-
 export default function Dashboard({ members, zip, onNavigate }) {
   const [layout, setLayout] = useState(getDashboardLayout());
-  const [enabledWidgets, setEnabledWidgetsState] = useState(() => getEnabledWidgets());
+  const [enabledWidgets] = useState(() => getEnabledWidgets());
   const wrapRef = useRef(null);
 
   // react-grid-layout only ever knows about the currently-visible items (it's
@@ -48,13 +44,6 @@ export default function Dashboard({ members, zip, onNavigate }) {
       setDashboardLayout(merged);
       return merged;
     });
-  }
-
-  function resetLayout() {
-    setLayout(DEFAULT_LAYOUT);
-    setDashboardLayout(DEFAULT_LAYOUT);
-    setEnabledWidgetsState(ALL_WIDGET_IDS);
-    setEnabledWidgets(ALL_WIDGET_IDS);
   }
 
   // A widget's saved height can fall behind its actual content - more
@@ -104,10 +93,6 @@ export default function Dashboard({ members, zip, onNavigate }) {
   return (
     <div className="dashboard-wrap" ref={wrapRef}>
       <ReminderBanner members={members} />
-
-      <div className="dashboard-toolbar">
-        <button className="see-all" onClick={resetLayout}>&#8635; Reset layout</button>
-      </div>
 
       <AutoWidthGridLayout
         className="dashboard-rgl"

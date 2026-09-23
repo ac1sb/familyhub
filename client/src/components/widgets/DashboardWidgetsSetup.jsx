@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { WIDGET_CATALOG, getEnabledWidgets, setEnabledWidgets } from '../../lib/dashboardLayout.js';
+import { WIDGET_CATALOG, getEnabledWidgets, setEnabledWidgets, resetDashboardLayout } from '../../lib/dashboardLayout.js';
 
 export default function DashboardWidgetsSetup() {
   const [enabled, setEnabled] = useState(() => getEnabledWidgets());
@@ -12,6 +12,10 @@ export default function DashboardWidgetsSetup() {
       setEnabledWidgets(next);
       return next;
     });
+  }
+
+  function handleReset() {
+    setEnabled(resetDashboardLayout());
   }
 
   return (
@@ -35,6 +39,14 @@ export default function DashboardWidgetsSetup() {
           </div>
         </div>
       ))}
+
+      <button className="btn btn-secondary" onClick={handleReset} style={{ marginTop: 12 }}>
+        &#8635; Reset to default layout
+      </button>
+      <p style={{ color: 'var(--color-text-muted)', fontSize: '0.8rem', marginTop: 8 }}>
+        Turns every widget back on and puts them back in their default positions/sizes on this device -
+        undoes any dragging, resizing, or hiding done from the Home dashboard.
+      </p>
     </div>
   );
 }

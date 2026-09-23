@@ -104,3 +104,13 @@ export function setEnabledWidgets(idsSet) {
     // private browsing / storage blocked - choice just won't persist on this device
   }
 }
+
+// Settings -> Dashboard Widgets' "Reset to default layout" button - restores
+// this device's positions/sizes AND turns every widget back on, undoing both
+// a dragged/resized layout and any hidden widgets in one step.
+export function resetDashboardLayout() {
+  setDashboardLayout(DEFAULT_LAYOUT);
+  const allIds = new Set(WIDGET_CATALOG.map((w) => w.id));
+  setEnabledWidgets(allIds);
+  return allIds;
+}
