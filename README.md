@@ -15,8 +15,9 @@ shopping list from another device.
   turning into a wall of text, Chores and Daily Checklist show a
   completed-count next to their name plus only up to 3 still-open items
   (checking one off cycles the next open one into view on its own), and
-  Shopping List just shows a plain item tally — tap "See all" for the full
-  list either way. Every widget can be
+  Shopping List just shows a plain item tally plus a quick-add box (typing
+  a name and hitting Add/Enter drops it straight onto the list) — tap
+  "See all" for the full list either way. Every widget can be
   dragged and resized to your own layout, which is saved per-device (in
   the browser) and survives `git pull`/rebuilds. Pick which widgets appear
   at all in Settings → Dashboard Widgets (also per-device, so a phone can

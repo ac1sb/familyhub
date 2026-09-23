@@ -61,6 +61,16 @@ export default function ShoppingList({ compact = false, onExpand }) {
             {onExpand && <button className="see-all" onClick={onExpand}>See all &rarr;</button>}
           </div>
         </div>
+        <div className="add-row">
+          <input
+            type="text"
+            placeholder="Add an item…"
+            value={newItem}
+            onChange={(e) => setNewItem(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && addItem()}
+          />
+          <button className="btn btn-primary" onClick={addItem}>Add</button>
+        </div>
       </section>
     );
   }
