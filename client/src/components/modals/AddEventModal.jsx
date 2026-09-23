@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { api } from '../../api.js';
 import { WEEKDAY_SHORT } from '../../lib/week.js';
 
@@ -21,9 +21,11 @@ export default function AddEventModal({ members, defaultMember, existingEvent, o
   const [photoPath, setPhotoPath] = useState(existingEvent?.photo_path || null);
   const [scanning, setScanning] = useState(false);
   const [scanError, setScanError] = useState(null);
+  const [scanWarning, setScanWarning] = useState(null);
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [error, setError] = useState(null);
+  const titleInputRef = useRef(null);
 
   useEffect(() => {
     if (!isEditing) setMember(defaultMember || 'family');
@@ -40,12 +42,18 @@ export default function AddEventModal({ members, defaultMember, existingEvent, o
     if (!file) return;
     setScanning(true);
     setScanError(null);
+    setScanWarning(null);
     try {
       const result = await api.scanFlyer(file);
+      // The photo is kept no matter what: even when OCR can't read it, or
+      // fails outright, the picture itself was already saved server-side and
+      // should never be silently dropped from the event being created.
+      if (result.photo_path) setPhotoPath(result.photo_path);
       if (result.title) setTitle(result.title);
       if (result.location) setLocation(result.location);
       if (result.start_datetime) setStart(toLocalInputValue(result.start_datetime));
-      setPhotoPath(result.photo_path);
+      if (!result.success) setScanError(result.error);
+      else if (result.warning) setScanWarning(result.warning);
     } catch (err) {
       setScanError(err.message);
     } finally {
@@ -55,7 +63,12 @@ export default function AddEventModal({ members, defaultMember, existingEvent, o
 
   async function handleSave() {
     if (!title.trim()) {
+      // Easy to miss otherwise, especially right after a flyer scan that
+      // couldn't read a title automatically - the field is empty, the person
+      // taps Add, and nothing visibly happens unless this is impossible to miss.
       setError('Please enter a title');
+      titleInputRef.current?.focus();
+      titleInputRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
       return;
     }
     setSaving(true);
@@ -110,7 +123,8 @@ export default function AddEventModal({ members, defaultMember, existingEvent, o
             {photoPath && <img className="flyer-preview" src={photoPath} alt="Scanned flyer" />}
             <input type="file" accept="image/*" capture="environment" onChange={handleFlyerUpload} />
             {scanning && <p>Reading photo&hellip; extracting date, time &amp; location.</p>}
-            {scanError && <p style={{ color: 'var(--color-danger)' }}>{scanError}</p>}
+            {scanError && <p style={{ color: 'var(--color-danger)' }}>⚠️ {scanError}</p>}
+            {!scanError && scanWarning && <p style={{ color: 'var(--color-accent)' }}>ℹ️ {scanWarning}</p>}
             {!scanning && !photoPath && <p>Take a picture and we'll fill in the details below for you to check.</p>}
           </div>
         </div>
@@ -140,7 +154,14 @@ export default function AddEventModal({ members, defaultMember, existingEvent, o
 
         <div className="field">
           <label htmlFor="ev-title">Title</label>
-          <input id="ev-title" type="text" value={title} onChange={(e) => setTitle(e.target.value)} />
+          <input
+            id="ev-title"
+            ref={titleInputRef}
+            type="text"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            style={error ? { borderColor: 'var(--color-danger)', borderWidth: 2 } : undefined}
+          />
         </div>
 
         <div className="field">

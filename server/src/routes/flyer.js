@@ -30,6 +30,12 @@ function withTimeout(promise, ms, message) {
 // POST /api/flyer/scan  (multipart form field "photo") -> OCR + parsed date/time/location suggestions.
 // The uploaded image is kept on disk; its relative path is returned so it can be attached
 // to the event once the person confirms/edits the parsed details.
+//
+// Always responds 200, success or not: the photo is already safely saved to disk by the time
+// OCR even starts, and the caller needs that photo_path either way (previously, an OCR failure
+// returned an HTTP error status, which meant the client's fetch wrapper threw before it ever
+// looked at the response body - discarding photo_path and silently detaching the just-taken
+// picture from the event, even though it was sitting right there on disk the whole time).
 router.post('/scan', upload.single('photo'), async (req, res) => {
   if (!req.file) return res.status(400).json({ error: 'photo file is required' });
 
@@ -61,9 +67,21 @@ router.post('/scan', upload.single('photo'), async (req, res) => {
     await worker.terminate();
 
     const parsed = parseFlyerText(data.text || '');
-    res.json({ ...parsed, photo_path });
+    const foundAnything = !!(parsed.title || parsed.start_datetime);
+    res.json({
+      success: true,
+      ...parsed,
+      photo_path,
+      warning: foundAnything
+        ? null
+        : "Couldn't automatically read any text from this photo. The picture has been attached below - please fill in the title, date and location yourself.",
+    });
   } catch (err) {
-    res.status(500).json({ error: `OCR failed: ${err.message}`, photo_path });
+    res.json({
+      success: false,
+      photo_path,
+      error: `Couldn't automatically read this photo (${err.message}). The picture has been attached below - please fill in the details yourself.`,
+    });
   }
 });
 
