@@ -27,6 +27,7 @@ export default function DailyTaskSetup({ members }) {
   const [newTitle, setNewTitle] = useState('');
   const [assignedTo, setAssignedTo] = useState('family');
   const [newDays, setNewDays] = useState(ALL_DAYS);
+  const [addError, setAddError] = useState(null);
 
   const allMembers = { ...(members || {}), family: 'Family' };
 
@@ -38,10 +39,15 @@ export default function DailyTaskSetup({ members }) {
 
   async function addTemplate() {
     if (!newTitle.trim() || newDays.length === 0) return;
-    await api.createDailyTaskTemplate({ title: newTitle.trim(), assigned_to: assignedTo, days: newDays });
-    setNewTitle('');
-    setNewDays(ALL_DAYS);
-    refresh();
+    setAddError(null);
+    try {
+      await api.createDailyTaskTemplate({ title: newTitle.trim(), assigned_to: assignedTo, days: newDays });
+      setNewTitle('');
+      setNewDays(ALL_DAYS);
+      refresh();
+    } catch (err) {
+      setAddError(err.message);
+    }
   }
 
   async function toggleActive(template) {
@@ -123,6 +129,12 @@ export default function DailyTaskSetup({ members }) {
         <DayChips days={newDays} onToggle={toggleNewDay} />
         <button className="btn-link" onClick={() => setNewDays(ALL_DAYS)}>Every day</button>
       </div>
+      {newDays.length === 0 && (
+        <p style={{ color: 'var(--color-text-muted)', fontSize: '0.8rem', margin: '4px 0 0' }}>
+          Pick at least one day above before adding - that's why "Add" is grayed out.
+        </p>
+      )}
+      {addError && <p style={{ color: 'var(--color-danger)', margin: '8px 0 0' }}>{addError}</p>}
     </div>
   );
 }
