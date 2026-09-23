@@ -4,6 +4,9 @@ import { api } from '../../api.js';
 import { currentWeekStartSunday, WEEKDAY_SHORT } from '../../lib/week.js';
 
 const SUNDAY_FIRST_RANK = (dayOfWeek) => (dayOfWeek == null ? 7 : (dayOfWeek + 1) % 7);
+// The dashboard tile is a glance, not the whole list - past this many
+// still-open chores, the rest are only a tap away on "See all".
+const COMPACT_ITEM_LIMIT = 3;
 
 // The full page groups every instance of a recurring chore (same
 // template_id) into one row with a badge per expected day, instead of a
@@ -70,12 +73,16 @@ export default function ChoreList({ members, compact = false, onExpand }) {
   const allMembers = { ...members, family: 'Family' };
   const weekChores = data?.chores || [];
 
-  // The dashboard widget is a "what's due today" glance, kept down to a
-  // single completed-count line so the main screen stays uncluttered - the
+  // The dashboard widget is a "what's due today" glance: a completed-count
+  // line plus up to COMPACT_ITEM_LIMIT still-open chores. Checking one off
+  // just drops it out of that not-done filter, so the next open one (if
+  // any) takes its place on its own - no separate "cycle" logic needed. The
   // full page (opened from "See all") still lists every chore for the week.
   if (compact) {
     const todayChores = weekChores.filter((c) => c.day_of_week == null || c.day_of_week === TODAY_DAY_INDEX);
     const doneToday = todayChores.filter((c) => c.done).length;
+    const notDone = todayChores.filter((c) => !c.done);
+    const visible = notDone.slice(0, COMPACT_ITEM_LIMIT);
     return (
       <section className="widget-card compact">
         <div className="widget-header">
@@ -89,6 +96,18 @@ export default function ChoreList({ members, compact = false, onExpand }) {
             {onExpand && <button className="see-all" onClick={onExpand}>See all &rarr;</button>}
           </div>
         </div>
+
+        {data && todayChores.length > 0 && notDone.length === 0 && (
+          <p style={{ color: 'var(--color-text-muted)' }}>All done for today! 🎉</p>
+        )}
+
+        {visible.map((chore) => (
+          <div className="chore-row" key={chore.id}>
+            <input type="checkbox" checked={chore.done} onChange={() => toggleDone(chore)} />
+            <span className="chore-title">{chore.title}</span>
+            <span className={`chore-tag ${chore.assigned_to}`}>{allMembers[chore.assigned_to] || chore.assigned_to}</span>
+          </div>
+        ))}
       </section>
     );
   }

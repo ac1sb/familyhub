@@ -3,6 +3,10 @@ import { usePolling } from '../../hooks/usePolling.js';
 import { api } from '../../api.js';
 import { todayISO } from '../../lib/week.js';
 
+// The dashboard tile is a glance, not the whole list - past this many
+// still-open items, the rest are only a tap away on "See all".
+const COMPACT_ITEM_LIMIT = 3;
+
 export default function DailyChecklist({ members, compact = false, onExpand }) {
   const today = todayISO();
   const { data, setData, refresh } = usePolling(() => api.dailyTasks(today), [today], 15000);
@@ -28,11 +32,15 @@ export default function DailyChecklist({ members, compact = false, onExpand }) {
   const allMembers = { ...members, family: 'Family' };
   const tasks = data?.tasks || [];
 
-  // Kept down to a single completed-count line on the dashboard so the main
-  // screen stays uncluttered - the full page (opened from "See all") still
-  // lists every item.
+  // The dashboard widget is a glance: a completed-count line plus up to
+  // COMPACT_ITEM_LIMIT still-open items. Checking one off just drops it out
+  // of that not-done filter, so the next open one (if any) takes its place
+  // on its own - no separate "cycle" logic needed. The full page (opened
+  // from "See all") still lists every item.
   if (compact) {
     const doneCount = tasks.filter((t) => t.done).length;
+    const notDone = tasks.filter((t) => !t.done);
+    const visible = notDone.slice(0, COMPACT_ITEM_LIMIT);
     return (
       <section className="widget-card compact">
         <div className="widget-header">
@@ -46,6 +54,21 @@ export default function DailyChecklist({ members, compact = false, onExpand }) {
             {onExpand && <button className="see-all" onClick={onExpand}>See all &rarr;</button>}
           </div>
         </div>
+
+        {data && tasks.length > 0 && notDone.length === 0 && (
+          <p style={{ color: 'var(--color-text-muted)' }}>All done for today! 🎉</p>
+        )}
+
+        {visible.map((task) => (
+          <div className="chore-row" key={task.id}>
+            <input type="checkbox" checked={task.done} onChange={() => toggleDone(task)} />
+            <span className="chore-title">
+              {task.template_id && <span title="Repeats on selected days">🔁 </span>}
+              {task.title}
+            </span>
+            <span className={`chore-tag ${task.assigned_to}`}>{allMembers[task.assigned_to] || task.assigned_to}</span>
+          </div>
+        ))}
       </section>
     );
   }
