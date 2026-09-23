@@ -25,11 +25,6 @@ export default function DailyChecklist({ members, compact = false, onExpand }) {
     refresh();
   }
 
-  async function removeTask(id) {
-    await api.deleteDailyTask(id);
-    refresh();
-  }
-
   const allMembers = { ...members, family: 'Family' };
   const tasks = data?.tasks || [];
 
@@ -48,7 +43,6 @@ export default function DailyChecklist({ members, compact = false, onExpand }) {
             {task.title}
           </span>
           <span className={`chore-tag ${task.assigned_to}`}>{allMembers[task.assigned_to] || task.assigned_to}</span>
-          <button className="btn-icon" onClick={() => removeTask(task.id)}>✕</button>
         </div>
       ))}
       {data && tasks.length === 0 && <p style={{ color: 'var(--color-text-muted)' }}>Nothing on today's list.</p>}

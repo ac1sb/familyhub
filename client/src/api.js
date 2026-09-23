@@ -33,7 +33,6 @@ export const api = {
   chores: (week) => request(`/chores?week=${week}`),
   createChore: (week, data) => request(`/chores?week=${week}`, { method: 'POST', body: JSON.stringify(data) }),
   updateChore: (id, data) => request(`/chores/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
-  deleteChore: (id) => request(`/chores/${id}`, { method: 'DELETE' }),
 
   choreTemplates: () => request('/chore-templates'),
   createChoreTemplate: (data) => request('/chore-templates', { method: 'POST', body: JSON.stringify(data) }),
@@ -43,7 +42,6 @@ export const api = {
   dailyTasks: (date) => request(`/daily-tasks?date=${date}`),
   createDailyTask: (date, data) => request(`/daily-tasks?date=${date}`, { method: 'POST', body: JSON.stringify(data) }),
   updateDailyTask: (id, data) => request(`/daily-tasks/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
-  deleteDailyTask: (id) => request(`/daily-tasks/${id}`, { method: 'DELETE' }),
 
   dailyTaskTemplates: () => request('/daily-task-templates'),
   createDailyTaskTemplate: (data) => request('/daily-task-templates', { method: 'POST', body: JSON.stringify(data) }),

@@ -67,11 +67,6 @@ export default function ChoreList({ members, compact = false, onExpand }) {
     refresh();
   }
 
-  async function removeChore(id) {
-    await api.deleteChore(id);
-    refresh();
-  }
-
   const allMembers = { ...members, family: 'Family' };
   const weekChores = data?.chores || [];
   // The dashboard widget is a "what's due today" glance; the full page (not
@@ -135,7 +130,6 @@ export default function ChoreList({ members, compact = false, onExpand }) {
             <span className={`chore-tag ${row.chore.assigned_to}`}>
               {allMembers[row.chore.assigned_to] || row.chore.assigned_to}
             </span>
-            <button className="btn-icon" onClick={() => removeChore(row.chore.id)}>✕</button>
           </div>
         )
       )}
