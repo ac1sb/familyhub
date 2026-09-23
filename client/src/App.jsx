@@ -11,6 +11,7 @@ import ShoppingList from './components/widgets/ShoppingList.jsx';
 import WhiteboardPage from './components/WhiteboardPage.jsx';
 import SmartHomeWidget from './components/widgets/SmartHomeWidget.jsx';
 import HeaderSmartHomeToggles from './components/HeaderSmartHomeToggles.jsx';
+import HeaderWeather from './components/HeaderWeather.jsx';
 import SettingsPanel from './components/widgets/SettingsPanel.jsx';
 import Screensaver from './components/Screensaver.jsx';
 import { api } from './api.js';
@@ -64,8 +65,8 @@ export default function App() {
             {now.toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' })} &middot;{' '}
             {now.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' })}
           </div>
-          <WeatherWidget zip={zip} compact />
         </header>
+        <HeaderWeather zip={zip} />
         <HeaderSmartHomeToggles />
         <main className={`main-content${active === 'dashboard' ? ' dashboard-mode' : ''}`}>
           {active === 'dashboard' && <Dashboard members={members} zip={zip} onNavigate={setActive} />}

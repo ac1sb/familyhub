@@ -12,25 +12,16 @@ const ICONS = {
   storm: '⛈️',
 };
 
-export default function WeatherWidget({ zip, compact = false }) {
+export default function WeatherWidget({ zip }) {
   const { data, error, loading } = usePolling(() => api.weather(zip), [zip], 30 * 60 * 1000);
 
-  if (loading) return compact ? null : <section className="widget-card"><p>Loading weather…</p></section>;
+  if (loading) return <section className="widget-card"><p>Loading weather…</p></section>;
   if (error || !data) {
-    return compact ? null : (
+    return (
       <section className="widget-card">
         <div className="widget-header"><h2>Weather</h2></div>
         <p style={{ color: 'var(--color-text-muted)' }}>Weather unavailable right now.</p>
       </section>
-    );
-  }
-
-  if (compact) {
-    return (
-      <div className="weather-chip">
-        <span>{ICONS[data.current.icon] || '☁️'}</span>
-        <span>{data.current.temperature}°F</span>
-      </div>
     );
   }
 

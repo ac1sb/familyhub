@@ -67,10 +67,11 @@ shopping list from another device.
   This is currently a prototype of the control UI and data model - nothing
   is sent to a real bulb or bridge yet; see "Known limitations" below for
   what a real integration would need.
-- **Weather** — a "Today" card (high/low, precipitation chance, a
-  morning/afternoon/evening timeline, and a clothing hint) on the dashboard,
-  plus a full 7-day forecast on its own sidebar tab. Geocoded from a US zip
-  code via Open-Meteo (no API key required).
+- **Weather** — a row of quick-glance chips right below the date/time on
+  every page (current temp, high/low, precipitation chance, a
+  morning/afternoon/evening timeline, and a clothing hint), a "Today" card
+  on the dashboard, and a full 7-day forecast on its own sidebar tab.
+  Geocoded from a US zip code via Open-Meteo (no API key required).
 - **Day/night theme** — switches automatically on a schedule you set in
   Settings → Appearance (or pin it to always-light/always-dark).
 - **Screensaver** — per-device (Settings → Screensaver): idle timeout, photo

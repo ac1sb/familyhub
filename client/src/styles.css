@@ -142,14 +142,9 @@ button {
 }
 
 .topbar .datetime { font-size: 0.95rem; color: var(--color-text-muted); }
-.topbar .weather-chip {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-weight: 600;
-}
 
-/* ---------- Smart home quick toggles (always visible, right below the date/time) ---------- */
+/* ---------- Header info/toggle strips (always visible, right below the date/time) ---------- */
+.topbar-weather,
 .topbar-smarthome {
   display: flex;
   flex-wrap: wrap;
@@ -159,6 +154,24 @@ button {
   background: var(--color-surface);
   border-bottom: 1px solid var(--color-border);
   flex-shrink: 0;
+}
+
+.header-info-chip {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  padding: 6px 12px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--color-text-muted);
+}
+.header-info-chip-now {
+  background: color-mix(in srgb, var(--color-primary) 14%, var(--color-bg));
+  border-color: var(--color-primary);
+  color: var(--color-text);
 }
 .header-toggle-wrap { position: relative; }
 .header-toggle {
