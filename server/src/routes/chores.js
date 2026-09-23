@@ -6,27 +6,43 @@ const router = Router();
 
 // Recurring chores are managed as templates (Settings > Chore Setup). Whenever
 // a week's chore list is requested, make sure every active template has a
-// fresh, unchecked instance for that week — carrying a chore forward every
-// week without ever duplicating one that's already there.
+// fresh, unchecked instance for each of its selected days that week — carrying
+// chores forward every week without ever duplicating one that's already there.
 function ensureWeekChores(week_start) {
   const templates = db.prepare('SELECT * FROM chore_templates WHERE active = 1 ORDER BY sort_order ASC, id ASC').all();
   if (templates.length === 0) return;
 
-  const existingTemplateIds = new Set(
+  const existingKeys = new Set(
     db
-      .prepare('SELECT template_id FROM chores WHERE week_start = ? AND template_id IS NOT NULL')
+      .prepare('SELECT template_id, day_of_week FROM chores WHERE week_start = ? AND template_id IS NOT NULL')
       .all(week_start)
-      .map((r) => r.template_id)
+      .map((r) => `${r.template_id}:${r.day_of_week}`)
   );
-  const missing = templates.filter((t) => !existingTemplateIds.has(t.id));
-  if (missing.length === 0) return;
 
   const maxOrder = db.prepare('SELECT COALESCE(MAX(sort_order), -1) as m FROM chores WHERE week_start = ?').get(week_start).m;
   const insert = db.prepare(
-    'INSERT INTO chores (title, assigned_to, recurring, template_id, week_start, sort_order) VALUES (?, ?, 1, ?, ?, ?)'
+    'INSERT INTO chores (title, assigned_to, recurring, template_id, day_of_week, week_start, sort_order) VALUES (?, ?, 1, ?, ?, ?, ?)'
   );
+
   withTransaction(() => {
-    missing.forEach((t, i) => insert.run(t.title, t.assigned_to, t.id, week_start, maxOrder + 1 + i));
+    let order = maxOrder;
+    for (const t of templates) {
+      let days;
+      try {
+        days = JSON.parse(t.days || '[]');
+      } catch {
+        days = [];
+      }
+      if (!Array.isArray(days) || days.length === 0) days = [0, 1, 2, 3, 4, 5, 6];
+
+      for (const day of days) {
+        const key = `${t.id}:${day}`;
+        if (existingKeys.has(key)) continue;
+        order += 1;
+        insert.run(t.title, t.assigned_to, t.id, day, week_start, order);
+        existingKeys.add(key);
+      }
+    }
   });
 }
 
@@ -34,7 +50,9 @@ router.get('/', (req, res) => {
   const week_start = weekStartParam(req.query);
   ensureWeekChores(week_start);
   const rows = db
-    .prepare('SELECT * FROM chores WHERE week_start = ? ORDER BY sort_order ASC, id ASC')
+    .prepare(
+      'SELECT * FROM chores WHERE week_start = ? ORDER BY (day_of_week IS NULL) ASC, day_of_week ASC, sort_order ASC, id ASC'
+    )
     .all(week_start)
     .map((r) => ({ ...r, done: !!r.done, recurring: !!r.recurring }));
   res.json({ week_start, chores: rows });

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { usePolling } from '../../hooks/usePolling.js';
 import { api } from '../../api.js';
 import { formatMonthLabel, weekdayGridDays, toISODate, WEEKDAY_SHORT } from '../../lib/week.js';
@@ -13,6 +13,8 @@ export default function LunchCalendar({ childName }) {
   const [syncing, setSyncing] = useState(false);
   const [syncResult, setSyncResult] = useState(null);
   const [showDetails, setShowDetails] = useState(false);
+  const [copyMessage, setCopyMessage] = useState(null);
+  const previewRef = useRef(null);
 
   useEffect(() => {
     api.lunchImportSettings().then((r) => setMenuUrl(r.url || '')).catch(() => {});
@@ -54,6 +56,28 @@ export default function LunchCalendar({ childName }) {
 
   function toggleStatus(date, currentStatus) {
     updateDay(date, { status: currentStatus === 'school' ? 'home' : 'school' });
+  }
+
+  async function handleCopyDetails() {
+    const el = previewRef.current;
+    if (!el) return;
+    // Kiosk/embedded browsers on plain http:// often lack the Clipboard API
+    // (it requires a secure context) - select the text and fall back to the
+    // older execCommand, which works in more places, before giving up.
+    el.focus();
+    el.select();
+    try {
+      await navigator.clipboard.writeText(el.value);
+      setCopyMessage('Copied!');
+    } catch {
+      try {
+        const ok = document.execCommand('copy');
+        setCopyMessage(ok ? 'Copied!' : 'Text selected — use your device\'s copy action.');
+      } catch {
+        setCopyMessage('Text selected — use your device\'s copy action.');
+      }
+    }
+    setTimeout(() => setCopyMessage(null), 4000);
   }
 
   async function handleSync() {
@@ -107,10 +131,23 @@ export default function LunchCalendar({ childName }) {
                 </button>
               )}
               {showDetails && (
-                <pre className="lunch-import-preview">
-                  {syncResult.scriptBlocksFound !== undefined && `Embedded JSON blocks found: ${syncResult.scriptBlocksFound}\n\n`}
-                  {syncResult.htmlPreview}
-                </pre>
+                <div className="lunch-import-details">
+                  <textarea
+                    ref={previewRef}
+                    className="lunch-import-preview"
+                    readOnly
+                    value={
+                      (syncResult.scriptBlocksFound !== undefined
+                        ? `Embedded JSON blocks found: ${syncResult.scriptBlocksFound}\n\n`
+                        : '') + (syncResult.htmlPreview || '')
+                    }
+                    onFocus={(e) => e.target.select()}
+                  />
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 6 }}>
+                    <button className="btn btn-secondary" onClick={handleCopyDetails}>Copy details</button>
+                    {copyMessage && <span style={{ fontSize: '0.8rem', color: 'var(--color-text-muted)' }}>{copyMessage}</span>}
+                  </div>
+                </div>
               )}
             </>
           )}

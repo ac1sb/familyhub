@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { usePolling } from '../../hooks/usePolling.js';
 import { api } from '../../api.js';
-import { currentWeekStart } from '../../lib/week.js';
+import { currentWeekStart, WEEKDAY_SHORT } from '../../lib/week.js';
 
 export default function ChoreList({ members, compact = false, onExpand }) {
   const weekStart = currentWeekStart();
@@ -42,8 +42,11 @@ export default function ChoreList({ members, compact = false, onExpand }) {
       {(data?.chores || []).map((chore) => (
         <div className="chore-row" key={chore.id}>
           <input type="checkbox" checked={chore.done} onChange={() => toggleDone(chore)} />
+          {chore.day_of_week != null && (
+            <span className="chore-day-tag">{WEEKDAY_SHORT[chore.day_of_week]}</span>
+          )}
           <span className={`chore-title${chore.done ? ' done' : ''}`}>
-            {chore.template_id && <span title="Repeats every week">🔁 </span>}
+            {chore.template_id && <span title="Repeats on selected days">🔁 </span>}
             {chore.title}
           </span>
           <span className={`chore-tag ${chore.assigned_to}`}>{allMembers[chore.assigned_to] || chore.assigned_to}</span>

@@ -45,6 +45,7 @@ CREATE TABLE IF NOT EXISTS chore_templates (
   title TEXT NOT NULL,
   assigned_to TEXT NOT NULL DEFAULT 'family',
   active INTEGER NOT NULL DEFAULT 1,
+  days TEXT NOT NULL DEFAULT '[0,1,2,3,4,5,6]', -- JSON array of 0-6 (Mon=0); which days it recurs on
   sort_order INTEGER NOT NULL DEFAULT 0,
   created_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
@@ -110,6 +111,11 @@ try {
 }
 try {
   db.exec('ALTER TABLE events ADD COLUMN is_reminder INTEGER NOT NULL DEFAULT 0');
+} catch {
+  // column already exists
+}
+try {
+  db.exec("ALTER TABLE chore_templates ADD COLUMN days TEXT NOT NULL DEFAULT '[0,1,2,3,4,5,6]'");
 } catch {
   // column already exists
 }
