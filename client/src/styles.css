@@ -522,6 +522,26 @@ button {
   padding: 2px 8px;
   flex-shrink: 0;
 }
+
+.chore-group-row .chore-title { flex: 0 1 auto; margin-right: auto; }
+.chore-day-badges { display: flex; gap: 4px; flex-wrap: wrap; }
+.chore-day-toggle {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--color-text-muted);
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  padding: 4px 10px;
+  cursor: pointer;
+  min-height: auto;
+  min-width: auto;
+}
+.chore-day-toggle.done {
+  background: var(--color-primary);
+  color: #fff;
+  border-color: var(--color-primary);
+}
 .chore-setup-row { border-bottom: 1px solid var(--color-border); padding-bottom: 6px; margin-bottom: 6px; }
 .chore-setup-row .chore-row { border-bottom: none; padding-bottom: 4px; }
 .chore-day-picker { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; padding: 0 8px 8px; }
@@ -916,15 +936,6 @@ button {
   cursor: crosshair;
 }
 
-/* ---------- Whiteboard ---------- */
-.whiteboard-preview-img {
-  width: 100%;
-  max-height: 140px;
-  object-fit: contain;
-  border-radius: 8px;
-  border: 1px solid var(--color-border);
-  background: #fff;
-}
 
 @keyframes reminder-pulse {
   0%, 100% { box-shadow: 0 0 0 0 rgba(0,0,0,0.12); }

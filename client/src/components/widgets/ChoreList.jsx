@@ -4,6 +4,42 @@ import { api } from '../../api.js';
 import { currentWeekStartSunday, WEEKDAY_SHORT } from '../../lib/week.js';
 
 const TODAY_DAY_INDEX = (new Date().getDay() + 6) % 7; // 0=Mon..6=Sun
+const SUNDAY_FIRST_RANK = (dayOfWeek) => (dayOfWeek == null ? 7 : (dayOfWeek + 1) % 7);
+
+// The full page groups every instance of a recurring chore (same
+// template_id) into one row with a badge per expected day, instead of a
+// separate row per day - "Dish washer" set up for Mon/Wed/Thu shows once,
+// not three times. A one-off chore (no template) has nothing to group with,
+// so it keeps its own single-checkbox row exactly as before.
+function groupChores(chores) {
+  const rows = [];
+  const seenTemplates = new Set();
+  for (const chore of chores) {
+    if (!chore.template_id) {
+      rows.push({ type: 'single', chore, sortKey: SUNDAY_FIRST_RANK(chore.day_of_week) });
+      continue;
+    }
+    if (seenTemplates.has(chore.template_id)) continue;
+    seenTemplates.add(chore.template_id);
+    const instances = chores
+      .filter((c) => c.template_id === chore.template_id)
+      .sort((a, b) => SUNDAY_FIRST_RANK(a.day_of_week) - SUNDAY_FIRST_RANK(b.day_of_week));
+    rows.push({
+      type: 'group',
+      template_id: chore.template_id,
+      title: chore.title,
+      assigned_to: chore.assigned_to,
+      instances,
+      sortKey: Math.min(...instances.map((i) => SUNDAY_FIRST_RANK(i.day_of_week))),
+    });
+  }
+  rows.sort((a, b) => a.sortKey - b.sortKey);
+  return rows;
+}
+
+function isRowDone(row) {
+  return row.type === 'group' ? row.instances.every((i) => i.done) : row.chore.done;
+}
 
 export default function ChoreList({ members, compact = false, onExpand }) {
   const weekStart = currentWeekStartSunday();
@@ -40,9 +76,13 @@ export default function ChoreList({ members, compact = false, onExpand }) {
   const scopedChores = compact
     ? weekChores.filter((c) => c.day_of_week == null || c.day_of_week === TODAY_DAY_INDEX)
     : weekChores;
-  const openChores = scopedChores.filter((c) => !c.done);
-  const doneCount = scopedChores.length - openChores.length;
-  const visibleChores = showDone ? scopedChores : openChores;
+
+  const rows = compact
+    ? scopedChores.map((chore) => ({ type: 'single', chore }))
+    : groupChores(scopedChores);
+  const openRows = rows.filter((r) => !isRowDone(r));
+  const doneCount = rows.length - openRows.length;
+  const visibleRows = showDone ? rows : openRows;
 
   return (
     <section className={`widget-card${compact ? ' compact' : ''}`}>
@@ -51,23 +91,42 @@ export default function ChoreList({ members, compact = false, onExpand }) {
         {compact && onExpand && <button className="see-all" onClick={onExpand}>See all &rarr;</button>}
       </div>
 
-      {visibleChores.map((chore) => (
-        <div className="chore-row" key={chore.id}>
-          <input type="checkbox" checked={chore.done} onChange={() => toggleDone(chore)} />
-          {!compact && chore.day_of_week != null && (
-            <span className="chore-day-tag">{WEEKDAY_SHORT[chore.day_of_week]}</span>
-          )}
-          <span className={`chore-title${chore.done ? ' done' : ''}`}>
-            {chore.template_id && <span title="Repeats on selected days">🔁 </span>}
-            {chore.title}
-          </span>
-          <span className={`chore-tag ${chore.assigned_to}`}>{allMembers[chore.assigned_to] || chore.assigned_to}</span>
-          <button className="btn-icon" onClick={() => removeChore(chore.id)}>✕</button>
-        </div>
-      ))}
-      {data && openChores.length === 0 && !showDone && (
+      {visibleRows.map((row) =>
+        row.type === 'group' ? (
+          <div className="chore-row chore-group-row" key={`group-${row.template_id}`}>
+            <span className={`chore-title${isRowDone(row) ? ' done' : ''}`}>{row.title}</span>
+            <div className="chore-day-badges">
+              {row.instances.map((inst) => (
+                <button
+                  key={inst.id}
+                  type="button"
+                  className={`chore-day-toggle${inst.done ? ' done' : ''}`}
+                  onClick={() => toggleDone(inst)}
+                  title={inst.done ? 'Mark not done' : 'Mark done'}
+                >
+                  {WEEKDAY_SHORT[inst.day_of_week]}
+                </button>
+              ))}
+            </div>
+            <span className={`chore-tag ${row.assigned_to}`}>{allMembers[row.assigned_to] || row.assigned_to}</span>
+          </div>
+        ) : (
+          <div className="chore-row" key={row.chore.id}>
+            <input type="checkbox" checked={row.chore.done} onChange={() => toggleDone(row.chore)} />
+            {!compact && row.chore.day_of_week != null && (
+              <span className="chore-day-tag">{WEEKDAY_SHORT[row.chore.day_of_week]}</span>
+            )}
+            <span className={`chore-title${row.chore.done ? ' done' : ''}`}>{row.chore.title}</span>
+            <span className={`chore-tag ${row.chore.assigned_to}`}>
+              {allMembers[row.chore.assigned_to] || row.chore.assigned_to}
+            </span>
+            <button className="btn-icon" onClick={() => removeChore(row.chore.id)}>✕</button>
+          </div>
+        )
+      )}
+      {data && openRows.length === 0 && !showDone && (
         <p style={{ color: 'var(--color-text-muted)' }}>
-          {scopedChores.length === 0
+          {rows.length === 0
             ? compact
               ? 'Nothing due today.'
               : 'No chores yet this week.'

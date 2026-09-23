@@ -73,7 +73,7 @@ export default function App() {
           {active === 'lunch' && <LunchCalendar childName={members.member_3} />}
           {active === 'weather' && <WeatherWidget zip={zip} />}
           {active === 'shopping' && <ShoppingList />}
-          {active === 'whiteboard' && <WhiteboardPage />}
+          {active === 'whiteboard' && <WhiteboardPage onNavigate={setActive} />}
           {active === 'settings' && (
             <SettingsPanel
               config={config}
