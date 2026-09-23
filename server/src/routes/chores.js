@@ -4,12 +4,44 @@ import { weekStartParamSunday } from '../lib/week.js';
 
 const router = Router();
 
+function parseTemplateDays(rawDays) {
+  let days;
+  try {
+    days = JSON.parse(rawDays || '[]');
+  } catch {
+    days = [];
+  }
+  if (!Array.isArray(days) || days.length === 0) days = [0, 1, 2, 3, 4, 5, 6];
+  return days;
+}
+
 // Recurring chores are managed as templates (Settings > Chore Setup). Whenever
 // a week's chore list is requested, make sure every active template has a
 // fresh, unchecked instance for each of its selected days that week — carrying
 // chores forward every week without ever duplicating one that's already there.
 function ensureWeekChores(week_start) {
   const templates = db.prepare('SELECT * FROM chore_templates WHERE active = 1 ORDER BY sort_order ASC, id ASC').all();
+  const templateDays = new Map(templates.map((t) => [t.id, parseTemplateDays(t.days)]));
+
+  // A template's schedule can change (a day unchecked in Chore Setup) after
+  // this week's instances were already generated - drop any not-yet-done
+  // instance for a day that's no longer selected, instead of leaving it
+  // stuck on the list until next week. Left alone if the chore is already
+  // done (keeps a record of what actually got done this week) or if the
+  // template itself was deactivated/deleted (a separate, existing behavior).
+  const existingRows = db
+    .prepare('SELECT id, template_id, day_of_week, done FROM chores WHERE week_start = ? AND template_id IS NOT NULL')
+    .all(week_start);
+  const staleIds = existingRows
+    .filter((row) => templateDays.has(row.template_id) && !row.done && !templateDays.get(row.template_id).includes(row.day_of_week))
+    .map((row) => row.id);
+  if (staleIds.length > 0) {
+    withTransaction(() => {
+      const del = db.prepare('DELETE FROM chores WHERE id = ?');
+      for (const id of staleIds) del.run(id);
+    });
+  }
+
   if (templates.length === 0) return;
 
   const existingKeys = new Set(
@@ -27,15 +59,7 @@ function ensureWeekChores(week_start) {
   withTransaction(() => {
     let order = maxOrder;
     for (const t of templates) {
-      let days;
-      try {
-        days = JSON.parse(t.days || '[]');
-      } catch {
-        days = [];
-      }
-      if (!Array.isArray(days) || days.length === 0) days = [0, 1, 2, 3, 4, 5, 6];
-
-      for (const day of days) {
+      for (const day of templateDays.get(t.id)) {
         const key = `${t.id}:${day}`;
         if (existingKeys.has(key)) continue;
         order += 1;

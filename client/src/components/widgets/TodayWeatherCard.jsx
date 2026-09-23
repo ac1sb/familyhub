@@ -27,11 +27,11 @@ export default function TodayWeatherCard({ zip }) {
     );
   }
 
-  const { today } = data;
+  const { today, current } = data;
 
-  // Just the day's overall shape at a glance: one icon, high/low, and when
-  // rain is expected (if at all) - not current conditions or an hourly
-  // breakdown, which belongs on the full Weather page instead.
+  // The day's overall shape at a glance: icon, condition, high/low, the
+  // current temperature, and when rain is expected (if at all) - a step up
+  // from just an icon, but still short of the full Weather page's detail.
   const rainSlot = (today.timeline || []).find((t) => (t.precipitation_chance ?? 0) >= RAIN_THRESHOLD);
   const rainToday = rainSlot
     ? `${rainSlot.label} (${rainSlot.precipitation_chance}%)`
@@ -46,12 +46,28 @@ export default function TodayWeatherCard({ zip }) {
       </div>
       <div className="weather-today-main">
         <span className="weather-today-icon">{ICONS[today.icon] || '☁️'}</span>
-        <div className="weather-today-hilo">
-          <span>H {today.high}°</span>
-          <span>L {today.low}°</span>
+        <div className="weather-today-info">
+          <div className="weather-today-condition">{today.condition}</div>
+          <div className="weather-today-hilo">
+            <span>H {today.high}°</span>
+            <span>L {today.low}°</span>
+          </div>
         </div>
+        {current && (
+          <div className="weather-today-now">
+            <span className="weather-today-now-label">Now</span>
+            <span className="weather-today-now-temp">{current.temperature}°</span>
+          </div>
+        )}
       </div>
-      {rainToday && <div className="weather-today-rain">🌧️ Rain likely {rainToday}</div>}
+      {rainToday ? (
+        <div className="weather-today-rain">🌧️ Rain likely {rainToday}</div>
+      ) : (
+        today.precipitation_chance != null &&
+        today.precipitation_chance > 0 && (
+          <div className="weather-today-rain">💧 {today.precipitation_chance}% chance of rain</div>
+        )
+      )}
     </section>
   );
 }

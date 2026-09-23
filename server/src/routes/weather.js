@@ -73,10 +73,14 @@ router.get('/', async (req, res) => {
     const url = new URL('https://api.open-meteo.com/v1/forecast');
     url.searchParams.set('latitude', lat);
     url.searchParams.set('longitude', lon);
-    url.searchParams.set('daily', 'weathercode,temperature_2m_max,temperature_2m_min,precipitation_probability_max');
+    url.searchParams.set(
+      'daily',
+      'weathercode,temperature_2m_max,temperature_2m_min,precipitation_probability_max,windspeed_10m_max'
+    );
     url.searchParams.set('hourly', 'temperature_2m,precipitation_probability,weathercode');
     url.searchParams.set('current_weather', 'true');
     url.searchParams.set('temperature_unit', 'fahrenheit');
+    url.searchParams.set('windspeed_unit', 'mph');
     url.searchParams.set('timezone', 'auto');
     url.searchParams.set('forecast_days', '7');
 
@@ -92,6 +96,7 @@ router.get('/', async (req, res) => {
       high: Math.round(raw.daily.temperature_2m_max[i]),
       low: Math.round(raw.daily.temperature_2m_min[i]),
       precipitation_chance: raw.daily.precipitation_probability_max?.[i] ?? null,
+      wind_speed: raw.daily.windspeed_10m_max ? Math.round(raw.daily.windspeed_10m_max[i]) : null,
     }));
 
     const todayDate = raw.daily.time[0];

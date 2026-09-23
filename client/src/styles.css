@@ -339,6 +339,7 @@ button {
 .agenda-day-row.today .agenda-day-label .date-num { color: var(--color-primary); }
 
 .agenda-cell { display: flex; flex-direction: column; gap: 6px; min-height: 32px; }
+.agenda-cell + .agenda-cell { padding-left: 8px; border-left: 1px solid var(--color-border); }
 
 .event-pill {
   border-radius: 10px;
@@ -732,20 +733,25 @@ button {
 .weather-current .temp { font-size: 2.4rem; font-weight: 700; }
 .weather-days {
   display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  gap: 8px;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 12px;
 }
 .weather-day {
   background: var(--color-bg);
-  border-radius: 12px;
-  padding: 10px 4px;
+  border: 1px solid var(--color-border);
+  border-radius: 14px;
+  padding: 16px 8px;
   text-align: center;
-  font-size: 0.8rem;
+  font-size: 0.85rem;
 }
-.weather-day .wd { font-weight: 700; margin-bottom: 4px; }
-.weather-day .icon { font-size: 1.4rem; margin: 4px 0; }
+.weather-day .wd { font-weight: 700; font-size: 1rem; }
+.weather-day .wd-date { color: var(--color-text-muted); font-size: 0.75rem; margin-bottom: 6px; }
+.weather-day .icon { font-size: 2.4rem; margin: 8px 0; }
+.weather-day .condition { color: var(--color-text-muted); font-size: 0.78rem; min-height: 2.2em; margin-bottom: 6px; }
+.weather-day .hilo { display: flex; justify-content: center; gap: 10px; font-size: 1rem; margin-bottom: 6px; }
 .weather-day .hi { font-weight: 700; }
 .weather-day .lo { color: var(--color-text-muted); }
+.weather-day .precip, .weather-day .wind { color: var(--color-text-muted); font-size: 0.75rem; }
 
 .weather-today-main {
   display: flex;
@@ -753,6 +759,8 @@ button {
   gap: 14px;
 }
 .weather-today-icon { font-size: 3rem; line-height: 1; }
+.weather-today-info { flex: 1; }
+.weather-today-condition { font-size: 0.85rem; color: var(--color-text-muted); margin-bottom: 2px; }
 .weather-today-hilo {
   display: flex;
   gap: 12px;
@@ -760,6 +768,9 @@ button {
   font-weight: 700;
   color: var(--color-text);
 }
+.weather-today-now { text-align: center; }
+.weather-today-now-label { display: block; font-size: 0.7rem; color: var(--color-text-muted); text-transform: uppercase; }
+.weather-today-now-temp { font-size: 1.4rem; font-weight: 700; color: var(--color-text); }
 .weather-today-rain {
   margin-top: 8px;
   font-size: 0.85rem;

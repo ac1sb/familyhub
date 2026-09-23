@@ -3,6 +3,8 @@ import { usePolling } from '../../hooks/usePolling.js';
 import { api } from '../../api.js';
 import { currentWeekStartSunday, WEEKDAY_SHORT } from '../../lib/week.js';
 
+const TODAY_DAY_INDEX = (new Date().getDay() + 6) % 7; // 0=Mon..6=Sun
+
 export default function ChoreList({ members, compact = false, onExpand }) {
   const weekStart = currentWeekStartSunday();
   const { data, setData, refresh } = usePolling(() => api.chores(weekStart), [weekStart], 15000);
@@ -32,22 +34,27 @@ export default function ChoreList({ members, compact = false, onExpand }) {
   }
 
   const allMembers = { ...members, family: 'Family' };
-  const allChores = data?.chores || [];
-  const openChores = allChores.filter((c) => !c.done);
-  const doneCount = allChores.length - openChores.length;
-  const visibleChores = showDone ? allChores : openChores;
+  const weekChores = data?.chores || [];
+  // The dashboard widget is a "what's due today" glance; the full page (not
+  // compact) still shows the whole week for planning ahead.
+  const scopedChores = compact
+    ? weekChores.filter((c) => c.day_of_week == null || c.day_of_week === TODAY_DAY_INDEX)
+    : weekChores;
+  const openChores = scopedChores.filter((c) => !c.done);
+  const doneCount = scopedChores.length - openChores.length;
+  const visibleChores = showDone ? scopedChores : openChores;
 
   return (
     <section className={`widget-card${compact ? ' compact' : ''}`}>
       <div className="widget-header">
-        <h2>Chore List</h2>
+        <h2>{compact ? "Today's Chores" : 'Chore List'}</h2>
         {compact && onExpand && <button className="see-all" onClick={onExpand}>See all &rarr;</button>}
       </div>
 
       {visibleChores.map((chore) => (
         <div className="chore-row" key={chore.id}>
           <input type="checkbox" checked={chore.done} onChange={() => toggleDone(chore)} />
-          {chore.day_of_week != null && (
+          {!compact && chore.day_of_week != null && (
             <span className="chore-day-tag">{WEEKDAY_SHORT[chore.day_of_week]}</span>
           )}
           <span className={`chore-title${chore.done ? ' done' : ''}`}>
@@ -60,7 +67,13 @@ export default function ChoreList({ members, compact = false, onExpand }) {
       ))}
       {data && openChores.length === 0 && !showDone && (
         <p style={{ color: 'var(--color-text-muted)' }}>
-          {allChores.length === 0 ? 'No chores yet this week.' : 'All done for this week! 🎉'}
+          {scopedChores.length === 0
+            ? compact
+              ? 'Nothing due today.'
+              : 'No chores yet this week.'
+            : compact
+              ? 'All done for today! 🎉'
+              : 'All done for this week! 🎉'}
         </p>
       )}
 
@@ -70,25 +83,27 @@ export default function ChoreList({ members, compact = false, onExpand }) {
         </button>
       )}
 
-      <div className="add-row">
-        <input
-          type="text"
-          placeholder="Add a one-time chore…"
-          value={newTitle}
-          onChange={(e) => setNewTitle(e.target.value)}
-          onKeyDown={(e) => e.key === 'Enter' && addChore()}
-        />
-        <select value={assignedTo} onChange={(e) => setAssignedTo(e.target.value)}>
-          {Object.entries(allMembers).map(([key, name]) => (
-            <option key={key} value={key}>{name}</option>
-          ))}
-        </select>
-        <button className="btn btn-primary" onClick={addChore}>Add</button>
-      </div>
       {!compact && (
-        <p style={{ color: 'var(--color-text-muted)', fontSize: '0.8rem', marginTop: 10, marginBottom: 0 }}>
-          Want a chore to repeat every week? Set it up once in Settings &rarr; Chore Setup. Week starts Sunday.
-        </p>
+        <>
+          <div className="add-row">
+            <input
+              type="text"
+              placeholder="Add a one-time chore…"
+              value={newTitle}
+              onChange={(e) => setNewTitle(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && addChore()}
+            />
+            <select value={assignedTo} onChange={(e) => setAssignedTo(e.target.value)}>
+              {Object.entries(allMembers).map(([key, name]) => (
+                <option key={key} value={key}>{name}</option>
+              ))}
+            </select>
+            <button className="btn btn-primary" onClick={addChore}>Add</button>
+          </div>
+          <p style={{ color: 'var(--color-text-muted)', fontSize: '0.8rem', marginTop: 10, marginBottom: 0 }}>
+            Want a chore to repeat every week? Set it up once in Settings &rarr; Chore Setup. Week starts Sunday.
+          </p>
+        </>
       )}
     </section>
   );

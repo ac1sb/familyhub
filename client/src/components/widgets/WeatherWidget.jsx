@@ -50,9 +50,17 @@ export default function WeatherWidget({ zip, compact = false }) {
         {data.daily.map((d) => (
           <div className="weather-day" key={d.date}>
             <div className="wd">{new Date(d.date).toLocaleDateString(undefined, { weekday: 'short' })}</div>
+            <div className="wd-date">{new Date(d.date).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}</div>
             <div className="icon">{ICONS[d.icon] || '☁️'}</div>
-            <div className="hi">{d.high}°</div>
-            <div className="lo">{d.low}°</div>
+            <div className="condition">{d.condition}</div>
+            <div className="hilo">
+              <span className="hi">{d.high}°</span>
+              <span className="lo">{d.low}°</span>
+            </div>
+            {d.precipitation_chance != null && d.precipitation_chance > 0 && (
+              <div className="precip">💧 {d.precipitation_chance}%</div>
+            )}
+            {d.wind_speed != null && <div className="wind">💨 {d.wind_speed} mph</div>}
           </div>
         ))}
       </div>

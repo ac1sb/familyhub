@@ -53,25 +53,27 @@ export default function DailyChecklist({ members, compact = false, onExpand }) {
       ))}
       {data && tasks.length === 0 && <p style={{ color: 'var(--color-text-muted)' }}>Nothing on today's list.</p>}
 
-      <div className="add-row">
-        <input
-          type="text"
-          placeholder="Add a one-time item…"
-          value={newTitle}
-          onChange={(e) => setNewTitle(e.target.value)}
-          onKeyDown={(e) => e.key === 'Enter' && addTask()}
-        />
-        <select value={assignedTo} onChange={(e) => setAssignedTo(e.target.value)}>
-          {Object.entries(allMembers).map(([key, name]) => (
-            <option key={key} value={key}>{name}</option>
-          ))}
-        </select>
-        <button className="btn btn-primary" onClick={addTask}>Add</button>
-      </div>
       {!compact && (
-        <p style={{ color: 'var(--color-text-muted)', fontSize: '0.8rem', marginTop: 10, marginBottom: 0 }}>
-          Want something to repeat every day (or just school days)? Set it up once in Settings &rarr; Daily Checklist Setup.
-        </p>
+        <>
+          <div className="add-row">
+            <input
+              type="text"
+              placeholder="Add a one-time item…"
+              value={newTitle}
+              onChange={(e) => setNewTitle(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && addTask()}
+            />
+            <select value={assignedTo} onChange={(e) => setAssignedTo(e.target.value)}>
+              {Object.entries(allMembers).map(([key, name]) => (
+                <option key={key} value={key}>{name}</option>
+              ))}
+            </select>
+            <button className="btn btn-primary" onClick={addTask}>Add</button>
+          </div>
+          <p style={{ color: 'var(--color-text-muted)', fontSize: '0.8rem', marginTop: 10, marginBottom: 0 }}>
+            Want something to repeat every day (or just school days)? Set it up once in Settings &rarr; Daily Checklist Setup.
+          </p>
+        </>
       )}
     </section>
   );
