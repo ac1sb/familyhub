@@ -54,3 +54,29 @@ export function getMenuImportUrl() {
 export function setMenuImportUrl(url) {
   setSetting('menu_import_url', url);
 }
+
+// A calendar's "Secret address in iCal format" (Google Calendar -> that
+// calendar's Settings -> "Integrate calendar") - a plain read-only .ics feed
+// URL. Unlike the OAuth-based sync above, this needs no Google Cloud project
+// or sign-in at all: knowing the secret URL IS the auth, so it's the easiest
+// way to pull in a shared family calendar nobody wants to run OAuth for.
+export function getIcalFeedUrl() {
+  return getSetting('ical_feed_url') || process.env.ICAL_FEED_URL || '';
+}
+
+export function setIcalFeedUrl(url) {
+  setSetting('ical_feed_url', url);
+}
+
+// Which Google calendar locally-created events get pushed to (see
+// routes/google.js). Defaults to the signed-in account's own calendar;
+// pushing to a shared family calendar instead means sharing that calendar
+// with the OAuth account as an editor and pasting its Calendar ID here
+// (Google Calendar -> that calendar's Settings -> "Integrate calendar").
+export function getGoogleCalendarId() {
+  return getSetting('google_calendar_id') || process.env.GOOGLE_CALENDAR_ID || 'primary';
+}
+
+export function setGoogleCalendarId(id) {
+  setSetting('google_calendar_id', id);
+}

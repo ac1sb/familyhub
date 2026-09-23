@@ -6,12 +6,22 @@ import {
   setWeatherZip,
   getThemeSettings,
   setThemeSettings,
+  getIcalFeedUrl,
+  setIcalFeedUrl,
+  getGoogleCalendarId,
+  setGoogleCalendarId,
 } from '../lib/appConfig.js';
 
 const router = Router();
 
 function fullSettings() {
-  return { members: getMemberNames(), weather_zip: getWeatherZip(), theme: getThemeSettings() };
+  return {
+    members: getMemberNames(),
+    weather_zip: getWeatherZip(),
+    theme: getThemeSettings(),
+    ical_feed_url: getIcalFeedUrl(),
+    google_calendar_id: getGoogleCalendarId(),
+  };
 }
 
 router.get('/', (req, res) => {
@@ -19,7 +29,7 @@ router.get('/', (req, res) => {
 });
 
 router.put('/', (req, res) => {
-  const { member_1, member_2, member_3, weather_zip, theme_mode, dark_start, dark_end } = req.body;
+  const { member_1, member_2, member_3, weather_zip, theme_mode, dark_start, dark_end, ical_feed_url, google_calendar_id } = req.body;
 
   const trimmedOrUndefined = (v) => (typeof v === 'string' && v.trim() ? v.trim() : undefined);
 
@@ -48,6 +58,9 @@ router.put('/', (req, res) => {
     return res.status(400).json({ error: 'dark_end must be HH:MM' });
   }
   setThemeSettings({ theme_mode, dark_start, dark_end });
+
+  if (ical_feed_url !== undefined) setIcalFeedUrl(ical_feed_url.trim());
+  if (google_calendar_id !== undefined) setGoogleCalendarId(google_calendar_id.trim() || 'primary');
 
   res.json(fullSettings());
 });

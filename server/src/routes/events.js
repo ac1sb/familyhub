@@ -2,7 +2,9 @@ import { Router } from 'express';
 import db from '../db.js';
 import { expandOccurrences } from '../lib/recurrence.js';
 import { addDays, startOfWeek } from '../lib/week.js';
-import { fetchGoogleEvents } from './google.js';
+import { fetchGoogleEvents, isGoogleWriteEnabled, pushEventToGoogle, updateGoogleEvent, deleteGoogleEvent } from './google.js';
+import { fetchIcalEvents } from '../lib/icalFeed.js';
+import { getIcalFeedUrl } from '../lib/appConfig.js';
 
 const router = Router();
 
@@ -37,18 +39,30 @@ router.get('/', async (req, res) => {
   const rows = db.prepare('SELECT * FROM events').all().map(rowToEvent);
   let occurrences = rows.flatMap((row) => expandOccurrences(row, rangeStart, rangeEnd));
 
+  // A local event that's already been pushed to Google (google_event_id set)
+  // would otherwise show up twice - once as the local row, once again as
+  // Google's own copy of the same event when we fetch that calendar below.
+  const pushedGoogleIds = new Set(rows.filter((r) => r.google_event_id).map((r) => r.google_event_id));
+
   try {
     const googleEvents = await fetchGoogleEvents(rangeStart, rangeEnd);
-    occurrences = occurrences.concat(googleEvents);
+    occurrences = occurrences.concat(googleEvents.filter((ev) => !pushedGoogleIds.has(ev.google_event_id)));
   } catch (err) {
     // Google not connected or failed - agenda still works with local events only
+  }
+
+  try {
+    const icalUrl = getIcalFeedUrl();
+    if (icalUrl) occurrences = occurrences.concat(await fetchIcalEvents(icalUrl, rangeStart, rangeEnd));
+  } catch (err) {
+    // Feed unreachable/misconfigured - agenda still works with the other sources
   }
 
   occurrences.sort((a, b) => new Date(a.occurrence_start) - new Date(b.occurrence_start));
   res.json({ range_start: rangeStart.toISOString(), range_end: rangeEnd.toISOString(), events: occurrences });
 });
 
-router.post('/', (req, res) => {
+router.post('/', async (req, res) => {
   const {
     title,
     description = '',
@@ -88,7 +102,28 @@ router.post('/', (req, res) => {
     is_reminder: is_reminder ? 1 : 0,
   });
 
-  const row = db.prepare('SELECT * FROM events WHERE id = ?').get(info.lastInsertRowid);
+  let row = db.prepare('SELECT * FROM events WHERE id = ?').get(info.lastInsertRowid);
+
+  // Best-effort mirror to Google Calendar - a failed push (not connected,
+  // API hiccup) shouldn't stop the event from being saved locally. Recurring
+  // events are skipped: our weekly recurrence_days model doesn't map onto a
+  // single Google event, and creating a real Google recurring series would
+  // come back from fetchGoogleEvents as one entry per occurrence (Google
+  // expands them with singleEvents:true) with per-instance ids that never
+  // match this row's single google_event_id - every occurrence would show
+  // up twice on the agenda instead of being deduped.
+  if (isGoogleWriteEnabled() && !row.recurring) {
+    try {
+      const googleEventId = await pushEventToGoogle(rowToEvent(row));
+      if (googleEventId) {
+        db.prepare('UPDATE events SET google_event_id = ? WHERE id = ?').run(googleEventId, row.id);
+        row = db.prepare('SELECT * FROM events WHERE id = ?').get(row.id);
+      }
+    } catch (err) {
+      console.error('Failed to push new event to Google Calendar:', err.message);
+    }
+  }
+
   res.status(201).json(rowToEvent(row));
 });
 
@@ -118,11 +153,28 @@ router.put('/:id', (req, res) => {
   `).run({ ...merged, id: req.params.id });
 
   const row = db.prepare('SELECT * FROM events WHERE id = ?').get(req.params.id);
+
+  if (existing.google_event_id && isGoogleWriteEnabled()) {
+    updateGoogleEvent(existing.google_event_id, rowToEvent(row)).catch((err) => {
+      console.error('Failed to update event on Google Calendar:', err.message);
+    });
+  }
+
   res.json(rowToEvent(row));
 });
 
-router.delete('/:id', (req, res) => {
+router.delete('/:id', async (req, res) => {
+  const existing = db.prepare('SELECT * FROM events WHERE id = ?').get(req.params.id);
   db.prepare('DELETE FROM events WHERE id = ?').run(req.params.id);
+
+  if (existing?.google_event_id && isGoogleWriteEnabled()) {
+    try {
+      await deleteGoogleEvent(existing.google_event_id);
+    } catch (err) {
+      console.error('Failed to delete event on Google Calendar:', err.message);
+    }
+  }
+
   res.status(204).end();
 });
 

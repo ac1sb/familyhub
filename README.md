@@ -28,8 +28,11 @@ shopping list from another device.
   Tapping a member's name opens **Add Event**, preselected for that person.
   Tapping an existing event opens its full details (including its saved
   flyer photo, if it has one), with Edit and Delete right there.
-- **Google Calendar** read-only sync — connected events show up merged into
-  the same agenda, alongside the built-in events.
+- **Calendar sync** — two ways to bring in outside events: paste any
+  calendar's secret iCal feed URL for a simple read-only merge (no sign-in
+  needed), or connect a Google account via OAuth for two-way sync (its
+  events show up here, and one-off events created in FamilyHub are pushed
+  back to it).
 - **Recurring events** — a "Repeats weekly" checkbox plus day-of-week chips,
   for anything that happens multiple times a week or the same day every week.
 - **Big reminder banners** — flag any event as an "important reminder" and
@@ -211,7 +214,17 @@ unchecked (trash day, feeding a pet, etc.), add it once in **Settings →
 Chore Setup**. Toggle a chore off there to pause it without losing its
 setup, or delete it to remove it for good.
 
-## Connecting Google Calendar
+## Connecting a shared calendar (easiest option)
+
+If you just want a shared family calendar's events to show up on the agenda
+and don't need FamilyHub to write anything back to it, skip Google OAuth
+entirely: open that calendar's Settings in Google Calendar -> "Integrate
+calendar" -> copy its **Secret address in iCal format**, then paste that URL
+into Settings -> General -> "Shared calendar feed URL" in FamilyHub. No
+Google Cloud project, no sign-in, no client ID/secret - the secret URL is the
+only credential involved, and it's read-only (FamilyHub never writes to it).
+
+## Connecting Google Calendar (two-way sync)
 
 1. In the [Google Cloud Console](https://console.cloud.google.com/apis/credentials),
    create an **OAuth client ID** of type "Web application".
@@ -226,9 +239,23 @@ setup, or delete it to remove it for good.
 4. Restart the server, open the app's **Settings** tab, and tap
    **Connect Google Calendar**.
 
-Google Calendar is synced read-only into the agenda; events created *in*
-FamilyHub go to the built-in calendar (not pushed to Google) so kids/parents
-can add quick events without needing their own Google account.
+This syncs both ways: that calendar's events show up in the agenda, and
+one-off events created *in* FamilyHub are pushed to it too (so they show up
+on your phone's Google Calendar app, for instance). Recurring events
+("Repeats weekly") are the one exception - they stay FamilyHub-only for now,
+since our weekly-recurrence model doesn't map cleanly onto how Google
+expands a recurring series, and pushing them would risk showing every
+occurrence twice.
+
+By default this syncs to the signed-in account's own ("primary") calendar.
+To sync to a *shared* family calendar instead, share that calendar with the
+OAuth account as an editor, then paste its Calendar ID (same "Integrate
+calendar" settings page as above) into Settings -> General -> "Google
+Calendar to sync events to".
+
+If you connected Google Calendar before this two-way sync existed, that
+connection only has read access - disconnect and reconnect once from
+Settings to approve the write permission.
 
 ## Flyer / poster photo scanning
 
@@ -292,9 +319,15 @@ other file on the Pi.
   public local API, so the usual path is a
   [Home Assistant](https://www.home-assistant.io/) instance with the Caseta
   integration, with FamilyHub calling *that* instead of the bridge directly.
-- Google Calendar sync is one-way (Google → agenda). Two-way sync could be
-  added later if you want events created in FamilyHub to also appear on
-  Google Calendar.
+- Google Calendar sync is two-way for one-off events, but recurring
+  ("Repeats weekly") events are never pushed to Google - they stay
+  FamilyHub-only. The iCal feed URL option is always read-only, by design.
+- No integration with Google Drive/Docs or Life360. Drive/Docs would be
+  buildable (Drive: reuse the flyer OCR pipeline against a shared folder;
+  Docs: one-way append of shopping items) but aren't built yet. Life360 has
+  no public API - the only integrations that exist talk to a
+  reverse-engineered private endpoint using your real login, which isn't
+  something this project takes on.
 - OCR on flyers is best-effort; always double-check the pre-filled date/time
   before saving.
 - No authentication yet — anyone with network access to the app can view and

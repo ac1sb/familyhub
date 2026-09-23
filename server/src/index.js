@@ -20,7 +20,7 @@ import whiteboardRouter from './routes/whiteboard.js';
 import settingsRouter from './routes/settings.js';
 import smartDevicesRouter from './routes/smartDevices.js';
 import updateRouter from './routes/update.js';
-import { getMemberNames, getWeatherZip, getThemeSettings } from './lib/appConfig.js';
+import { getMemberNames, getWeatherZip, getThemeSettings, getIcalFeedUrl, getGoogleCalendarId } from './lib/appConfig.js';
 import { uploadsDir } from './lib/paths.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -42,7 +42,13 @@ app.use(express.json({ limit: '5mb' }));
 app.use('/uploads', express.static(uploadsDir));
 
 app.get('/api/config', (req, res) => {
-  res.json({ members: getMemberNames(), weather_zip: getWeatherZip(), theme: getThemeSettings() });
+  res.json({
+    members: getMemberNames(),
+    weather_zip: getWeatherZip(),
+    theme: getThemeSettings(),
+    ical_feed_url: getIcalFeedUrl(),
+    google_calendar_id: getGoogleCalendarId(),
+  });
 });
 
 app.use('/api/events', eventsRouter);

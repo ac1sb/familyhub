@@ -10,6 +10,8 @@ import UpdatePanel from './UpdatePanel.jsx';
 function GeneralSettings({ config, onConfigUpdated }) {
   const [names, setNames] = useState({ member_1: '', member_2: '', member_3: '' });
   const [zip, setZip] = useState('');
+  const [icalUrl, setIcalUrl] = useState('');
+  const [googleCalendarId, setGoogleCalendarId] = useState('');
   const [saving, setSaving] = useState(false);
   const [saveMessage, setSaveMessage] = useState(null);
   const [error, setError] = useState(null);
@@ -21,6 +23,8 @@ function GeneralSettings({ config, onConfigUpdated }) {
     if (config) {
       setNames(config.members);
       setZip(config.weather_zip);
+      setIcalUrl(config.ical_feed_url || '');
+      setGoogleCalendarId(config.google_calendar_id || 'primary');
     }
   }, [config]);
 
@@ -52,6 +56,8 @@ function GeneralSettings({ config, onConfigUpdated }) {
         member_2: names.member_2,
         member_3: names.member_3,
         weather_zip: zip,
+        ical_feed_url: icalUrl,
+        google_calendar_id: googleCalendarId,
       });
       onConfigUpdated?.(updated);
       setSaveMessage('Saved!');
@@ -96,13 +102,22 @@ function GeneralSettings({ config, onConfigUpdated }) {
         <label htmlFor="weather-zip">Weather zip code</label>
         <input id="weather-zip" type="text" inputMode="numeric" maxLength={5} value={zip} onChange={(e) => setZip(e.target.value)} />
       </div>
-
-      {error && <p style={{ color: 'var(--color-danger)' }}>{error}</p>}
-      {saveMessage && <p style={{ color: 'var(--color-primary)', fontWeight: 600 }}>{saveMessage}</p>}
-
-      <button className="btn btn-primary" onClick={handleSave} disabled={saving}>
-        {saving ? 'Saving…' : 'Save Changes'}
-      </button>
+      <div className="field">
+        <label htmlFor="ical-feed-url">Shared calendar feed URL (optional)</label>
+        <input
+          id="ical-feed-url"
+          type="text"
+          placeholder="https://calendar.google.com/calendar/ical/.../basic.ics"
+          value={icalUrl}
+          onChange={(e) => setIcalUrl(e.target.value)}
+        />
+        <p style={{ color: 'var(--color-text-muted)', fontSize: '0.8rem', marginTop: 4 }}>
+          Paste a calendar's "Secret address in iCal format" (Google Calendar &rarr; that calendar's
+          Settings &rarr; Integrate calendar) to show its events on the agenda - read-only, and no
+          Google sign-in needed. This is separate from the Google Calendar connection below, which is
+          for two-way sync with your own account's calendar.
+        </p>
+      </div>
 
       <div className="field" style={{ marginTop: 24 }}>
         <label>Google Calendar</label>
@@ -115,16 +130,50 @@ function GeneralSettings({ config, onConfigUpdated }) {
         )}
         {googleStatus && googleStatus.configured && (
           <div>
-            <p>{googleStatus.connected ? '✅ Connected — Google Calendar events appear on the agenda.' : 'Not connected yet.'}</p>
+            <p>
+              {googleStatus.connected
+                ? '✅ Connected — two-way sync: that calendar\'s events show up here, and events added in FamilyHub are pushed to it too.'
+                : 'Not connected yet.'}
+            </p>
             {googleStatus.connected ? (
               <button className="btn btn-secondary" onClick={disconnectGoogle}>Disconnect</button>
             ) : (
               <button className="btn btn-primary" onClick={connectGoogle}>Connect Google Calendar</button>
             )}
+            <p style={{ color: 'var(--color-text-muted)', fontSize: '0.8rem', marginTop: 8 }}>
+              Connected before and FamilyHub-created events aren't showing up on Google? That connection
+              only granted read access - disconnect and reconnect once to approve the write permission
+              two-way sync needs.
+            </p>
           </div>
         )}
         {googleError && <p style={{ color: 'var(--color-danger)' }}>{googleError}</p>}
       </div>
+
+      {googleStatus?.connected && (
+        <div className="field">
+          <label htmlFor="google-calendar-id">Google Calendar to sync events to</label>
+          <input
+            id="google-calendar-id"
+            type="text"
+            placeholder="primary"
+            value={googleCalendarId}
+            onChange={(e) => setGoogleCalendarId(e.target.value)}
+          />
+          <p style={{ color: 'var(--color-text-muted)', fontSize: '0.8rem', marginTop: 4 }}>
+            Leave as "primary" to use the signed-in account's own calendar. To sync to a shared family
+            calendar instead, share it with that account as an editor in Google Calendar, then paste its
+            Calendar ID here (that calendar's Settings &rarr; Integrate calendar).
+          </p>
+        </div>
+      )}
+
+      {error && <p style={{ color: 'var(--color-danger)' }}>{error}</p>}
+      {saveMessage && <p style={{ color: 'var(--color-primary)', fontWeight: 600 }}>{saveMessage}</p>}
+
+      <button className="btn btn-primary" onClick={handleSave} disabled={saving}>
+        {saving ? 'Saving…' : 'Save Changes'}
+      </button>
 
       <UpdatePanel />
     </>
