@@ -3,22 +3,25 @@ import { usePolling } from '../../hooks/usePolling.js';
 import { api } from '../../api.js';
 import AddEventModal from '../modals/AddEventModal.jsx';
 import EventDetailModal from '../modals/EventDetailModal.jsx';
-import { addDays, currentWeekStart, formatTime, startOfWeek, toISODate } from '../../lib/week.js';
+import { addDays, formatTime, todayISO, toISODate } from '../../lib/week.js';
 
 const MEMBER_KEYS = ['member_1', 'member_2', 'member_3'];
 
 export default function CalendarAgenda({ members, compact = false, onExpand, fillHeight = false }) {
-  const [weekStart, setWeekStart] = useState(currentWeekStart());
+  // A rolling window instead of a fixed Mon-Sun week: "today" is always the
+  // top row, followed by the next 6 days, so what's showing never depends on
+  // which day of the week it happens to be.
+  const [rangeStart, setRangeStart] = useState(todayISO());
   const [modalMember, setModalMember] = useState(null);
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [confirmation, setConfirmation] = useState(null);
-  const { data, refresh } = usePolling(() => api.events(weekStart), [weekStart], 20000);
+  const dayCount = compact ? 3 : 7;
+  const { data, refresh } = usePolling(() => api.eventsRange(rangeStart, dayCount), [rangeStart, dayCount], 20000);
 
   const days = useMemo(() => {
-    const start = new Date(weekStart);
-    const count = compact ? 3 : 7;
-    return Array.from({ length: count }, (_, i) => addDays(start, i));
-  }, [weekStart, compact]);
+    const start = new Date(`${rangeStart}T00:00:00`);
+    return Array.from({ length: dayCount }, (_, i) => addDays(start, i));
+  }, [rangeStart, dayCount]);
 
   const eventsByDayAndMember = useMemo(() => {
     const map = {};
@@ -36,18 +39,19 @@ export default function CalendarAgenda({ members, compact = false, onExpand, fil
     return map;
   }, [data, days]);
 
-  function goWeek(offset) {
-    setWeekStart(toISODate(addDays(new Date(weekStart), offset * 7)));
+  function goRange(offsetDays) {
+    setRangeStart(toISODate(addDays(new Date(`${rangeStart}T00:00:00`), offsetDays)));
   }
 
   function handleEventSaved(created) {
     if (created?.start_datetime) {
       const eventDate = new Date(created.start_datetime);
-      const eventWeekStart = toISODate(startOfWeek(eventDate));
+      const eventDateKey = toISODate(eventDate);
+      const windowEnd = toISODate(addDays(new Date(`${rangeStart}T00:00:00`), dayCount - 1));
       // A scanned flyer or a manually-picked date can easily land outside the
-      // week currently on screen; jump there so the new event is immediately
-      // visible instead of silently landing on a week nobody is looking at.
-      if (eventWeekStart !== weekStart) setWeekStart(eventWeekStart);
+      // window currently on screen; jump there so the new event is
+      // immediately visible instead of silently landing off-screen.
+      if (eventDateKey < rangeStart || eventDateKey > windowEnd) setRangeStart(eventDateKey);
       setConfirmation(
         `Added "${created.title}" for ${eventDate.toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' })}`
       );
@@ -59,14 +63,14 @@ export default function CalendarAgenda({ members, compact = false, onExpand, fil
   return (
     <section className={`widget-card${compact ? ' compact' : ''}${fillHeight ? ' fill-height' : ''}`}>
       <div className="widget-header">
-        <h2>{compact ? 'Calendar — Next Few Days' : 'Calendar — Agenda'}</h2>
+        <h2>{compact ? 'Calendar — Next Few Days' : 'Calendar — Next 7 Days'}</h2>
         {compact ? (
           onExpand && <button className="see-all" onClick={onExpand}>Full week &rarr;</button>
         ) : (
           <div style={{ display: 'flex', gap: 8 }}>
-            <button className="btn-icon" onClick={() => goWeek(-1)}>&larr;</button>
-            <button className="btn btn-secondary" onClick={() => setWeekStart(currentWeekStart())}>This Week</button>
-            <button className="btn-icon" onClick={() => goWeek(1)}>&rarr;</button>
+            <button className="btn-icon" onClick={() => goRange(-7)}>&larr;</button>
+            <button className="btn btn-secondary" onClick={() => setRangeStart(todayISO())}>Today</button>
+            <button className="btn-icon" onClick={() => goRange(7)}>&rarr;</button>
           </div>
         )}
       </div>
@@ -84,11 +88,12 @@ export default function CalendarAgenda({ members, compact = false, onExpand, fil
 
       {days.map((day) => {
         const key = toISODate(day);
+        const isToday = key === todayISO();
         const bucket = eventsByDayAndMember[key] || { member_1: [], member_2: [], member_3: [] };
         return (
-          <div className="agenda-day-row" key={key}>
+          <div className={`agenda-day-row${isToday ? ' today' : ''}`} key={key}>
             <div className="agenda-day-label">
-              {day.toLocaleDateString(undefined, { weekday: 'short' })}
+              {isToday ? 'Today' : day.toLocaleDateString(undefined, { weekday: 'short' })}
               <span className="date-num">{day.getDate()}</span>
             </div>
             {MEMBER_KEYS.map((memberKey) => (

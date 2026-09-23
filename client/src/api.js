@@ -23,6 +23,7 @@ export const api = {
   config: () => request('/config'),
 
   events: (week) => request(`/events?week=${week}`),
+  eventsRange: (start, days = 7) => request(`/events?start=${start}&days=${days}`),
   createEvent: (data) => request('/events', { method: 'POST', body: JSON.stringify(data) }),
   updateEvent: (id, data) => request(`/events/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
   deleteEvent: (id) => request(`/events/${id}`, { method: 'DELETE' }),

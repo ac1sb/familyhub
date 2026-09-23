@@ -18,11 +18,21 @@ function rowToEvent(row) {
   };
 }
 
-// GET /api/events?week=YYYY-MM-DD  -> agenda for that week (Mon-Sun), local + google merged
+// GET /api/events?week=YYYY-MM-DD          -> agenda for that Mon-Sun week, local + google merged
+// GET /api/events?start=YYYY-MM-DD&days=N  -> agenda for a literal N-day window starting on that
+//                                             exact date (no Monday snapping) - used for the
+//                                             dashboard's rolling "today + next 6 days" view.
 router.get('/', async (req, res) => {
-  const base = req.query.week ? new Date(req.query.week) : new Date();
-  const rangeStart = startOfWeek(base);
-  const rangeEnd = addDays(rangeStart, 7);
+  let rangeStart;
+  let rangeEnd;
+  if (req.query.start && /^\d{4}-\d{2}-\d{2}$/.test(req.query.start)) {
+    rangeStart = new Date(`${req.query.start}T00:00:00`);
+    rangeEnd = addDays(rangeStart, Number(req.query.days) || 7);
+  } else {
+    const base = req.query.week ? new Date(req.query.week) : new Date();
+    rangeStart = startOfWeek(base);
+    rangeEnd = addDays(rangeStart, 7);
+  }
 
   const rows = db.prepare('SELECT * FROM events').all().map(rowToEvent);
   let occurrences = rows.flatMap((row) => expandOccurrences(row, rangeStart, rangeEnd));

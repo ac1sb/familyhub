@@ -330,6 +330,14 @@ button {
 }
 .agenda-day-label .date-num { display: block; font-size: 1.3rem; color: var(--color-text); }
 
+.agenda-day-row.today {
+  background: color-mix(in srgb, var(--color-primary) 10%, transparent);
+  border-radius: 10px;
+  border-bottom-color: transparent;
+}
+.agenda-day-row.today .agenda-day-label { color: var(--color-primary); }
+.agenda-day-row.today .agenda-day-label .date-num { color: var(--color-primary); }
+
 .agenda-cell { display: flex; flex-direction: column; gap: 6px; min-height: 32px; }
 
 .event-pill {
