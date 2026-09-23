@@ -5,6 +5,7 @@ import DailyTaskSetup from './DailyTaskSetup.jsx';
 import ScreensaverSettings from './ScreensaverSettings.jsx';
 import SmartHomeSetup from './SmartHomeSetup.jsx';
 import DashboardWidgetsSetup from './DashboardWidgetsSetup.jsx';
+import UpdatePanel from './UpdatePanel.jsx';
 
 function GeneralSettings({ config, onConfigUpdated }) {
   const [names, setNames] = useState({ member_1: '', member_2: '', member_3: '' });
@@ -124,6 +125,8 @@ function GeneralSettings({ config, onConfigUpdated }) {
         )}
         {googleError && <p style={{ color: 'var(--color-danger)' }}>{googleError}</p>}
       </div>
+
+      <UpdatePanel />
     </>
   );
 }

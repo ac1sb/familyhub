@@ -98,6 +98,10 @@ export const api = {
   googleAuthUrl: () => request('/google/auth-url'),
   googleDisconnect: () => request('/google/disconnect', { method: 'POST' }),
 
+  updateCheck: () => request('/update/check'),
+  updateStatus: () => request('/update/status'),
+  updateRun: () => request('/update/run', { method: 'POST' }),
+
   scanFlyer: (file) => {
     const form = new FormData();
     form.append('photo', file);

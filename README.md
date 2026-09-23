@@ -155,6 +155,25 @@ prompt `esbuild` triggered during setup), `npm run update` will pause with
 that warning instead of finishing. Run `npm install-scripts approve
 <package-name>` as it tells you to, then run `npm run update` again.
 
+#### Updating from inside the app
+
+Settings → General → Software Update has a **Check for updates** /
+**Update now** button that does the same thing without SSH: `git pull`,
+reinstall dependencies, rebuild the client, then restart the server. The
+display goes blank for a minute or two while it restarts, then reloads
+itself automatically. If `git pull`, installing, or building fails, nothing
+is touched and the currently-running app keeps serving as if nothing
+happened - only a *successful* update ever restarts anything.
+
+By default this stops the running Node process itself and starts a fresh
+one, which is fine for the simple "just run `npm start`" setup this README
+otherwise describes. If you run FamilyHub under a process supervisor
+instead (`pm2`, a `systemd` service, ...), set `UPDATE_RESTART_CMD` in
+`server/.env` to whatever restarts it *there* (e.g. `pm2 restart familyhub`
+or `sudo systemctl restart familyhub`) - otherwise the in-app button and
+your supervisor's own restart policy would both try to manage the same
+process and fight each other.
+
 ## Configuring household members & weather
 
 Open the app's **Settings → General** tab to rename the three household
@@ -263,7 +282,10 @@ other file on the Pi.
   before saving.
 - No authentication yet — anyone with network access to the app can view and
   edit everything. Fine for a home network; put it behind a VPN or reverse
-  proxy with auth if you expose it to the internet.
+  proxy with auth if you expose it to the internet. This applies doubly to
+  the Software Update button above: anyone who can reach the app can trigger
+  a `git pull` + rebuild + restart, so don't expose this app to the internet
+  without adding auth in front of it first.
 - The database uses Node's built-in `node:sqlite` module, which Node still
   labels "experimental" (you may see a startup warning on some Node
   versions) even though its API is stable enough for this app. This was

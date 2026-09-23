@@ -19,6 +19,7 @@ import flyerRouter from './routes/flyer.js';
 import whiteboardRouter from './routes/whiteboard.js';
 import settingsRouter from './routes/settings.js';
 import smartDevicesRouter from './routes/smartDevices.js';
+import updateRouter from './routes/update.js';
 import { getMemberNames, getWeatherZip, getThemeSettings } from './lib/appConfig.js';
 import { uploadsDir } from './lib/paths.js';
 
@@ -58,6 +59,7 @@ app.use('/api/flyer', flyerRouter);
 app.use('/api/whiteboard', whiteboardRouter);
 app.use('/api/settings', settingsRouter);
 app.use('/api/smart-devices', smartDevicesRouter);
+app.use('/api/update', updateRouter);
 
 // Serve the built client in production (npm run build in /client outputs to /client/dist).
 const clientDist = path.join(__dirname, '..', '..', 'client', 'dist');
