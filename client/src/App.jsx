@@ -66,8 +66,10 @@ export default function App() {
             {now.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' })}
           </div>
         </header>
-        <HeaderWeather zip={zip} />
-        <HeaderSmartHomeToggles />
+        <div className="topbar-strip">
+          <HeaderSmartHomeToggles />
+          <HeaderWeather zip={zip} />
+        </div>
         <main className={`main-content${active === 'dashboard' ? ' dashboard-mode' : ''}`}>
           {active === 'dashboard' && <Dashboard members={members} zip={zip} onNavigate={setActive} />}
           {active === 'calendar' && <CalendarAgenda members={members} />}

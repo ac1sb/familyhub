@@ -104,7 +104,7 @@ export default function HeaderSmartHomeToggles() {
   if (devices.length === 0) return null;
 
   return (
-    <div className="topbar-smarthome">
+    <div className="topbar-smarthome-group">
       {devices.map((device) => (
         <HeaderToggle key={device.id} device={device} onToggle={toggle} onSetBrightness={setBrightness} />
       ))}

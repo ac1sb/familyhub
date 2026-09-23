@@ -143,18 +143,29 @@ button {
 
 .topbar .datetime { font-size: 0.95rem; color: var(--color-text-muted); }
 
-/* ---------- Header info/toggle strips (always visible, right below the date/time) ---------- */
-.topbar-weather,
-.topbar-smarthome {
+/* ---------- Header info/toggle strip (always visible, right below the date/time) ----------
+   Smart-home toggles on the left, weather chips justified to the right - if
+   the window's too narrow for both on one line, the whole weather group
+   wraps down below the toggles rather than the two interleaving. */
+.topbar-strip {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 8px;
+  justify-content: space-between;
+  gap: 8px 16px;
   padding: 6px 10px;
   background: var(--color-surface);
   border-bottom: 1px solid var(--color-border);
   flex-shrink: 0;
 }
+.topbar-smarthome-group,
+.topbar-weather-group {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+.topbar-weather-group { margin-left: auto; justify-content: flex-end; }
 
 .header-info-chip {
   display: flex;

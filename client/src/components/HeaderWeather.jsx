@@ -24,7 +24,7 @@ export default function HeaderWeather({ zip }) {
   const { today, current } = data;
 
   return (
-    <div className="topbar-weather">
+    <div className="topbar-weather-group">
       <span className="header-info-chip header-info-chip-now">
         <span>{ICONS[current.icon] || '☁️'}</span>
         <span>Now {current.temperature}&deg;</span>
