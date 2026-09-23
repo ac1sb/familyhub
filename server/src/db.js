@@ -125,6 +125,15 @@ CREATE TABLE IF NOT EXISTS settings (
   key TEXT PRIMARY KEY,
   value TEXT
 );
+
+-- A saved history of past whiteboard messages, one row per time the board
+-- was cleared with something drawn on it - "post-it notes" you can look
+-- back on, separate from the single current board image in settings.
+CREATE TABLE IF NOT EXISTS whiteboard_notes (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  image_path TEXT NOT NULL,
+  created_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
 `);
 
 // Migration for databases created before chore_templates existed: CREATE TABLE

@@ -3,6 +3,7 @@ import { usePolling } from '../../hooks/usePolling.js';
 import { api } from '../../api.js';
 import DrawingCanvas from '../DrawingCanvas.jsx';
 import { useMemberColorPalette } from '../../lib/memberColors.js';
+import { archiveAndClearWhiteboard } from '../../lib/whiteboardClear.js';
 
 export default function WhiteboardPreview({ onExpand }) {
   const { data, refresh } = usePolling(() => api.whiteboard(), [], 15000);
@@ -17,6 +18,11 @@ export default function WhiteboardPreview({ onExpand }) {
     } finally {
       setSaving(false);
     }
+  }
+
+  async function handleClear(dataUrl) {
+    await archiveAndClearWhiteboard(dataUrl);
+    refresh();
   }
 
   return (
@@ -34,6 +40,7 @@ export default function WhiteboardPreview({ onExpand }) {
         initialSrc={data?.image_path || null}
         saveLabel={saving ? 'Saving…' : 'Save'}
         onSave={handleSave}
+        onClear={handleClear}
       />
     </section>
   );

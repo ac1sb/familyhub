@@ -50,7 +50,9 @@ shopping list from another device.
 - **Whiteboard** — a shared drawing pad synced to every screen and phone;
   draw right in the dashboard widget for a quick note, or open the full
   page for a bigger canvas. Saving from the full page returns you to the
-  dashboard automatically.
+  dashboard automatically. Clearing the board archives whatever was on it
+  first, so past notes are browsable (on the full page) instead of just
+  thrown away.
 - **Weather** — a "Today" card (high/low, precipitation chance, a
   morning/afternoon/evening timeline, and a clothing hint) on the dashboard,
   plus a full 7-day forecast on its own sidebar tab. Geocoded from a US zip

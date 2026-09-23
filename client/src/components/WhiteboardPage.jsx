@@ -3,9 +3,11 @@ import { usePolling } from '../hooks/usePolling.js';
 import { api } from '../api.js';
 import DrawingCanvas from './DrawingCanvas.jsx';
 import { useMemberColorPalette } from '../lib/memberColors.js';
+import { archiveAndClearWhiteboard } from '../lib/whiteboardClear.js';
 
 export default function WhiteboardPage({ onNavigate }) {
   const { data, refresh } = usePolling(() => api.whiteboard(), [], 8000);
+  const { data: notesData, refresh: refreshNotes } = usePolling(() => api.whiteboardNotes(), [], 30000);
   const [saving, setSaving] = useState(false);
   const palette = useMemberColorPalette();
 
@@ -23,6 +25,19 @@ export default function WhiteboardPage({ onNavigate }) {
     }
   }
 
+  async function handleClear(dataUrl) {
+    await archiveAndClearWhiteboard(dataUrl);
+    refresh();
+    refreshNotes();
+  }
+
+  async function removeNote(id) {
+    await api.deleteWhiteboardNote(id);
+    refreshNotes();
+  }
+
+  const notes = notesData?.notes || [];
+
   return (
     <section className="widget-card fill-height">
       <div className="widget-header">
@@ -31,7 +46,8 @@ export default function WhiteboardPage({ onNavigate }) {
       <p style={{ color: 'var(--color-text-muted)', fontSize: '0.85rem', marginTop: 0 }}>
         Draw a message or doodle - it saves to every screen and phone. "Save to Board" writes what's
         on the pad now and takes you back to the dashboard; anyone else's saved drawing will load in
-        the next time this page opens.
+        the next time this page opens. Clearing the board (🗑️) keeps a copy below instead of just
+        throwing it away.
       </p>
       <DrawingCanvas
         key={data?.image_path || 'blank'}
@@ -42,7 +58,27 @@ export default function WhiteboardPage({ onNavigate }) {
         initialSrc={data?.image_path || null}
         saveLabel={saving ? 'Saving…' : 'Save to Board'}
         onSave={handleSave}
+        onClear={handleClear}
       />
+
+      {notes.length > 0 && (
+        <div className="whiteboard-notes">
+          <h3 className="whiteboard-notes-title">Past notes</h3>
+          <div className="whiteboard-notes-grid">
+            {notes.map((note) => (
+              <div className="whiteboard-note" key={note.id}>
+                <img src={note.image_path} alt="Saved whiteboard note" />
+                <div className="whiteboard-note-meta">
+                  <span>{new Date(note.created_at.replace(' ', 'T') + 'Z').toLocaleString(undefined, {
+                    month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit',
+                  })}</span>
+                  <button className="btn-icon" onClick={() => removeNote(note.id)} title="Delete this note">✕</button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </section>
   );
 }

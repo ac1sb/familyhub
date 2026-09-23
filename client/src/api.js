@@ -76,6 +76,13 @@ export const api = {
     form.append('image', dataUrlToBlob(dataUrl), 'whiteboard.png');
     return request('/whiteboard', { method: 'POST', body: form });
   },
+  whiteboardNotes: () => request('/whiteboard/notes'),
+  archiveWhiteboardNote: (dataUrl) => {
+    const form = new FormData();
+    form.append('image', dataUrlToBlob(dataUrl), 'note.png');
+    return request('/whiteboard/notes', { method: 'POST', body: form });
+  },
+  deleteWhiteboardNote: (id) => request(`/whiteboard/notes/${id}`, { method: 'DELETE' }),
 
   weather: (zip) => request(`/weather${zip ? `?zip=${zip}` : ''}`),
 

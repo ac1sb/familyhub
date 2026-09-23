@@ -3,7 +3,6 @@ import { usePolling } from '../../hooks/usePolling.js';
 import { api } from '../../api.js';
 import { currentWeekStartSunday, WEEKDAY_SHORT } from '../../lib/week.js';
 
-const TODAY_DAY_INDEX = (new Date().getDay() + 6) % 7; // 0=Mon..6=Sun
 const SUNDAY_FIRST_RANK = (dayOfWeek) => (dayOfWeek == null ? 7 : (dayOfWeek + 1) % 7);
 
 // The full page groups every instance of a recurring chore (same
@@ -42,6 +41,10 @@ function isRowDone(row) {
 }
 
 export default function ChoreList({ members, compact = false, onExpand }) {
+  // Computed fresh every render (not once at module load) so the widget
+  // picks up the new day right after midnight instead of needing a page
+  // reload - the parent app already re-renders every minute for the clock.
+  const TODAY_DAY_INDEX = (new Date().getDay() + 6) % 7; // 0=Mon..6=Sun
   const weekStart = currentWeekStartSunday();
   const { data, setData, refresh } = usePolling(() => api.chores(weekStart), [weekStart], 15000);
   const [newTitle, setNewTitle] = useState('');
@@ -82,7 +85,12 @@ export default function ChoreList({ members, compact = false, onExpand }) {
     : groupChores(scopedChores);
   const openRows = rows.filter((r) => !isRowDone(r));
   const doneCount = rows.length - openRows.length;
-  const visibleRows = showDone ? rows : openRows;
+  // The dashboard widget keeps a chore visible (checked off) for the rest of
+  // the day once it's done, instead of hiding it - it disappears on its own
+  // once the day rolls over and it's no longer in today's scopedChores. The
+  // full page keeps its "Show completed" toggle since it covers a whole week.
+  const visibleRows = compact ? rows : (showDone ? rows : openRows);
+  const allDone = rows.length > 0 && openRows.length === 0;
 
   return (
     <section className={`widget-card${compact ? ' compact' : ''}`}>
@@ -90,6 +98,13 @@ export default function ChoreList({ members, compact = false, onExpand }) {
         <h2>{compact ? "Today's Chores" : 'Chore List'}</h2>
         {compact && onExpand && <button className="see-all" onClick={onExpand}>See all &rarr;</button>}
       </div>
+
+      {compact && data && allDone && (
+        <p style={{ color: 'var(--color-text-muted)' }}>All done for today! 🎉</p>
+      )}
+      {compact && data && rows.length === 0 && (
+        <p style={{ color: 'var(--color-text-muted)' }}>Nothing due today.</p>
+      )}
 
       {visibleRows.map((row) =>
         row.type === 'group' ? (
@@ -124,19 +139,13 @@ export default function ChoreList({ members, compact = false, onExpand }) {
           </div>
         )
       )}
-      {data && openRows.length === 0 && !showDone && (
+      {!compact && data && openRows.length === 0 && !showDone && (
         <p style={{ color: 'var(--color-text-muted)' }}>
-          {rows.length === 0
-            ? compact
-              ? 'Nothing due today.'
-              : 'No chores yet this week.'
-            : compact
-              ? 'All done for today! 🎉'
-              : 'All done for this week! 🎉'}
+          {rows.length === 0 ? 'No chores yet this week.' : 'All done for this week! 🎉'}
         </p>
       )}
 
-      {doneCount > 0 && (
+      {!compact && doneCount > 0 && (
         <button className="btn-link" onClick={() => setShowDone((v) => !v)} style={{ marginTop: 4 }}>
           {showDone ? 'Hide completed' : `Show completed (${doneCount})`}
         </button>
