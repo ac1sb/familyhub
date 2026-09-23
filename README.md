@@ -52,7 +52,11 @@ shopping list from another device.
   *tomorrow's*, so packing a lunch is never a last-minute scramble. Can
   auto-sync the entrée for each day from a school lunch menu site (including
   JS-rendered sites, via a headless-browser fallback) instead of typing it
-  in by hand.
+  in by hand. Set `LUNCH_MENU_URL` in `server/.env` to pre-fill that sync
+  URL on a fresh install instead of re-pasting it into Settings every time
+  - the `date=` part of the URL never needs updating by hand either way,
+  since each sync always walks forward to the current + next couple of
+  months regardless of what's saved.
 - **Shopping list**, editable from any device, with support for quick
   handwritten/drawn items in addition to typed ones.
 - **Whiteboard** — a shared drawing pad synced to every screen and phone;

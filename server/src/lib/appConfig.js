@@ -42,7 +42,13 @@ export function setThemeSettings({ theme_mode, dark_start, dark_end }) {
 }
 
 export function getMenuImportUrl() {
-  return getSetting('menu_import_url') || '';
+  // Same DB-wins-over-.env-default pattern as the weather zip/member names -
+  // set LUNCH_MENU_URL once in server/.env so a fresh install (a new machine,
+  // a reset database) already has the school's menu configured instead of
+  // needing it re-pasted into Settings. The `date=` part of the URL doesn't
+  // matter either way - fetchMenuItems() always overrides it with the
+  // current + next couple of months, so this never needs updating by hand.
+  return getSetting('menu_import_url') || process.env.LUNCH_MENU_URL || '';
 }
 
 export function setMenuImportUrl(url) {
