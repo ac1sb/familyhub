@@ -4,6 +4,7 @@ import ChoreSetup from './ChoreSetup.jsx';
 import DailyTaskSetup from './DailyTaskSetup.jsx';
 import ScreensaverSettings from './ScreensaverSettings.jsx';
 import SmartHomeSetup from './SmartHomeSetup.jsx';
+import DashboardWidgetsSetup from './DashboardWidgetsSetup.jsx';
 
 function GeneralSettings({ config, onConfigUpdated }) {
   const [names, setNames] = useState({ member_1: '', member_2: '', member_3: '' });
@@ -207,6 +208,7 @@ function AppearanceSettings({ config, onConfigUpdated }) {
 const TABS = [
   { id: 'general', label: 'General' },
   { id: 'appearance', label: 'Appearance' },
+  { id: 'widgets', label: 'Dashboard Widgets' },
   { id: 'chores', label: 'Chore Setup' },
   { id: 'daily', label: 'Daily Checklist Setup' },
   { id: 'smarthome', label: 'Smart Home Setup' },
@@ -236,6 +238,7 @@ export default function SettingsPanel({ config, onConfigUpdated, screensaverSett
 
       {tab === 'general' && <GeneralSettings config={config} onConfigUpdated={onConfigUpdated} />}
       {tab === 'appearance' && <AppearanceSettings config={config} onConfigUpdated={onConfigUpdated} />}
+      {tab === 'widgets' && <DashboardWidgetsSetup />}
       {tab === 'chores' && <ChoreSetup members={config?.members} />}
       {tab === 'daily' && <DailyTaskSetup members={config?.members} />}
       {tab === 'smarthome' && <SmartHomeSetup />}

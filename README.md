@@ -13,7 +13,10 @@ shopping list from another device.
   list, and whiteboard, all in one glance. Any flagged reminder (see below)
   shows as a big banner across the top. Every widget can be dragged and
   resized to your own layout, which is saved per-device (in the browser)
-  and survives `git pull`/rebuilds.
+  and survives `git pull`/rebuilds. Pick which widgets appear at all in
+  Settings → Dashboard Widgets (also per-device, so a phone can show fewer
+  than the wall display); a widget that's undersized for its own content
+  (e.g. a longer shopping list) grows itself to fit automatically.
 - **Built-in calendar** with an **agenda view**: three tappable columns for
   the household members (Mom / Dad / Child by default — rename in Settings).
   Tapping a member's name opens **Add Event**, preselected for that person.
@@ -57,9 +60,13 @@ shopping list from another device.
   switches and bulbs once in Settings → Smart Home Setup (name, room, and
   LIFX vs. Caseta dimmer/switch), then toggle them, drag brightness, and
   pick a LIFX bulb's color from the dashboard or the full page (grouped by
-  room). This is currently a prototype of the control UI and data model -
-  nothing is sent to a real bulb or bridge yet; see "Known limitations"
-  below for what a real integration would need.
+  room). A quick-access strip of the same devices sits right below the
+  date/time on every page — tap one to flip it on/off, or press and hold a
+  dimmable one to pull up a brightness slider. Four example devices (Dining
+  Room, Living Room, Lamp, Kitchen Counter) are seeded in on first run.
+  This is currently a prototype of the control UI and data model - nothing
+  is sent to a real bulb or bridge yet; see "Known limitations" below for
+  what a real integration would need.
 - **Weather** — a "Today" card (high/low, precipitation chance, a
   morning/afternoon/evening timeline, and a clothing hint) on the dashboard,
   plus a full 7-day forecast on its own sidebar tab. Geocoded from a US zip

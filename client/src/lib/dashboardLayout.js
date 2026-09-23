@@ -1,4 +1,20 @@
 const KEY = 'familyhub.dashboardLayout.v1';
+const WIDGETS_KEY = 'familyhub.dashboardWidgets.v1';
+
+// The catalog of every widget the Home dashboard can show, in the order
+// they're offered in Settings - independent of DEFAULT_LAYOUT's ids so
+// Settings has a human label for each one.
+export const WIDGET_CATALOG = [
+  { id: 'calendar', label: 'Calendar' },
+  { id: 'weather', label: 'Weather' },
+  { id: 'lunch', label: 'Lunch' },
+  { id: 'chores', label: 'Chores' },
+  { id: 'daily', label: 'Daily Checklist' },
+  { id: 'meals', label: 'Weekly Dinner Menu' },
+  { id: 'shopping', label: 'Shopping List' },
+  { id: 'whiteboard', label: 'Whiteboard' },
+  { id: 'smarthome', label: 'Smart Home' },
+];
 
 // x/y/w/h are in grid units (12 columns wide). Sized for the "daily
 // briefing" dashboard - today/tomorrow-focused, condensed widgets - rather
@@ -62,5 +78,30 @@ export function setDashboardLayout(layout) {
     localStorage.setItem(KEY, JSON.stringify(layout));
   } catch {
     // private browsing / storage blocked - layout just won't persist on this device
+  }
+}
+
+// Which widgets show on the Home dashboard at all, separate from where
+// they're positioned - per-device like the layout itself, since a phone
+// might reasonably want a smaller set than the kitchen kiosk. Everything
+// is shown by default (a missing/blank entry means "not customized yet",
+// not "hide everything").
+export function getEnabledWidgets() {
+  try {
+    const raw = localStorage.getItem(WIDGETS_KEY);
+    if (!raw) return new Set(WIDGET_CATALOG.map((w) => w.id));
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed)) return new Set(WIDGET_CATALOG.map((w) => w.id));
+    return new Set(parsed);
+  } catch {
+    return new Set(WIDGET_CATALOG.map((w) => w.id));
+  }
+}
+
+export function setEnabledWidgets(idsSet) {
+  try {
+    localStorage.setItem(WIDGETS_KEY, JSON.stringify([...idsSet]));
+  } catch {
+    // private browsing / storage blocked - choice just won't persist on this device
   }
 }

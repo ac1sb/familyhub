@@ -11,7 +11,14 @@ import SmartHomeWidget from './widgets/SmartHomeWidget.jsx';
 import TodayWeatherCard from './widgets/TodayWeatherCard.jsx';
 import LunchTodayCard from './widgets/LunchTodayCard.jsx';
 import ReminderBanner from './ReminderBanner.jsx';
-import { DEFAULT_LAYOUT, getDashboardLayout, setDashboardLayout } from '../lib/dashboardLayout.js';
+import {
+  DEFAULT_LAYOUT,
+  WIDGET_CATALOG,
+  getDashboardLayout,
+  setDashboardLayout,
+  getEnabledWidgets,
+  setEnabledWidgets,
+} from '../lib/dashboardLayout.js';
 
 const AutoWidthGridLayout = WidthProvider(GridLayout);
 
@@ -22,18 +29,32 @@ const ROW_MARGIN = 8;
 // dashboard's height the way a short list widget should.
 const NO_AUTO_GROW = new Set(['calendar']);
 
+const ALL_WIDGET_IDS = new Set(WIDGET_CATALOG.map((w) => w.id));
+
 export default function Dashboard({ members, zip, onNavigate }) {
   const [layout, setLayout] = useState(getDashboardLayout());
+  const [enabledWidgets, setEnabledWidgetsState] = useState(() => getEnabledWidgets());
   const wrapRef = useRef(null);
 
+  // react-grid-layout only ever knows about the currently-visible items (it's
+  // handed `visibleLayout`, not the full set), so its own onLayoutChange
+  // callback would silently drop the saved position of any widget that's
+  // currently turned off in Settings if applied directly - merge its
+  // changes back into the full layout instead of replacing it outright.
   function handleLayoutChange(next) {
-    setLayout(next);
-    setDashboardLayout(next);
+    setLayout((prev) => {
+      const nextById = new Map(next.map((item) => [item.i, item]));
+      const merged = prev.map((item) => nextById.get(item.i) || item);
+      setDashboardLayout(merged);
+      return merged;
+    });
   }
 
   function resetLayout() {
     setLayout(DEFAULT_LAYOUT);
     setDashboardLayout(DEFAULT_LAYOUT);
+    setEnabledWidgetsState(ALL_WIDGET_IDS);
+    setEnabledWidgets(ALL_WIDGET_IDS);
   }
 
   // A widget's saved height can fall behind its actual content - more
@@ -66,6 +87,20 @@ export default function Dashboard({ members, zip, onNavigate }) {
     return () => clearInterval(id);
   }, []);
 
+  const widgetContent = {
+    calendar: <CalendarAgenda members={members} compact fillHeight onExpand={() => onNavigate('calendar')} />,
+    weather: <TodayWeatherCard zip={zip} />,
+    lunch: <LunchTodayCard childName={members.member_3} onExpand={() => onNavigate('lunch')} />,
+    chores: <ChoreList members={members} compact onExpand={() => onNavigate('chores')} />,
+    daily: <DailyChecklist members={members} compact onExpand={() => onNavigate('daily')} />,
+    meals: <MealPlanner compact onExpand={() => onNavigate('meals')} />,
+    shopping: <ShoppingList compact onExpand={() => onNavigate('shopping')} />,
+    whiteboard: <WhiteboardPreview onExpand={() => onNavigate('whiteboard')} />,
+    smarthome: <SmartHomeWidget compact onExpand={() => onNavigate('smarthome')} />,
+  };
+
+  const visibleLayout = layout.filter((item) => enabledWidgets.has(item.i));
+
   return (
     <div className="dashboard-wrap" ref={wrapRef}>
       <ReminderBanner members={members} />
@@ -76,7 +111,7 @@ export default function Dashboard({ members, zip, onNavigate }) {
 
       <AutoWidthGridLayout
         className="dashboard-rgl"
-        layout={layout}
+        layout={visibleLayout}
         cols={12}
         rowHeight={ROW_HEIGHT}
         margin={[ROW_MARGIN, ROW_MARGIN]}
@@ -87,33 +122,11 @@ export default function Dashboard({ members, zip, onNavigate }) {
         compactType="vertical"
         onLayoutChange={handleLayoutChange}
       >
-        <div key="calendar" data-grid-id="calendar">
-          <CalendarAgenda members={members} compact fillHeight onExpand={() => onNavigate('calendar')} />
-        </div>
-        <div key="weather" data-grid-id="weather">
-          <TodayWeatherCard zip={zip} />
-        </div>
-        <div key="lunch" data-grid-id="lunch">
-          <LunchTodayCard childName={members.member_3} onExpand={() => onNavigate('lunch')} />
-        </div>
-        <div key="chores" data-grid-id="chores">
-          <ChoreList members={members} compact onExpand={() => onNavigate('chores')} />
-        </div>
-        <div key="daily" data-grid-id="daily">
-          <DailyChecklist members={members} compact onExpand={() => onNavigate('daily')} />
-        </div>
-        <div key="meals" data-grid-id="meals">
-          <MealPlanner compact onExpand={() => onNavigate('meals')} />
-        </div>
-        <div key="shopping" data-grid-id="shopping">
-          <ShoppingList compact onExpand={() => onNavigate('shopping')} />
-        </div>
-        <div key="whiteboard" data-grid-id="whiteboard">
-          <WhiteboardPreview onExpand={() => onNavigate('whiteboard')} />
-        </div>
-        <div key="smarthome" data-grid-id="smarthome">
-          <SmartHomeWidget compact onExpand={() => onNavigate('smarthome')} />
-        </div>
+        {WIDGET_CATALOG.filter((w) => enabledWidgets.has(w.id)).map((w) => (
+          <div key={w.id} data-grid-id={w.id}>
+            {widgetContent[w.id]}
+          </div>
+        ))}
       </AutoWidthGridLayout>
     </div>
   );

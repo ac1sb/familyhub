@@ -179,6 +179,29 @@ try {
   // column already exists
 }
 
+// Seed a handful of example smart-home devices once, so the header quick-
+// toggle strip and the Smart Home widget have something to show out of the
+// box instead of starting empty. Guarded by a settings flag (not just "is
+// the table empty") so deliberately deleting all of them later doesn't
+// bring them back on the next server restart.
+const SMART_DEVICES_SEEDED_KEY = 'smart_devices_seeded';
+const alreadySeeded = db.prepare('SELECT value FROM settings WHERE key = ?').get(SMART_DEVICES_SEEDED_KEY);
+if (!alreadySeeded) {
+  const insertDevice = db.prepare(
+    'INSERT INTO smart_devices (name, room, platform, kind, dimmable, color_capable, sort_order) VALUES (?, ?, ?, ?, ?, ?, ?)'
+  );
+  withTransaction(() => {
+    insertDevice.run('Dining Room', 'Dining Room', 'caseta', 'dimmer', 1, 0, 0);
+    insertDevice.run('Living Room', 'Living Room', 'caseta', 'dimmer', 1, 0, 1);
+    insertDevice.run('Lamp', 'Living Room', 'lifx', 'light', 1, 1, 2);
+    insertDevice.run('Kitchen Counter', 'Kitchen Counter', 'caseta', 'dimmer', 1, 0, 3);
+  });
+  db.prepare('INSERT INTO settings (key, value) VALUES (?, ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value').run(
+    SMART_DEVICES_SEEDED_KEY,
+    '1'
+  );
+}
+
 // node:sqlite's DatabaseSync has no built-in transaction() helper (unlike better-sqlite3),
 // so batch writes (e.g. reordering a whole week of meals) use this instead.
 export function withTransaction(fn) {
