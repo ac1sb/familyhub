@@ -81,7 +81,7 @@ export default function ShoppingList({ compact = false, onExpand }) {
         <h2>Shopping List</h2>
       </div>
       {items.map((item) => (
-        <div className="shopping-row" key={item.id}>
+        <label className="shopping-row" key={item.id}>
           <input type="checkbox" checked={item.checked} onChange={() => toggleChecked(item)} />
           {item.image_path ? (
             <span className="shopping-ink-item" style={{ flex: 1 }}>
@@ -96,7 +96,7 @@ export default function ShoppingList({ compact = false, onExpand }) {
             <span className={`name${item.checked ? ' checked' : ''}`} style={{ flex: 1 }}>{item.name}</span>
           )}
           <button className="btn-icon" onClick={() => removeItem(item.id)}>✕</button>
-        </div>
+        </label>
       ))}
       {data && items.length === 0 && <p style={{ color: 'var(--color-text-muted)' }}>List is empty.</p>}
       <div className="add-row">

@@ -60,14 +60,14 @@ export default function DailyChecklist({ members, compact = false, onExpand }) {
         )}
 
         {visible.map((task) => (
-          <div className="chore-row" key={task.id}>
+          <label className="chore-row" key={task.id}>
             <input type="checkbox" checked={task.done} onChange={() => toggleDone(task)} />
             <span className="chore-title">
               {task.template_id && <span title="Repeats on selected days">🔁 </span>}
               {task.title}
             </span>
             <span className={`chore-tag ${task.assigned_to}`}>{allMembers[task.assigned_to] || task.assigned_to}</span>
-          </div>
+          </label>
         ))}
       </section>
     );
@@ -80,14 +80,14 @@ export default function DailyChecklist({ members, compact = false, onExpand }) {
       </div>
 
       {tasks.map((task) => (
-        <div className="chore-row" key={task.id}>
+        <label className="chore-row" key={task.id}>
           <input type="checkbox" checked={task.done} onChange={() => toggleDone(task)} />
           <span className={`chore-title${task.done ? ' done' : ''}`}>
             {task.template_id && <span title="Repeats on selected days">🔁 </span>}
             {task.title}
           </span>
           <span className={`chore-tag ${task.assigned_to}`}>{allMembers[task.assigned_to] || task.assigned_to}</span>
-        </div>
+        </label>
       ))}
       {data && tasks.length === 0 && <p style={{ color: 'var(--color-text-muted)' }}>Nothing on today's list.</p>}
 

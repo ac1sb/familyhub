@@ -102,11 +102,11 @@ export default function ChoreList({ members, compact = false, onExpand }) {
         )}
 
         {visible.map((chore) => (
-          <div className="chore-row" key={chore.id}>
+          <label className="chore-row" key={chore.id}>
             <input type="checkbox" checked={chore.done} onChange={() => toggleDone(chore)} />
             <span className="chore-title">{chore.title}</span>
             <span className={`chore-tag ${chore.assigned_to}`}>{allMembers[chore.assigned_to] || chore.assigned_to}</span>
-          </div>
+          </label>
         ))}
       </section>
     );
@@ -143,7 +143,7 @@ export default function ChoreList({ members, compact = false, onExpand }) {
             <span className={`chore-tag ${row.assigned_to}`}>{allMembers[row.assigned_to] || row.assigned_to}</span>
           </div>
         ) : (
-          <div className="chore-row" key={row.chore.id}>
+          <label className="chore-row" key={row.chore.id}>
             <input type="checkbox" checked={row.chore.done} onChange={() => toggleDone(row.chore)} />
             {row.chore.day_of_week != null && (
               <span className="chore-day-tag">{WEEKDAY_SHORT[row.chore.day_of_week]}</span>
@@ -152,7 +152,7 @@ export default function ChoreList({ members, compact = false, onExpand }) {
             <span className={`chore-tag ${row.chore.assigned_to}`}>
               {allMembers[row.chore.assigned_to] || row.chore.assigned_to}
             </span>
-          </div>
+          </label>
         )
       )}
       {data && openRows.length === 0 && !showDone && (
