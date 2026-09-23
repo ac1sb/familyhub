@@ -511,7 +511,13 @@ button {
 .chore-tag.family { background: var(--color-primary); }
 
 .add-row { display: flex; gap: 8px; margin-top: 12px; }
-.add-row input { flex: 1; border: 1px solid var(--color-border); border-radius: 10px; padding: 12px; min-height: 44px; }
+/* min-width: 0 overrides a text input's flex default of min-width: auto,
+   which otherwise refuses to shrink below its intrinsic content width and
+   forces the whole row wider than its box - the Shopping List widget's add
+   row is visible even in the narrow dashboard tile (unlike Chores/Daily,
+   which hide theirs there), which is what exposed this as a horizontal
+   scrollbar instead of the row just wrapping/shrinking to fit. */
+.add-row input { flex: 1; min-width: 0; border: 1px solid var(--color-border); border-radius: 10px; padding: 12px; min-height: 44px; }
 
 .chore-day-tag {
   font-size: 0.68rem;
