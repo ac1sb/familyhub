@@ -5,7 +5,7 @@ import ical from 'node-ical';
 // routes/events.js can merge both sources into the agenda identically. No
 // auth beyond the URL itself - anyone who has the secret link can read it,
 // which is the whole point: no Google Cloud project or sign-in required.
-export async function fetchIcalEvents(url, rangeStart, rangeEnd) {
+export async function fetchIcalEvents(url, rangeStart, rangeEnd, member = 'family') {
   if (!url) return [];
   const data = await ical.async.fromURL(url);
   const results = [];
@@ -17,7 +17,7 @@ export async function fetchIcalEvents(url, rangeStart, rangeEnd) {
       title: item.summary || '(untitled)',
       description: item.description || '',
       location: item.location || '',
-      member: 'family',
+      member,
       source: 'ical',
       all_day: !!(item.start && item.start.dateOnly),
       recurring: false,

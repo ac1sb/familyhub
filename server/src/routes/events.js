@@ -4,7 +4,7 @@ import { expandOccurrences } from '../lib/recurrence.js';
 import { addDays, startOfWeek } from '../lib/week.js';
 import { fetchGoogleEvents, isGoogleWriteEnabled, pushEventToGoogle, updateGoogleEvent, deleteGoogleEvent } from './google.js';
 import { fetchIcalEvents } from '../lib/icalFeed.js';
-import { getIcalFeedUrl } from '../lib/appConfig.js';
+import { getIcalFeedUrl, getIcalEventsMember } from '../lib/appConfig.js';
 
 const router = Router();
 
@@ -53,7 +53,7 @@ router.get('/', async (req, res) => {
 
   try {
     const icalUrl = getIcalFeedUrl();
-    if (icalUrl) occurrences = occurrences.concat(await fetchIcalEvents(icalUrl, rangeStart, rangeEnd));
+    if (icalUrl) occurrences = occurrences.concat(await fetchIcalEvents(icalUrl, rangeStart, rangeEnd, getIcalEventsMember()));
   } catch (err) {
     // Feed unreachable/misconfigured - agenda still works with the other sources
   }

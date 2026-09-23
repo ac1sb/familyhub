@@ -11,7 +11,9 @@ function GeneralSettings({ config, onConfigUpdated }) {
   const [names, setNames] = useState({ member_1: '', member_2: '', member_3: '' });
   const [zip, setZip] = useState('');
   const [icalUrl, setIcalUrl] = useState('');
+  const [icalEventsMember, setIcalEventsMember] = useState('family');
   const [googleCalendarId, setGoogleCalendarId] = useState('');
+  const [googleEventsMember, setGoogleEventsMember] = useState('family');
   const [saving, setSaving] = useState(false);
   const [saveMessage, setSaveMessage] = useState(null);
   const [error, setError] = useState(null);
@@ -24,7 +26,9 @@ function GeneralSettings({ config, onConfigUpdated }) {
       setNames(config.members);
       setZip(config.weather_zip);
       setIcalUrl(config.ical_feed_url || '');
+      setIcalEventsMember(config.ical_events_member || 'family');
       setGoogleCalendarId(config.google_calendar_id || 'primary');
+      setGoogleEventsMember(config.google_events_member || 'family');
     }
   }, [config]);
 
@@ -57,7 +61,9 @@ function GeneralSettings({ config, onConfigUpdated }) {
         member_3: names.member_3,
         weather_zip: zip,
         ical_feed_url: icalUrl,
+        ical_events_member: icalEventsMember,
         google_calendar_id: googleCalendarId,
+        google_events_member: googleEventsMember,
       });
       onConfigUpdated?.(updated);
       setSaveMessage('Saved!');
@@ -118,6 +124,21 @@ function GeneralSettings({ config, onConfigUpdated }) {
           for two-way sync with your own account's calendar.
         </p>
       </div>
+      {icalUrl && (
+        <div className="field">
+          <label htmlFor="ical-events-member">Show its events under</label>
+          <select
+            id="ical-events-member"
+            value={icalEventsMember}
+            onChange={(e) => setIcalEventsMember(e.target.value)}
+          >
+            <option value="family">Family (all columns)</option>
+            <option value="member_1">{names.member_1 || 'Member 1'}</option>
+            <option value="member_2">{names.member_2 || 'Member 2'}</option>
+            <option value="member_3">{names.member_3 || 'Member 3'}</option>
+          </select>
+        </div>
+      )}
 
       <div className="field" style={{ marginTop: 24 }}>
         <label>Google Calendar</label>
@@ -164,6 +185,25 @@ function GeneralSettings({ config, onConfigUpdated }) {
             Leave as "primary" to use the signed-in account's own calendar. To sync to a shared family
             calendar instead, share it with that account as an editor in Google Calendar, then paste its
             Calendar ID here (that calendar's Settings &rarr; Integrate calendar).
+          </p>
+        </div>
+      )}
+      {googleStatus?.connected && (
+        <div className="field">
+          <label htmlFor="google-events-member">Show its events under</label>
+          <select
+            id="google-events-member"
+            value={googleEventsMember}
+            onChange={(e) => setGoogleEventsMember(e.target.value)}
+          >
+            <option value="family">Family (all columns)</option>
+            <option value="member_1">{names.member_1 || 'Member 1'}</option>
+            <option value="member_2">{names.member_2 || 'Member 2'}</option>
+            <option value="member_3">{names.member_3 || 'Member 3'}</option>
+          </select>
+          <p style={{ color: 'var(--color-text-muted)', fontSize: '0.8rem', marginTop: 4 }}>
+            If this connection is really one person's calendar rather than a shared household one, pin
+            it to their column instead of showing it under all three.
           </p>
         </div>
       )}

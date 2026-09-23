@@ -20,7 +20,10 @@ import whiteboardRouter from './routes/whiteboard.js';
 import settingsRouter from './routes/settings.js';
 import smartDevicesRouter from './routes/smartDevices.js';
 import updateRouter from './routes/update.js';
-import { getMemberNames, getWeatherZip, getThemeSettings, getIcalFeedUrl, getGoogleCalendarId } from './lib/appConfig.js';
+import {
+  getMemberNames, getWeatherZip, getThemeSettings, getIcalFeedUrl, getGoogleCalendarId,
+  getGoogleEventsMember, getIcalEventsMember,
+} from './lib/appConfig.js';
 import { uploadsDir } from './lib/paths.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -48,6 +51,8 @@ app.get('/api/config', (req, res) => {
     theme: getThemeSettings(),
     ical_feed_url: getIcalFeedUrl(),
     google_calendar_id: getGoogleCalendarId(),
+    google_events_member: getGoogleEventsMember(),
+    ical_events_member: getIcalEventsMember(),
   });
 });
 

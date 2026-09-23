@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { google } from 'googleapis';
 import { getJSON, setJSON } from '../lib/settings.js';
-import { getGoogleCalendarId } from '../lib/appConfig.js';
+import { getGoogleCalendarId, getGoogleEventsMember } from '../lib/appConfig.js';
 
 const router = Router();
 
@@ -75,12 +75,13 @@ export async function fetchGoogleEvents(rangeStart, rangeEnd) {
     maxResults: 100,
   });
 
+  const member = getGoogleEventsMember();
   return (result.data.items || []).map((ev) => ({
     id: `google-${ev.id}`,
     title: ev.summary || '(untitled)',
     description: ev.description || '',
     location: ev.location || '',
-    member: 'family',
+    member,
     source: 'google',
     google_event_id: ev.id,
     all_day: !ev.start?.dateTime,

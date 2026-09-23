@@ -80,3 +80,24 @@ export function getGoogleCalendarId() {
 export function setGoogleCalendarId(id) {
   setSetting('google_calendar_id', id);
 }
+
+// Which agenda column incoming synced events land in. Both default to
+// 'family', which the agenda shows in every member's column - fine for a
+// household-wide calendar, but a single person's personal Google Calendar
+// (or a shared feed that's really just one person's schedule) usually reads
+// better pinned to that one column instead of appearing three times over.
+export function getGoogleEventsMember() {
+  return getSetting('google_events_member') || 'family';
+}
+
+export function setGoogleEventsMember(member) {
+  setSetting('google_events_member', member);
+}
+
+export function getIcalEventsMember() {
+  return getSetting('ical_events_member') || 'family';
+}
+
+export function setIcalEventsMember(member) {
+  setSetting('ical_events_member', member);
+}

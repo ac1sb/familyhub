@@ -224,6 +224,11 @@ into Settings -> General -> "Shared calendar feed URL" in FamilyHub. No
 Google Cloud project, no sign-in, no client ID/secret - the secret URL is the
 only credential involved, and it's read-only (FamilyHub never writes to it).
 
+Synced events default to showing under "Family" (every member's column) -
+if the calendar is really one person's schedule rather than a shared
+household one, use the "Show its events under" dropdown that appears once a
+feed URL is set to pin it to that person's column instead.
+
 ## Connecting Google Calendar (two-way sync)
 
 1. In the [Google Cloud Console](https://console.cloud.google.com/apis/credentials),
@@ -256,6 +261,11 @@ Calendar to sync events to".
 If you connected Google Calendar before this two-way sync existed, that
 connection only has read access - disconnect and reconnect once from
 Settings to approve the write permission.
+
+Same as the iCal feed above, synced Google events default to "Family" (every
+column) - the "Show its events under" dropdown next to the Calendar ID field
+pins them to one member's column instead, for when the connected calendar is
+really just that person's own schedule.
 
 ## Flyer / poster photo scanning
 
