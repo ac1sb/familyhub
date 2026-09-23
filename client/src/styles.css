@@ -285,6 +285,11 @@ button {
   justify-content: flex-end;
   margin-bottom: 4px;
 }
+/* Deliberately smaller than the 44px touch minimum used elsewhere - unlike
+   the per-widget "See all" links, this sits alone with nothing else nearby
+   to mis-tap, so it doesn't need the full minimum, and giving it .see-all's
+   enlarged height was leaving a big empty band above the widget grid. */
+.dashboard-toolbar .see-all { min-height: 32px; padding: 6px 4px; }
 
 .dashboard-rgl {
   position: relative;
