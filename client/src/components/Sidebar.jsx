@@ -6,6 +6,7 @@ const WIDGETS = [
   { id: 'lunch', icon: '🥪', label: 'Lunch' },
   { id: 'weather', icon: '⛅', label: 'Weather' },
   { id: 'shopping', icon: '🛒', label: 'Shopping' },
+  { id: 'whiteboard', icon: '📝', label: 'Whiteboard' },
   { id: 'settings', icon: '⚙️', label: 'Settings' },
 ];
 

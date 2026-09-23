@@ -1,5 +1,12 @@
 import { Router } from 'express';
+import multer from 'multer';
+import fs from 'node:fs';
 import db from '../db.js';
+import { uploadsDir } from '../lib/paths.js';
+
+if (!fs.existsSync(uploadsDir)) fs.mkdirSync(uploadsDir, { recursive: true });
+
+const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 5 * 1024 * 1024 } });
 
 const router = Router();
 
@@ -13,6 +20,24 @@ router.post('/', (req, res) => {
   if (!name) return res.status(400).json({ error: 'name is required' });
   const maxOrder = db.prepare('SELECT COALESCE(MAX(sort_order), -1) as m FROM shopping_items').get().m;
   const info = db.prepare('INSERT INTO shopping_items (name, sort_order) VALUES (?, ?)').run(name, maxOrder + 1);
+  const row = db.prepare('SELECT * FROM shopping_items WHERE id = ?').get(info.lastInsertRowid);
+  res.status(201).json({ ...row, checked: !!row.checked });
+});
+
+// POST /api/shopping/ink  (multipart form field "image") -> a handwritten item, drawn on a
+// touchscreen instead of typed. Saved as the ink itself (a PNG snapshot); name starts blank
+// and can be filled in later from any device via the "Type it" action (PUT with a name).
+router.post('/ink', upload.single('image'), (req, res) => {
+  if (!req.file) return res.status(400).json({ error: 'image file is required' });
+
+  const filename = `shopping-ink-${Date.now()}.png`;
+  fs.writeFileSync(`${uploadsDir}/${filename}`, req.file.buffer);
+  const image_path = `/uploads/${filename}`;
+
+  const maxOrder = db.prepare('SELECT COALESCE(MAX(sort_order), -1) as m FROM shopping_items').get().m;
+  const info = db
+    .prepare('INSERT INTO shopping_items (name, image_path, sort_order) VALUES (?, ?, ?)')
+    .run('', image_path, maxOrder + 1);
   const row = db.prepare('SELECT * FROM shopping_items WHERE id = ?').get(info.lastInsertRowid);
   res.status(201).json({ ...row, checked: !!row.checked });
 });

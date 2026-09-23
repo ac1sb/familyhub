@@ -789,6 +789,14 @@ button {
 }
 .shopping-row input[type=checkbox] { width: 26px; height: 26px; }
 .shopping-row .name.checked { text-decoration: line-through; color: var(--color-text-muted); }
+.shopping-ink-item { display: flex; align-items: center; gap: 10px; }
+.shopping-ink-img {
+  max-height: 44px;
+  max-width: 160px;
+  border-radius: 6px;
+  border: 1px solid var(--color-border);
+  background: #fff;
+}
 
 /* ---------- Screensaver ---------- */
 .screensaver-overlay {
@@ -859,6 +867,59 @@ button {
 .reminder-banner-icon { font-size: 1.8rem; flex-shrink: 0; }
 .reminder-banner-title { font-size: 1.15rem; font-weight: 800; }
 .reminder-banner-desc { font-size: 0.9rem; opacity: 0.95; font-weight: 600; }
+
+/* ---------- Drawing canvas (shared: handwritten shopping items + whiteboard) ---------- */
+.drawing-canvas-wrap { display: flex; flex-direction: column; gap: 10px; }
+.drawing-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding: 6px 0;
+}
+.drawing-colors { display: flex; gap: 6px; }
+.drawing-color-swatch {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 2px solid var(--color-border);
+  cursor: pointer;
+  padding: 0;
+}
+.drawing-color-swatch.selected { border-color: var(--color-text); box-shadow: 0 0 0 2px var(--color-surface) inset; }
+.drawing-sizes { display: flex; gap: 6px; }
+.drawing-size-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+.drawing-size-btn.selected { border-color: var(--color-primary); background: color-mix(in srgb, var(--color-primary) 12%, transparent); }
+.drawing-size-dot { display: inline-block; border-radius: 50%; background: var(--color-text); }
+.btn-icon.selected { background: var(--color-primary); color: #fff; }
+.drawing-canvas {
+  width: 100%;
+  touch-action: none;
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  background: #fff;
+  cursor: crosshair;
+}
+
+/* ---------- Whiteboard ---------- */
+.whiteboard-preview-img {
+  width: 100%;
+  max-height: 140px;
+  object-fit: contain;
+  border-radius: 8px;
+  border: 1px solid var(--color-border);
+  background: #fff;
+}
 
 @keyframes reminder-pulse {
   0%, 100% { box-shadow: 0 0 0 0 rgba(0,0,0,0.12); }

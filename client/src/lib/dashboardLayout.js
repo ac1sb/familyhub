@@ -9,6 +9,7 @@ export const DEFAULT_LAYOUT = [
   { i: 'chores', x: 8, y: 15, w: 4, h: 7, minW: 2, minH: 3 },
   { i: 'meals', x: 8, y: 22, w: 4, h: 7, minW: 2, minH: 3 },
   { i: 'shopping', x: 8, y: 29, w: 4, h: 7, minW: 2, minH: 3 },
+  { i: 'whiteboard', x: 8, y: 36, w: 4, h: 8, minW: 2, minH: 4 },
 ];
 
 export function getDashboardLayout() {

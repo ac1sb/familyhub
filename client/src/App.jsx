@@ -7,6 +7,7 @@ import MealPlanner from './components/widgets/MealPlanner.jsx';
 import LunchCalendar from './components/widgets/LunchCalendar.jsx';
 import WeatherWidget from './components/widgets/WeatherWidget.jsx';
 import ShoppingList from './components/widgets/ShoppingList.jsx';
+import WhiteboardPage from './components/WhiteboardPage.jsx';
 import SettingsPanel from './components/widgets/SettingsPanel.jsx';
 import Screensaver from './components/Screensaver.jsx';
 import { api } from './api.js';
@@ -70,6 +71,7 @@ export default function App() {
           {active === 'lunch' && <LunchCalendar childName={members.member_3} />}
           {active === 'weather' && <WeatherWidget zip={zip} />}
           {active === 'shopping' && <ShoppingList />}
+          {active === 'whiteboard' && <WhiteboardPage />}
           {active === 'settings' && (
             <SettingsPanel
               config={config}

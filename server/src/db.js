@@ -93,6 +93,7 @@ CREATE TABLE IF NOT EXISTS shopping_items (
   name TEXT NOT NULL,
   checked INTEGER NOT NULL DEFAULT 0,
   sort_order INTEGER NOT NULL DEFAULT 0,
+  image_path TEXT, -- set for a handwritten (ink) item instead of/alongside a typed name
   created_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
 
@@ -116,6 +117,11 @@ try {
 }
 try {
   db.exec("ALTER TABLE chore_templates ADD COLUMN days TEXT NOT NULL DEFAULT '[0,1,2,3,4,5,6]'");
+} catch {
+  // column already exists
+}
+try {
+  db.exec('ALTER TABLE shopping_items ADD COLUMN image_path TEXT');
 } catch {
   // column already exists
 }

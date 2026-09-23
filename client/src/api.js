@@ -1,3 +1,5 @@
+import { dataUrlToBlob } from './lib/canvas.js';
+
 const BASE = '/api';
 
 async function request(path, options = {}) {
@@ -49,8 +51,20 @@ export const api = {
 
   shopping: () => request('/shopping'),
   addShoppingItem: (name) => request('/shopping', { method: 'POST', body: JSON.stringify({ name }) }),
+  addInkShoppingItem: (dataUrl) => {
+    const form = new FormData();
+    form.append('image', dataUrlToBlob(dataUrl), 'item.png');
+    return request('/shopping/ink', { method: 'POST', body: form });
+  },
   updateShoppingItem: (id, data) => request(`/shopping/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
   deleteShoppingItem: (id) => request(`/shopping/${id}`, { method: 'DELETE' }),
+
+  whiteboard: () => request('/whiteboard'),
+  saveWhiteboard: (dataUrl) => {
+    const form = new FormData();
+    form.append('image', dataUrlToBlob(dataUrl), 'whiteboard.png');
+    return request('/whiteboard', { method: 'POST', body: form });
+  },
 
   weather: (zip) => request(`/weather${zip ? `?zip=${zip}` : ''}`),
 
