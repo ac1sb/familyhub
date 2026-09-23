@@ -570,7 +570,9 @@ button {
   flex: 1 1 120px;
   min-width: 100px;
 }
-.meal-box-row-compact .meal-box { flex: 0 0 128px; }
+/* Boxes grow to fill however wide the widget gets resized (shrinking back
+   down to min-width, then scrolling, if the widget is narrower than that) -
+   not a fixed size regardless of the available space. */
 .meal-box.dragging { box-shadow: 0 6px 16px rgba(0,0,0,0.15); z-index: 2; position: relative; }
 .meal-box-day {
   text-align: center;
