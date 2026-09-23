@@ -9,9 +9,11 @@ shopping list from another device.
 ## What's included
 
 - **Home dashboard** — a full-height weekly calendar alongside today's
-  weather, today/tomorrow's lunch status, chores, dinner menu, and shopping
-  list, all in one glance. Any flagged reminder (see below) shows as a big
-  banner across the top.
+  weather, today/tomorrow's lunch status, chores, dinner menu, shopping
+  list, and whiteboard, all in one glance. Any flagged reminder (see below)
+  shows as a big banner across the top. Every widget can be dragged and
+  resized to your own layout, which is saved per-device (in the browser)
+  and survives `git pull`/rebuilds.
 - **Built-in calendar** with an **agenda view**: three tappable columns for
   the household members (Mom / Dad / Child by default — rename in Settings).
   Tapping a member's name opens **Add Event**, preselected for that person.
@@ -30,15 +32,25 @@ shopping list from another device.
   before saving. The photo itself is kept and attached to the event.
 - **Chore list** for the week, assignable to a household member, plus
   **recurring chores** set up once in Settings → Chore Setup that
-  automatically reappear (unchecked) every week.
-- **Weekly dinner menu** — type in meal names, then drag the handle to
-  reorder which meal lands on which day (the days themselves always stay in
-  Monday→Sunday order).
+  automatically reappear (unchecked) every week. A chore that repeats on
+  several days (e.g. Mon/Wed/Thu) shows as a single row with one badge per
+  expected day — tap a day's badge to mark it done, and it turns green.
+- **Weekly dinner menu** — a horizontal row of day boxes (day on top, meal
+  name below); drag a box to reorder which meal lands on which day, and the
+  boxes resize themselves to fill however wide you make the widget.
 - **Lunch calendar** for one child — a full monthly view (tap a day to toggle
   School/Pack-from-home, mark no-school days, jot the menu item), plus a
   dashboard card that shows *today's* status until 3pm and then flips to
-  *tomorrow's*, so packing a lunch is never a last-minute scramble.
-- **Shopping list**, editable from any device.
+  *tomorrow's*, so packing a lunch is never a last-minute scramble. Can
+  auto-sync the entrée for each day from a school lunch menu site (including
+  JS-rendered sites, via a headless-browser fallback) instead of typing it
+  in by hand.
+- **Shopping list**, editable from any device, with support for quick
+  handwritten/drawn items in addition to typed ones.
+- **Whiteboard** — a shared drawing pad synced to every screen and phone;
+  draw right in the dashboard widget for a quick note, or open the full
+  page for a bigger canvas. Saving from the full page returns you to the
+  dashboard automatically.
 - **Weather** — a "Today" card (high/low, precipitation chance, a
   morning/afternoon/evening timeline, and a clothing hint) on the dashboard,
   plus a full 7-day forecast on its own sidebar tab. Geocoded from a US zip
