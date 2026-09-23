@@ -8,6 +8,8 @@ import { fileURLToPath } from 'node:url';
 import eventsRouter from './routes/events.js';
 import choresRouter from './routes/chores.js';
 import choreTemplatesRouter from './routes/choreTemplates.js';
+import dailyTasksRouter from './routes/dailyTasks.js';
+import dailyTaskTemplatesRouter from './routes/dailyTaskTemplates.js';
 import mealsRouter from './routes/meals.js';
 import lunchRouter from './routes/lunch.js';
 import shoppingRouter from './routes/shopping.js';
@@ -44,6 +46,8 @@ app.get('/api/config', (req, res) => {
 app.use('/api/events', eventsRouter);
 app.use('/api/chores', choresRouter);
 app.use('/api/chore-templates', choreTemplatesRouter);
+app.use('/api/daily-tasks', dailyTasksRouter);
+app.use('/api/daily-task-templates', dailyTaskTemplatesRouter);
 app.use('/api/meals', mealsRouter);
 app.use('/api/lunch', lunchRouter);
 app.use('/api/shopping', shoppingRouter);

@@ -34,6 +34,12 @@ export default function MealPlanner({ compact = false, onExpand }) {
   const [names, setNames] = useState(Array(7).fill(''));
   const [order, setOrder] = useState(Array.from({ length: 7 }, (_, i) => `slot-${i}`));
 
+  // Dashboard view: today's slot through the rest of the week, capped at 5 -
+  // a quick "what's for dinner soon" glance rather than the full week.
+  const todayIndex = (new Date().getDay() + 6) % 7; // 0=Mon..6=Sun
+  const visibleCount = compact ? Math.min(5, 7 - todayIndex) : 7;
+  const visibleOffset = compact ? todayIndex : 0;
+
   useEffect(() => {
     if (data?.meals) setNames(data.meals.sort((a, b) => a.day_of_week - b.day_of_week).map((m) => m.name || ''));
   }, [data]);
@@ -73,29 +79,40 @@ export default function MealPlanner({ compact = false, onExpand }) {
         <h2>Weekly Dinner Menu</h2>
         {compact && onExpand && <button className="see-all" onClick={onExpand}>See all &rarr;</button>}
       </div>
-      {!compact && (
-        <p style={{ color: 'var(--color-text-muted)', fontSize: '0.85rem', marginTop: 0 }}>
-          Type a meal name for each day, then drag the ⠿ handle to reorder which meal falls on which day.
-        </p>
-      )}
-      <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-        <SortableContext items={order} strategy={verticalListSortingStrategy}>
-          {order.map((id, idx) => (
-            <SortableMealSlot
-              key={id}
-              id={id}
-              dayIndex={idx}
-              name={names[idx] || ''}
-              onChange={handleNameChange}
-              onCommit={commitName}
-            />
+      {compact ? (
+        <div className="meal-slot-mini-list">
+          {Array.from({ length: visibleCount }, (_, i) => visibleOffset + i).map((dayIndex) => (
+            <div className="meal-slot-mini" key={dayIndex}>
+              <span className="day-badge">{WEEKDAY_LABELS[dayIndex]}</span>
+              <span className={names[dayIndex] ? '' : 'meal-slot-mini-empty'}>
+                {names[dayIndex] || 'Not planned yet'}
+              </span>
+            </div>
           ))}
-        </SortableContext>
-      </DndContext>
-      {!compact && (
-        <button className="btn btn-primary" style={{ marginTop: 8 }} onClick={() => Promise.all(names.map((_, i) => commitName(i)))}>
-          Save Menu
-        </button>
+        </div>
+      ) : (
+        <>
+          <p style={{ color: 'var(--color-text-muted)', fontSize: '0.85rem', marginTop: 0 }}>
+            Type a meal name for each day, then drag the ⠿ handle to reorder which meal falls on which day.
+          </p>
+          <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+            <SortableContext items={order} strategy={verticalListSortingStrategy}>
+              {order.map((id, idx) => (
+                <SortableMealSlot
+                  key={id}
+                  id={id}
+                  dayIndex={idx}
+                  name={names[idx] || ''}
+                  onChange={handleNameChange}
+                  onCommit={commitName}
+                />
+              ))}
+            </SortableContext>
+          </DndContext>
+          <button className="btn btn-primary" style={{ marginTop: 8 }} onClick={() => Promise.all(names.map((_, i) => commitName(i)))}>
+            Save Menu
+          </button>
+        </>
       )}
     </section>
   );

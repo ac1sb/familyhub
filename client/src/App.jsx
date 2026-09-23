@@ -3,6 +3,7 @@ import Sidebar from './components/Sidebar.jsx';
 import Dashboard from './components/Dashboard.jsx';
 import CalendarAgenda from './components/widgets/CalendarAgenda.jsx';
 import ChoreList from './components/widgets/ChoreList.jsx';
+import DailyChecklist from './components/widgets/DailyChecklist.jsx';
 import MealPlanner from './components/widgets/MealPlanner.jsx';
 import LunchCalendar from './components/widgets/LunchCalendar.jsx';
 import WeatherWidget from './components/widgets/WeatherWidget.jsx';
@@ -67,6 +68,7 @@ export default function App() {
           {active === 'dashboard' && <Dashboard members={members} zip={zip} onNavigate={setActive} />}
           {active === 'calendar' && <CalendarAgenda members={members} />}
           {active === 'chores' && <ChoreList members={members} />}
+          {active === 'daily' && <DailyChecklist members={members} />}
           {active === 'meals' && <MealPlanner />}
           {active === 'lunch' && <LunchCalendar childName={members.member_3} />}
           {active === 'weather' && <WeatherWidget zip={zip} />}

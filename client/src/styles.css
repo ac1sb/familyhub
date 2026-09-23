@@ -490,12 +490,12 @@ button {
 .chore-row {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 12px 8px;
+  gap: 8px;
+  padding: 6px 4px;
   border-bottom: 1px solid var(--color-border);
 }
-.chore-row input[type=checkbox] { width: 26px; height: 26px; flex-shrink: 0; }
-.chore-title { flex: 1; font-size: 1rem; }
+.chore-row input[type=checkbox] { width: 22px; height: 22px; flex-shrink: 0; }
+.chore-title { flex: 1; font-size: 0.92rem; }
 .chore-title.done { text-decoration: line-through; color: var(--color-text-muted); }
 .chore-tag {
   font-size: 0.72rem;
@@ -580,6 +580,18 @@ button {
   min-height: 40px;
 }
 .meal-slot.dragging { box-shadow: 0 6px 16px rgba(0,0,0,0.15); }
+
+.meal-slot-mini-list { display: flex; flex-direction: column; gap: 4px; }
+.meal-slot-mini {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 4px;
+  border-bottom: 1px solid var(--color-border);
+  font-size: 0.9rem;
+}
+.meal-slot-mini .day-badge { min-width: 64px; font-weight: 700; color: var(--color-primary-dark); }
+.meal-slot-mini-empty { color: var(--color-text-muted); font-style: italic; }
 
 /* ---------- Lunch calendar (full month view) ---------- */
 .lunch-import-row {
@@ -712,7 +724,7 @@ button {
 .lunch-today-row.status-home { background: rgba(197, 68, 60, 0.28); }
 .lunch-today-row.status-school { background: rgba(63, 145, 90, 0.28); }
 .lunch-today-row.no-school { background: var(--color-border); color: var(--color-text-muted); opacity: 0.7; }
-.lunch-today-row .ltr-day { font-weight: 700; min-width: 34px; }
+.lunch-today-row .ltr-day { font-weight: 700; min-width: 74px; }
 .lunch-today-row .ltr-meal { flex: 1; }
 
 /* ---------- Weather ---------- */
@@ -738,47 +750,21 @@ button {
 .weather-today-main {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 14px;
 }
-.weather-today-icon { font-size: 2rem; }
-.weather-today-temp { font-size: 1.6rem; font-weight: 700; line-height: 1; }
-.weather-today-condition { font-size: 0.8rem; color: var(--color-text-muted); }
+.weather-today-icon { font-size: 3rem; line-height: 1; }
 .weather-today-hilo {
-  margin-left: auto;
   display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 2px;
-  font-size: 0.78rem;
-  font-weight: 600;
+  gap: 12px;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--color-text);
+}
+.weather-today-rain {
+  margin-top: 8px;
+  font-size: 0.85rem;
   color: var(--color-text-muted);
 }
-.weather-today-timeline {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 6px;
-  margin-top: 8px;
-}
-.weather-today-slot {
-  background: var(--color-bg);
-  border-radius: 10px;
-  padding: 6px 4px;
-  text-align: center;
-  font-size: 0.75rem;
-}
-.weather-today-slot .wt-label { font-weight: 700; color: var(--color-text-muted); }
-.weather-today-slot .wt-icon { font-size: 1.2rem; margin: 2px 0; }
-.weather-today-slot .wt-temp { font-weight: 700; }
-.weather-today-hint {
-  margin-top: 8px;
-  background: #fdf2e9;
-  color: var(--color-primary-dark);
-  border-radius: 8px;
-  padding: 6px 10px;
-  font-size: 0.82rem;
-  font-weight: 600;
-}
-
 /* ---------- Shopping list ---------- */
 .shopping-row {
   display: flex;

@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import db, { withTransaction } from '../db.js';
-import { weekStartParam } from '../lib/week.js';
+import { weekStartParamSunday } from '../lib/week.js';
 
 const router = Router();
 
@@ -47,11 +47,14 @@ function ensureWeekChores(week_start) {
 }
 
 router.get('/', (req, res) => {
-  const week_start = weekStartParam(req.query);
+  const week_start = weekStartParamSunday(req.query);
   ensureWeekChores(week_start);
   const rows = db
     .prepare(
-      'SELECT * FROM chores WHERE week_start = ? ORDER BY (day_of_week IS NULL) ASC, day_of_week ASC, sort_order ASC, id ASC'
+      // The chore week starts Sunday, so Sunday (day_of_week 6) should list
+      // first: rotate the sort key so Sun=0, Mon=1, ..., Sat=6.
+      `SELECT * FROM chores WHERE week_start = ?
+       ORDER BY (day_of_week IS NULL) ASC, ((day_of_week + 1) % 7) ASC, sort_order ASC, id ASC`
     )
     .all(week_start)
     .map((r) => ({ ...r, done: !!r.done, recurring: !!r.recurring }));
@@ -59,7 +62,7 @@ router.get('/', (req, res) => {
 });
 
 router.post('/', (req, res) => {
-  const week_start = weekStartParam(req.query);
+  const week_start = weekStartParamSunday(req.query);
   const { title, assigned_to = 'family', recurring = false, day_of_week = null } = req.body;
   if (!title) return res.status(400).json({ error: 'title is required' });
 

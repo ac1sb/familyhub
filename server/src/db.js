@@ -88,6 +88,30 @@ CREATE TABLE IF NOT EXISTS lunch_days (
   menu_item TEXT NOT NULL DEFAULT ''
 );
 
+CREATE TABLE IF NOT EXISTS daily_task_templates (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  title TEXT NOT NULL,
+  assigned_to TEXT NOT NULL DEFAULT 'family',
+  active INTEGER NOT NULL DEFAULT 1,
+  days TEXT NOT NULL DEFAULT '[0,1,2,3,4,5,6]', -- JSON array of 0-6 (Mon=0); which days it applies
+  sort_order INTEGER NOT NULL DEFAULT 0,
+  created_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+
+-- Daily routine items (empty lunch box, practice clarinet, ...) - same
+-- template/instance split as chores, but reset every DAY instead of every
+-- week: bucketed by date rather than week_start.
+CREATE TABLE IF NOT EXISTS daily_tasks (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  title TEXT NOT NULL,
+  assigned_to TEXT NOT NULL DEFAULT 'family',
+  done INTEGER NOT NULL DEFAULT 0,
+  date TEXT NOT NULL,
+  sort_order INTEGER NOT NULL DEFAULT 0,
+  template_id INTEGER REFERENCES daily_task_templates(id),
+  created_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+
 CREATE TABLE IF NOT EXISTS shopping_items (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   name TEXT NOT NULL,

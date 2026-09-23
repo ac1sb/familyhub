@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { api } from '../../api.js';
 import ChoreSetup from './ChoreSetup.jsx';
+import DailyTaskSetup from './DailyTaskSetup.jsx';
 import ScreensaverSettings from './ScreensaverSettings.jsx';
 
 function GeneralSettings({ config, onConfigUpdated }) {
@@ -206,6 +207,7 @@ const TABS = [
   { id: 'general', label: 'General' },
   { id: 'appearance', label: 'Appearance' },
   { id: 'chores', label: 'Chore Setup' },
+  { id: 'daily', label: 'Daily Checklist Setup' },
   { id: 'screensaver', label: 'Screensaver' },
 ];
 
@@ -233,6 +235,7 @@ export default function SettingsPanel({ config, onConfigUpdated, screensaverSett
       {tab === 'general' && <GeneralSettings config={config} onConfigUpdated={onConfigUpdated} />}
       {tab === 'appearance' && <AppearanceSettings config={config} onConfigUpdated={onConfigUpdated} />}
       {tab === 'chores' && <ChoreSetup members={config?.members} />}
+      {tab === 'daily' && <DailyTaskSetup members={config?.members} />}
       {tab === 'screensaver' && (
         <ScreensaverSettings zip={config?.weather_zip} settings={screensaverSettings} onChange={onScreensaverSettingsChange} />
       )}

@@ -22,6 +22,22 @@ export function weekStartParam(query) {
   return toISODate(startOfWeek(base));
 }
 
+// Chores specifically reset on Sunday rather than Monday (a separate
+// convention from the calendar/meals week above) - kept as its own function
+// rather than changing startOfWeek(), which other views still rely on.
+export function startOfWeekSunday(date = new Date()) {
+  const d = new Date(date);
+  const day = d.getDay(); // 0 = Sunday .. 6 = Saturday
+  d.setHours(0, 0, 0, 0);
+  d.setDate(d.getDate() - day);
+  return d;
+}
+
+export function weekStartParamSunday(query) {
+  const base = query && query.week ? new Date(query.week) : new Date();
+  return toISODate(startOfWeekSunday(base));
+}
+
 export function addDays(date, days) {
   const d = new Date(date);
   d.setDate(d.getDate() + days);

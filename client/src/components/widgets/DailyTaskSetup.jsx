@@ -1,31 +1,29 @@
 import { useState } from 'react';
 import { usePolling } from '../../hooks/usePolling.js';
 import { api } from '../../api.js';
-import { WEEKDAY_SHORT, SUNDAY_FIRST_DAY_ORDER } from '../../lib/week.js';
+import { WEEKDAY_SHORT } from '../../lib/week.js';
 
 const ALL_DAYS = [0, 1, 2, 3, 4, 5, 6];
 
-// Chores' week starts Sunday, so the day picker lists Sun first too, even
-// though each chip's underlying value is still the app-wide 0=Mon..6=Sun index.
 function DayChips({ days, onToggle }) {
   return (
     <div className="chore-day-chips">
-      {SUNDAY_FIRST_DAY_ORDER.map((idx) => (
+      {WEEKDAY_SHORT.map((label, idx) => (
         <button
           key={idx}
           type="button"
           className={`chore-day-chip${days.includes(idx) ? ' active' : ''}`}
           onClick={() => onToggle(idx)}
         >
-          {WEEKDAY_SHORT[idx]}
+          {label}
         </button>
       ))}
     </div>
   );
 }
 
-export default function ChoreSetup({ members }) {
-  const { data, setData, refresh } = usePolling(() => api.choreTemplates(), [], 20000);
+export default function DailyTaskSetup({ members }) {
+  const { data, setData, refresh } = usePolling(() => api.dailyTaskTemplates(), [], 20000);
   const [newTitle, setNewTitle] = useState('');
   const [assignedTo, setAssignedTo] = useState('family');
   const [newDays, setNewDays] = useState(ALL_DAYS);
@@ -40,7 +38,7 @@ export default function ChoreSetup({ members }) {
 
   async function addTemplate() {
     if (!newTitle.trim() || newDays.length === 0) return;
-    await api.createChoreTemplate({ title: newTitle.trim(), assigned_to: assignedTo, days: newDays });
+    await api.createDailyTaskTemplate({ title: newTitle.trim(), assigned_to: assignedTo, days: newDays });
     setNewTitle('');
     setNewDays(ALL_DAYS);
     refresh();
@@ -50,7 +48,7 @@ export default function ChoreSetup({ members }) {
     setData((prev) => ({
       templates: prev.templates.map((t) => (t.id === template.id ? { ...t, active: !t.active } : t)),
     }));
-    await api.updateChoreTemplate(template.id, { active: !template.active });
+    await api.updateDailyTaskTemplate(template.id, { active: !template.active });
     refresh();
   }
 
@@ -62,7 +60,7 @@ export default function ChoreSetup({ members }) {
     setData((prev) => ({
       templates: prev.templates.map((t) => (t.id === template.id ? { ...t, days } : t)),
     }));
-    await api.updateChoreTemplate(template.id, { days });
+    await api.updateDailyTaskTemplate(template.id, { days });
     refresh();
   }
 
@@ -70,20 +68,20 @@ export default function ChoreSetup({ members }) {
     setData((prev) => ({
       templates: prev.templates.map((t) => (t.id === template.id ? { ...t, days: ALL_DAYS } : t)),
     }));
-    await api.updateChoreTemplate(template.id, { days: ALL_DAYS });
+    await api.updateDailyTaskTemplate(template.id, { days: ALL_DAYS });
     refresh();
   }
 
   async function removeTemplate(id) {
-    await api.deleteChoreTemplate(id);
+    await api.deleteDailyTaskTemplate(id);
     refresh();
   }
 
   return (
     <div>
       <p style={{ color: 'var(--color-text-muted)', fontSize: '0.85rem', marginTop: 0 }}>
-        Chores added here automatically appear on everyone's weekly chore list, on whichever days you pick,
-        already unchecked. Turn one off instead of deleting it if it's just paused for a while.
+        Daily routine items (empty lunch box, practice clarinet, ...) show up on whichever days you pick,
+        already unchecked - and reset again fresh the next day, unlike weekly chores.
       </p>
 
       {(data?.templates || []).map((template) => (
@@ -103,13 +101,13 @@ export default function ChoreSetup({ members }) {
         </div>
       ))}
       {data && data.templates.length === 0 && (
-        <p style={{ color: 'var(--color-text-muted)' }}>No recurring chores set up yet.</p>
+        <p style={{ color: 'var(--color-text-muted)' }}>No daily routine items set up yet.</p>
       )}
 
       <div className="add-row" style={{ flexWrap: 'wrap' }}>
         <input
           type="text"
-          placeholder="e.g. Take out the trash"
+          placeholder="e.g. Empty lunch box"
           value={newTitle}
           onChange={(e) => setNewTitle(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && addTemplate()}

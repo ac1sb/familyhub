@@ -12,6 +12,8 @@ const ICONS = {
   storm: '⛈️',
 };
 
+const RAIN_THRESHOLD = 40;
+
 export default function TodayWeatherCard({ zip }) {
   const { data, error, loading } = usePolling(() => api.weather(zip), [zip], 30 * 60 * 1000);
 
@@ -25,7 +27,17 @@ export default function TodayWeatherCard({ zip }) {
     );
   }
 
-  const { today, current } = data;
+  const { today } = data;
+
+  // Just the day's overall shape at a glance: one icon, high/low, and when
+  // rain is expected (if at all) - not current conditions or an hourly
+  // breakdown, which belongs on the full Weather page instead.
+  const rainSlot = (today.timeline || []).find((t) => (t.precipitation_chance ?? 0) >= RAIN_THRESHOLD);
+  const rainToday = rainSlot
+    ? `${rainSlot.label} (${rainSlot.precipitation_chance}%)`
+    : (today.precipitation_chance ?? 0) >= RAIN_THRESHOLD
+      ? `today (${today.precipitation_chance}%)`
+      : null;
 
   return (
     <section className="widget-card weather-today">
@@ -33,31 +45,13 @@ export default function TodayWeatherCard({ zip }) {
         <h2>Weather Today</h2>
       </div>
       <div className="weather-today-main">
-        <span className="weather-today-icon">{ICONS[current.icon] || '☁️'}</span>
-        <div>
-          <div className="weather-today-temp">{current.temperature}°F</div>
-          <div className="weather-today-condition">{current.condition}</div>
-        </div>
+        <span className="weather-today-icon">{ICONS[today.icon] || '☁️'}</span>
         <div className="weather-today-hilo">
           <span>H {today.high}°</span>
           <span>L {today.low}°</span>
-          {today.precipitation_chance != null && <span>💧 {today.precipitation_chance}%</span>}
         </div>
       </div>
-
-      {today.timeline?.length > 0 && (
-        <div className="weather-today-timeline">
-          {today.timeline.map((t) => (
-            <div className="weather-today-slot" key={t.label}>
-              <div className="wt-label">{t.label}</div>
-              <div className="wt-icon">{ICONS[t.icon] || '☁️'}</div>
-              <div className="wt-temp">{t.temperature}°</div>
-            </div>
-          ))}
-        </div>
-      )}
-
-      {today.clothing_hint && <div className="weather-today-hint">{today.clothing_hint}</div>}
+      {rainToday && <div className="weather-today-rain">🌧️ Rain likely {rainToday}</div>}
     </section>
   );
 }

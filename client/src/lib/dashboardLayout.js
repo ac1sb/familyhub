@@ -1,15 +1,18 @@
 const KEY = 'familyhub.dashboardLayout.v1';
 
-// x/y/w/h are in grid units (12 columns wide); roughly mirrors the previous
-// fixed 2fr:1fr layout (calendar w=8 of 12 ≈ 2/3, the rest w=4 ≈ 1/3).
+// x/y/w/h are in grid units (12 columns wide). Sized for the "daily
+// briefing" dashboard - today/tomorrow-focused, condensed widgets - rather
+// than the old full-week views; each one expands to full detail on its own
+// tabbed page.
 export const DEFAULT_LAYOUT = [
-  { i: 'calendar', x: 0, y: 0, w: 8, h: 22, minW: 3, minH: 6 },
-  { i: 'weather', x: 8, y: 0, w: 4, h: 6, minW: 2, minH: 3 },
-  { i: 'lunch', x: 8, y: 6, w: 4, h: 9, minW: 2, minH: 5 },
-  { i: 'chores', x: 8, y: 15, w: 4, h: 7, minW: 2, minH: 3 },
-  { i: 'meals', x: 8, y: 22, w: 4, h: 7, minW: 2, minH: 3 },
-  { i: 'shopping', x: 8, y: 29, w: 4, h: 7, minW: 2, minH: 3 },
-  { i: 'whiteboard', x: 8, y: 36, w: 4, h: 8, minW: 2, minH: 4 },
+  { i: 'calendar', x: 0, y: 0, w: 8, h: 15, minW: 3, minH: 6 },
+  { i: 'weather', x: 8, y: 0, w: 4, h: 5, minW: 2, minH: 3 },
+  { i: 'lunch', x: 8, y: 5, w: 4, h: 5, minW: 2, minH: 3 },
+  { i: 'chores', x: 8, y: 10, w: 4, h: 7, minW: 2, minH: 3 },
+  { i: 'daily', x: 8, y: 17, w: 4, h: 7, minW: 2, minH: 3 },
+  { i: 'meals', x: 8, y: 24, w: 4, h: 6, minW: 2, minH: 3 },
+  { i: 'shopping', x: 8, y: 30, w: 4, h: 7, minW: 2, minH: 3 },
+  { i: 'whiteboard', x: 8, y: 37, w: 4, h: 8, minW: 2, minH: 4 },
 ];
 
 export function getDashboardLayout() {

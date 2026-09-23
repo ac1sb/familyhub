@@ -3,6 +3,7 @@ import GridLayout, { WidthProvider } from 'react-grid-layout/legacy';
 import 'react-grid-layout/css/styles.css';
 import CalendarAgenda from './widgets/CalendarAgenda.jsx';
 import ChoreList from './widgets/ChoreList.jsx';
+import DailyChecklist from './widgets/DailyChecklist.jsx';
 import MealPlanner from './widgets/MealPlanner.jsx';
 import ShoppingList from './widgets/ShoppingList.jsx';
 import WhiteboardPreview from './widgets/WhiteboardPreview.jsx';
@@ -48,7 +49,7 @@ export default function Dashboard({ members, zip, onNavigate }) {
         onLayoutChange={handleLayoutChange}
       >
         <div key="calendar">
-          <CalendarAgenda members={members} fillHeight />
+          <CalendarAgenda members={members} compact fillHeight onExpand={() => onNavigate('calendar')} />
         </div>
         <div key="weather">
           <TodayWeatherCard zip={zip} />
@@ -58,6 +59,9 @@ export default function Dashboard({ members, zip, onNavigate }) {
         </div>
         <div key="chores">
           <ChoreList members={members} compact onExpand={() => onNavigate('chores')} />
+        </div>
+        <div key="daily">
+          <DailyChecklist members={members} compact onExpand={() => onNavigate('daily')} />
         </div>
         <div key="meals">
           <MealPlanner compact onExpand={() => onNavigate('meals')} />

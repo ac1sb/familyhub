@@ -28,6 +28,25 @@ export function currentWeekStart() {
   return toISODate(startOfWeek(new Date()));
 }
 
+// Chores specifically reset on Sunday rather than Monday (a separate
+// convention from the calendar/meals week above).
+export function startOfWeekSunday(date = new Date()) {
+  const d = new Date(date);
+  const day = d.getDay(); // 0 = Sunday .. 6 = Saturday
+  d.setHours(0, 0, 0, 0);
+  d.setDate(d.getDate() - day);
+  return d;
+}
+
+export function currentWeekStartSunday() {
+  return toISODate(startOfWeekSunday(new Date()));
+}
+
+// Sun-first day-index order (0=Mon..6=Sun encoding stays the same everywhere
+// it's stored; this just controls display/iteration order to match a week
+// that visually starts on Sunday).
+export const SUNDAY_FIRST_DAY_ORDER = [6, 0, 1, 2, 3, 4, 5];
+
 export function formatDayHeader(date) {
   return date.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' });
 }

@@ -1,18 +1,18 @@
 import { usePolling } from '../../hooks/usePolling.js';
 import { api } from '../../api.js';
-import { addDays, currentWeekStart, toISODate, WEEKDAY_SHORT } from '../../lib/week.js';
+import { addDays, toISODate } from '../../lib/week.js';
 
 export default function LunchTodayCard({ childName, onExpand }) {
   const now = new Date();
-  const weekStart = currentWeekStart();
-  const rangeEnd = toISODate(addDays(new Date(weekStart), 5)); // Mon..Fri only
-  const { data, setData, refresh } = usePolling(() => api.lunchRange(weekStart, rangeEnd), [weekStart, rangeEnd], 30000);
+  const todayKey = toISODate(now);
+  const rangeEnd = toISODate(addDays(now, 2));
+  const { data, setData, refresh } = usePolling(() => api.lunchRange(todayKey, rangeEnd), [todayKey, rangeEnd], 30000);
 
   const byDate = {};
   for (const d of data?.days || []) byDate[d.date] = d;
 
-  const weekDates = Array.from({ length: 5 }, (_, i) => toISODate(addDays(new Date(weekStart), i)));
-  const todayKey = toISODate(now);
+  // Today + tomorrow only - a quick "what's for lunch" glance, not a weekly view.
+  const shownDates = [todayKey, toISODate(addDays(now, 1))];
 
   async function updateDay(date, patch) {
     setData((prev) => ({
@@ -34,10 +34,11 @@ export default function LunchTodayCard({ childName, onExpand }) {
       </div>
 
       <div className="lunch-today-list">
-        {weekDates.map((date, i) => {
+        {shownDates.map((date, i) => {
           const day = byDate[date];
           const noSchool = !!day?.no_school;
           const statusClass = noSchool ? 'no-school' : `status-${day?.status || 'home'}`;
+          const label = i === 0 ? 'Today' : 'Tomorrow';
 
           return (
             <button
@@ -47,7 +48,7 @@ export default function LunchTodayCard({ childName, onExpand }) {
               onClick={() => !noSchool && toggleStatus(date, day?.status || 'home')}
               disabled={noSchool}
             >
-              <span className="ltr-day">{WEEKDAY_SHORT[i]}</span>
+              <span className="ltr-day">{label}</span>
               <span className="ltr-meal">{noSchool ? 'No School' : day?.menu_item || 'No menu yet'}</span>
             </button>
           );

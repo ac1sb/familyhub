@@ -40,6 +40,17 @@ export const api = {
   updateChoreTemplate: (id, data) => request(`/chore-templates/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
   deleteChoreTemplate: (id) => request(`/chore-templates/${id}`, { method: 'DELETE' }),
 
+  dailyTasks: (date) => request(`/daily-tasks?date=${date}`),
+  createDailyTask: (date, data) => request(`/daily-tasks?date=${date}`, { method: 'POST', body: JSON.stringify(data) }),
+  updateDailyTask: (id, data) => request(`/daily-tasks/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
+  deleteDailyTask: (id) => request(`/daily-tasks/${id}`, { method: 'DELETE' }),
+
+  dailyTaskTemplates: () => request('/daily-task-templates'),
+  createDailyTaskTemplate: (data) => request('/daily-task-templates', { method: 'POST', body: JSON.stringify(data) }),
+  updateDailyTaskTemplate: (id, data) =>
+    request(`/daily-task-templates/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
+  deleteDailyTaskTemplate: (id) => request(`/daily-task-templates/${id}`, { method: 'DELETE' }),
+
   meals: (week) => request(`/meals?week=${week}`),
   setMeal: (week, day, name) => request(`/meals/${day}?week=${week}`, { method: 'PUT', body: JSON.stringify({ name }) }),
   reorderMeals: (week, names) => request(`/meals?week=${week}`, { method: 'PUT', body: JSON.stringify({ names }) }),

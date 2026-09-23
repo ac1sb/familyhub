@@ -15,7 +15,7 @@ export default function CalendarAgenda({ members, compact = false, onExpand, fil
   const [modalMember, setModalMember] = useState(null);
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [confirmation, setConfirmation] = useState(null);
-  const dayCount = compact ? 3 : 7;
+  const dayCount = compact ? 4 : 7;
   const { data, refresh } = usePolling(() => api.eventsRange(rangeStart, dayCount), [rangeStart, dayCount], 20000);
 
   const days = useMemo(() => {

@@ -2,6 +2,7 @@ const WIDGETS = [
   { id: 'dashboard', icon: '🏠', label: 'Home' },
   { id: 'calendar', icon: '📅', label: 'Calendar' },
   { id: 'chores', icon: '✅', label: 'Chores' },
+  { id: 'daily', icon: '📋', label: 'Daily' },
   { id: 'meals', icon: '🍽️', label: 'Dinner' },
   { id: 'lunch', icon: '🥪', label: 'Lunch' },
   { id: 'weather', icon: '⛅', label: 'Weather' },
