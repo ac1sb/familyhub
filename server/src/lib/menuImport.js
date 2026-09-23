@@ -1,25 +1,24 @@
 import fetch from 'node-fetch';
 import { load } from 'cheerio';
+import { renderPages } from './browserFetch.js';
 
 // Best-effort scraper for online school-menu sites (Health-e Pro and similar
-// platforms). These sites are typically JavaScript apps that hydrate from a
-// JSON blob embedded in the initial HTML (Next.js/Nuxt/Redux-style patterns),
-// so this looks for those first. If that finds nothing - e.g. the page loads
-// its menu client-side via a separate API call this scraper doesn't know
-// about - it falls back to parsing a plain HTML calendar table instead,
-// which is the more common shape for a site's "print menu" view (server-
-// rendered for printing, so no JS execution needed to see the real content).
-// For Health-e Pro specifically, the interactive page never has usable data
-// in its own HTML, so any Health-e Pro URL (interactive or print) is instead
-// resolved to that site's print-menu view and walked forward a few months
-// automatically, so the calendar keeps filling in without the user having
-// to update the saved link every month.
-//
-// Written without being able to reach any real target site directly (this
-// environment has no outbound internet access), so treat both parsing
-// strategies as a starting point: run it for real, and if it finds nothing,
-// the diagnostic fields returned (which script tags existed, an HTML
-// preview) are what's needed to fix the matching logic.
+// platforms), tried in order from cheapest to most expensive:
+//  1. Look for a JSON blob embedded in the raw HTML (Next.js/Nuxt/Redux-style
+//     hydration patterns).
+//  2. Parse a plain HTML calendar table - the shape a site's "print view" is
+//     often server-rendered as, so no JS execution is needed to see it.
+//  3. Render the page with a real (headless) browser and see what its own
+//     JavaScript does: capture every JSON network response the page makes
+//     while loading, and re-run the same two checks above against the fully
+//     rendered HTML. This is the only tier that works for a pure
+//     client-rendered SPA - a site that ships an empty `<div id="app">` and
+//     fetches its data after load, which turned out to be exactly what
+//     Health-e Pro does (confirmed from an actual page source a user pasted
+//     back - both its interactive AND print views are empty shells with
+//     nothing usable in their raw HTML at all).
+// Health-e Pro's print-menu view is walked forward a few months automatically
+// so the calendar keeps filling in without updating the saved link monthly.
 
 const EMBEDDED_JSON_PATTERNS = [
   /<script[^>]*id=["']__NEXT_DATA__["'][^>]*>([\s\S]*?)<\/script>/i,
@@ -277,64 +276,87 @@ async function fetchHtml(url) {
   }
 }
 
-// Fetches one URL and tries both parsing strategies against it (JSON first,
-// then the plain HTML calendar table). Returns the same shape fetchMenuItems
-// does for a single page.
-async function fetchAndParseOne(url) {
-  const { html, error } = await fetchHtml(url);
-  if (error) return { success: false, error, htmlPreview: null };
-
+// Shared by both the plain-fetch and headless-browser tiers: given a page's
+// (possibly JS-rendered) HTML plus any JSON network responses captured while
+// loading it, tries every parsing strategy and returns the best result.
+function parseRenderedContent(html, url, extraJsonBlobs = []) {
   const { days: jsonDays, scriptBlocksFound } = findMenuDaysInJson(html);
-  let days = jsonDays;
+  const xhrDays = [];
+  for (const blob of extraJsonBlobs) findMenuDays(blob, xhrDays);
+
+  let days = [...jsonDays, ...xhrDays];
   let usedTableFallback = false;
   if (days.length === 0) {
     days = parseCalendarTable(html, url);
     usedTableFallback = days.length > 0;
   }
 
-  if (days.length === 0) {
-    return {
-      success: false,
-      error:
-        scriptBlocksFound > 0
-          ? `Found ${scriptBlocksFound} embedded JSON block(s) but none looked like a day's menu (no date+items shape matched), and no plain HTML calendar table was found either.`
+  return {
+    days,
+    usedTableFallback,
+    scriptBlocksFound,
+    jsonResponsesFound: extraJsonBlobs.length,
+  };
+}
+
+function noDataResult(html, scriptBlocksFound, jsonResponsesFound, viaBrowser) {
+  const triedXhr = jsonResponsesFound > 0 ? ` and ${jsonResponsesFound} JSON network response(s)` : '';
+  return {
+    success: false,
+    error:
+      scriptBlocksFound > 0 || jsonResponsesFound > 0
+        ? `Found ${scriptBlocksFound} embedded JSON block(s)${triedXhr}, but none looked like a day's menu, and no plain HTML calendar table matched either.`
+        : viaBrowser
+          ? "Rendered the page with a real browser but still found no menu data in its HTML, its network requests, or a calendar table. The site's data shape may not match this scraper yet."
           : 'No embedded JSON data and no plain HTML calendar table found on the page - it may load its menu via a separate API call this scraper does not know about yet.',
-      htmlPreview: html.slice(0, 3000),
-      scriptBlocksFound,
-    };
-  }
+    htmlPreview: html.slice(0, 3000),
+    scriptBlocksFound,
+    jsonResponsesFound,
+  };
+}
+
+// Fetches one URL with a plain HTTP request and tries every parsing strategy
+// against the raw HTML. Works for server-rendered pages; a pure
+// client-rendered SPA will come back empty since its JavaScript never runs.
+async function fetchAndParseOne(url) {
+  const { html, error } = await fetchHtml(url);
+  if (error) return { success: false, error, htmlPreview: null };
+
+  const { days, usedTableFallback, scriptBlocksFound, jsonResponsesFound } = parseRenderedContent(html, url);
+  if (days.length === 0) return noDataResult(html, scriptBlocksFound, jsonResponsesFound, false);
 
   const items = days.map((d) => ({ date: d.date, entree: pickEntree(d.items) })).filter((d) => d.entree);
   return { success: true, items, daysFound: days.length, usedTableFallback };
 }
 
-export async function fetchMenuItems(url) {
-  // Health-e Pro's interactive menu page loads its data client-side (nothing
-  // useful in the raw HTML), but the same menu has a server-rendered "print"
-  // view driven by a `date=` query param, one month at a time. Whenever the
-  // configured URL is a Health-e Pro menu link (interactive or print, with
-  // any or no date param), always walk a few months of that print view
-  // instead of the single URL given - this keeps the calendar filled in as
-  // time passes without the user needing to update the saved link every
-  // month, and skips wasting a request on the interactive page, which never
-  // has usable data in its own HTML.
-  const base = url.match(HEALTHEPRO_BASE_RE)?.[1];
-  if (!base) return fetchAndParseOne(url);
+// Renders each URL with one shared headless browser session and parses the
+// result the same way. Returns one parsed result per URL, in order.
+async function fetchAndParseViaBrowser(urls) {
+  const { results, error } = await renderPages(urls);
+  if (error) return urls.map(() => ({ success: false, error, htmlPreview: null }));
 
-  const now = new Date();
-  const monthAttempts = [0, 1, 2].map((offset) => {
-    const d = new Date(now.getFullYear(), now.getMonth() + offset, 1);
-    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-01`;
+  return results.map(({ url, html, jsonBlobs, error: pageError }) => {
+    if (pageError) return { success: false, error: `Could not render the page: ${pageError}`, htmlPreview: null };
+
+    const { days, usedTableFallback, scriptBlocksFound, jsonResponsesFound } = parseRenderedContent(
+      html,
+      url,
+      jsonBlobs
+    );
+    if (days.length === 0) return noDataResult(html, scriptBlocksFound, jsonResponsesFound, true);
+
+    const items = days.map((d) => ({ date: d.date, entree: pickEntree(d.items) })).filter((d) => d.entree);
+    return { success: true, items, daysFound: days.length, usedTableFallback, viaBrowser: true };
   });
+}
 
+function mergeMonthResults(results) {
   const allItems = [];
   const seenDates = new Set();
   let monthsWithData = 0;
   let lastFailure = null;
 
-  for (const monthStart of monthAttempts) {
-    const printUrl = `${base}/print-menu?date=${monthStart}`;
-    const result = await fetchAndParseOne(printUrl);
+  for (const result of results) {
     if (result.success) {
       monthsWithData += 1;
       for (const item of result.items) {
@@ -348,18 +370,64 @@ export async function fetchMenuItems(url) {
     }
   }
 
+  return { allItems, monthsWithData, lastFailure };
+}
+
+export async function fetchMenuItems(url) {
+  // Health-e Pro's interactive menu page loads its data client-side (nothing
+  // useful in the raw HTML), but the same menu has a "print" view driven by
+  // a `date=` query param, one month at a time. Whenever the configured URL
+  // is a Health-e Pro menu link (interactive or print, with any or no date
+  // param), always walk a few months of that print view instead of the
+  // single URL given - this keeps the calendar filled in as time passes
+  // without updating the saved link every month.
+  const base = url.match(HEALTHEPRO_BASE_RE)?.[1];
+  if (!base) {
+    const direct = await fetchAndParseOne(url);
+    if (direct.success) return direct;
+    // Plain fetch found nothing - this may be a client-rendered SPA like
+    // Health-e Pro turned out to be, so try again with a real browser before
+    // giving up.
+    const [viaBrowser] = await fetchAndParseViaBrowser([url]);
+    if (viaBrowser.success) return viaBrowser;
+    return { ...direct, error: `${direct.error} Also tried rendering with a real browser: ${viaBrowser.error}` };
+  }
+
+  const now = new Date();
+  const monthStarts = [0, 1, 2].map((offset) => {
+    const d = new Date(now.getFullYear(), now.getMonth() + offset, 1);
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-01`;
+  });
+  const printUrls = monthStarts.map((monthStart) => `${base}/print-menu?date=${monthStart}`);
+
+  // Health-e Pro's print view is confirmed to be just as empty a shell as
+  // the interactive one, so go straight to the headless-browser tier rather
+  // than wasting three plain-fetch round trips that are known to fail.
+  const browserResults = await fetchAndParseViaBrowser(printUrls);
+  let { allItems, monthsWithData, lastFailure } = mergeMonthResults(browserResults);
+
+  const browserUnavailableError = lastFailure?.error?.match(
+    /(playwright-core is not installed[^.]*\.|No Chromium\/Chrome browser found[^.]*\.)/
+  )?.[1];
+  if (allItems.length === 0 && browserUnavailableError) {
+    // No headless browser available at all - fall back to the plain-fetch
+    // walk on the off chance this deployment's version of the site (or a
+    // similarly-configured one) really is server-rendered after all.
+    const plainResults = [];
+    for (const printUrl of printUrls) plainResults.push(await fetchAndParseOne(printUrl));
+    ({ allItems, monthsWithData, lastFailure } = mergeMonthResults(plainResults));
+    if (allItems.length === 0 && lastFailure) {
+      lastFailure = { ...lastFailure, error: `${lastFailure.error} Also: ${browserUnavailableError}` };
+    }
+  }
+
   if (allItems.length === 0) {
     const fallback = lastFailure || {
       success: false,
-      error: `Reached the print-menu page for each of the next ${monthAttempts.length} months, but found no day with a usable entree.`,
+      error: `Reached the print-menu page for each of the next ${monthStarts.length} months, but found no day with a usable entree.`,
       htmlPreview: null,
     };
-    return {
-      ...fallback,
-      error: lastFailure
-        ? `${fallback.error} (also tried this site's print-menu view for the next ${monthAttempts.length} months with the same result.)`
-        : fallback.error,
-    };
+    return fallback;
   }
 
   return { success: true, items: allItems, daysFound: allItems.length, monthsSynced: monthsWithData };

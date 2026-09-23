@@ -21,6 +21,7 @@
     "morgan": "^1.10.0",
     "multer": "^2.4.0",
     "node-fetch": "^3.3.2",
+    "playwright-core": "^1.63.0",
     "tesseract.js": "^5.1.1"
   }
 }

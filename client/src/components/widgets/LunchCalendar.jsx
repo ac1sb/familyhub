@@ -138,8 +138,13 @@ export default function LunchCalendar({ childName }) {
                     readOnly
                     value={
                       (syncResult.scriptBlocksFound !== undefined
-                        ? `Embedded JSON blocks found: ${syncResult.scriptBlocksFound}\n\n`
-                        : '') + (syncResult.htmlPreview || '')
+                        ? `Embedded JSON blocks found: ${syncResult.scriptBlocksFound}\n`
+                        : '') +
+                      (syncResult.jsonResponsesFound !== undefined
+                        ? `JSON network responses captured (real-browser render): ${syncResult.jsonResponsesFound}\n`
+                        : '') +
+                      '\n' +
+                      (syncResult.htmlPreview || '')
                     }
                     onFocus={(e) => e.target.select()}
                   />
