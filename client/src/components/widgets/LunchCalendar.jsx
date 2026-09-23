@@ -5,6 +5,30 @@ import { formatMonthLabel, weekdayGridDays, toISODate, WEEKDAY_SHORT } from '../
 
 const WEEKDAYS_ONLY = WEEKDAY_SHORT.slice(0, 5);
 
+// A plain <input> can never wrap text - long entree names just scroll out of
+// view. This grows to fit whatever's typed instead of truncating it, and the
+// calendar cell (and its whole grid row) grows right along with it.
+function AutoGrowMenuInput({ value, onChange, onClick }) {
+  const ref = useRef(null);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    el.style.height = 'auto';
+    el.style.height = `${el.scrollHeight}px`;
+  }, [value]);
+  return (
+    <textarea
+      ref={ref}
+      className="lunch-cal-menu"
+      placeholder="Menu…"
+      rows={1}
+      value={value}
+      onClick={onClick}
+      onChange={onChange}
+    />
+  );
+}
+
 export default function LunchCalendar({ childName }) {
   const now = new Date();
   const [year, setYear] = useState(now.getFullYear());
@@ -197,9 +221,7 @@ export default function LunchCalendar({ childName }) {
               {day.no_school ? (
                 <div className="lunch-cal-noschool-label">No School</div>
               ) : (
-                <input
-                  className="lunch-cal-menu"
-                  placeholder="Menu…"
+                <AutoGrowMenuInput
                   value={day.menu_item}
                   onClick={(e) => e.stopPropagation()}
                   onChange={(e) => updateDay(date, { menu_item: e.target.value })}

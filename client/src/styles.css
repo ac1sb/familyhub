@@ -699,7 +699,13 @@ button {
   padding: 3px 4px;
   font-size: 0.7rem;
   min-height: 28px;
+  width: 100%;
   cursor: text;
+  resize: none;
+  overflow: hidden;
+  white-space: pre-wrap;
+  word-break: break-word;
+  font-family: inherit;
 }
 
 /* ---------- Lunch today card (dashboard) ---------- */
