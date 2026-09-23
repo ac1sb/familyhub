@@ -21,11 +21,32 @@ export function getDashboardLayout() {
     if (!raw) return DEFAULT_LAYOUT;
     const parsed = JSON.parse(raw);
     if (!Array.isArray(parsed) || parsed.length === 0) return DEFAULT_LAYOUT;
-    // If a future update adds/removes a dashboard widget, fall back to the
-    // default rather than rendering a layout missing an entry.
-    const ids = new Set(parsed.map((item) => item.i));
-    if (!DEFAULT_LAYOUT.every((item) => ids.has(item.i))) return DEFAULT_LAYOUT;
-    return parsed;
+
+    // Merge rather than discard: keep every saved position/size for a widget
+    // that still exists, and slot in any new one introduced since this
+    // layout was saved (e.g. an update adds a widget) below everything else
+    // - a saved layout missing an entry used to mean the whole customization
+    // got silently wiped back to defaults on the very next update that added
+    // a dashboard widget.
+    const savedById = new Map(parsed.map((item) => [item.i, item]));
+    const kept = [];
+    const newOnes = [];
+    for (const defaultItem of DEFAULT_LAYOUT) {
+      const saved = savedById.get(defaultItem.i);
+      if (saved) kept.push(saved);
+      else newOnes.push(defaultItem);
+    }
+    if (newOnes.length === 0) return kept;
+
+    // A new widget's raw default x/y can overlap oddly with an already-
+    // customized layout, so stack new ones below everything else instead -
+    // vertical compaction then settles the exact positions.
+    let cursor = kept.reduce((max, item) => Math.max(max, item.y + item.h), 0);
+    for (const item of newOnes) {
+      kept.push({ ...item, y: cursor });
+      cursor += item.h;
+    }
+    return kept;
   } catch {
     return DEFAULT_LAYOUT;
   }
