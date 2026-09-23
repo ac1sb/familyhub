@@ -3,6 +3,7 @@ import { api } from '../../api.js';
 import ChoreSetup from './ChoreSetup.jsx';
 import DailyTaskSetup from './DailyTaskSetup.jsx';
 import ScreensaverSettings from './ScreensaverSettings.jsx';
+import SmartHomeSetup from './SmartHomeSetup.jsx';
 
 function GeneralSettings({ config, onConfigUpdated }) {
   const [names, setNames] = useState({ member_1: '', member_2: '', member_3: '' });
@@ -208,6 +209,7 @@ const TABS = [
   { id: 'appearance', label: 'Appearance' },
   { id: 'chores', label: 'Chore Setup' },
   { id: 'daily', label: 'Daily Checklist Setup' },
+  { id: 'smarthome', label: 'Smart Home Setup' },
   { id: 'screensaver', label: 'Screensaver' },
 ];
 
@@ -236,6 +238,7 @@ export default function SettingsPanel({ config, onConfigUpdated, screensaverSett
       {tab === 'appearance' && <AppearanceSettings config={config} onConfigUpdated={onConfigUpdated} />}
       {tab === 'chores' && <ChoreSetup members={config?.members} />}
       {tab === 'daily' && <DailyTaskSetup members={config?.members} />}
+      {tab === 'smarthome' && <SmartHomeSetup />}
       {tab === 'screensaver' && (
         <ScreensaverSettings zip={config?.weather_zip} settings={screensaverSettings} onChange={onScreensaverSettingsChange} />
       )}

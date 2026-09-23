@@ -84,6 +84,11 @@ export const api = {
   },
   deleteWhiteboardNote: (id) => request(`/whiteboard/notes/${id}`, { method: 'DELETE' }),
 
+  smartDevices: () => request('/smart-devices'),
+  createSmartDevice: (data) => request('/smart-devices', { method: 'POST', body: JSON.stringify(data) }),
+  updateSmartDevice: (id, data) => request(`/smart-devices/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
+  deleteSmartDevice: (id) => request(`/smart-devices/${id}`, { method: 'DELETE' }),
+
   weather: (zip) => request(`/weather${zip ? `?zip=${zip}` : ''}`),
 
   settings: () => request('/settings'),

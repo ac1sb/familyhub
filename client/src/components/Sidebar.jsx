@@ -8,6 +8,7 @@ const WIDGETS = [
   { id: 'weather', icon: '⛅', label: 'Weather' },
   { id: 'shopping', icon: '🛒', label: 'Shopping' },
   { id: 'whiteboard', icon: '📝', label: 'Whiteboard' },
+  { id: 'smarthome', icon: '💡', label: 'Smart Home' },
   { id: 'settings', icon: '⚙️', label: 'Settings' },
 ];
 

@@ -9,6 +9,7 @@ import LunchCalendar from './components/widgets/LunchCalendar.jsx';
 import WeatherWidget from './components/widgets/WeatherWidget.jsx';
 import ShoppingList from './components/widgets/ShoppingList.jsx';
 import WhiteboardPage from './components/WhiteboardPage.jsx';
+import SmartHomeWidget from './components/widgets/SmartHomeWidget.jsx';
 import SettingsPanel from './components/widgets/SettingsPanel.jsx';
 import Screensaver from './components/Screensaver.jsx';
 import { api } from './api.js';
@@ -74,6 +75,7 @@ export default function App() {
           {active === 'weather' && <WeatherWidget zip={zip} />}
           {active === 'shopping' && <ShoppingList />}
           {active === 'whiteboard' && <WhiteboardPage onNavigate={setActive} />}
+          {active === 'smarthome' && <SmartHomeWidget />}
           {active === 'settings' && (
             <SettingsPanel
               config={config}

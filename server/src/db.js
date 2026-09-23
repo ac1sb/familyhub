@@ -126,6 +126,26 @@ CREATE TABLE IF NOT EXISTS settings (
   value TEXT
 );
 
+-- Mock smart-home devices (Lutron Caseta / LIFX) - rows here are toggled
+-- straight from the dashboard with no real bulb or bridge behind them yet.
+-- This is the prototype for the control UI and data model; wiring up the
+-- real LIFX Cloud API and a Lutron Caseta integration later only needs to
+-- change server/src/routes/smartDevices.js, not the client.
+CREATE TABLE IF NOT EXISTS smart_devices (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  name TEXT NOT NULL,
+  room TEXT NOT NULL DEFAULT '',
+  platform TEXT NOT NULL, -- 'lifx' | 'caseta'
+  kind TEXT NOT NULL DEFAULT 'light', -- 'light' (lifx, color) | 'dimmer' (caseta) | 'switch' (caseta)
+  dimmable INTEGER NOT NULL DEFAULT 1,
+  color_capable INTEGER NOT NULL DEFAULT 0,
+  is_on INTEGER NOT NULL DEFAULT 0,
+  brightness INTEGER NOT NULL DEFAULT 100, -- 0-100, meaningful only when dimmable
+  color TEXT NOT NULL DEFAULT '#ffffff', -- meaningful only when color_capable
+  sort_order INTEGER NOT NULL DEFAULT 0,
+  created_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+
 -- A saved history of past whiteboard messages, one row per time the board
 -- was cleared with something drawn on it - "post-it notes" you can look
 -- back on, separate from the single current board image in settings.

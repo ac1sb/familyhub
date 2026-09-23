@@ -13,6 +13,7 @@ export const DEFAULT_LAYOUT = [
   { i: 'meals', x: 8, y: 24, w: 4, h: 6, minW: 2, minH: 3 },
   { i: 'shopping', x: 8, y: 30, w: 4, h: 7, minW: 2, minH: 3 },
   { i: 'whiteboard', x: 8, y: 37, w: 4, h: 8, minW: 2, minH: 4 },
+  { i: 'smarthome', x: 8, y: 45, w: 4, h: 7, minW: 2, minH: 3 },
 ];
 
 export function getDashboardLayout() {

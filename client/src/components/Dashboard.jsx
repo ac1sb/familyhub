@@ -7,6 +7,7 @@ import DailyChecklist from './widgets/DailyChecklist.jsx';
 import MealPlanner from './widgets/MealPlanner.jsx';
 import ShoppingList from './widgets/ShoppingList.jsx';
 import WhiteboardPreview from './widgets/WhiteboardPreview.jsx';
+import SmartHomeWidget from './widgets/SmartHomeWidget.jsx';
 import TodayWeatherCard from './widgets/TodayWeatherCard.jsx';
 import LunchTodayCard from './widgets/LunchTodayCard.jsx';
 import ReminderBanner from './ReminderBanner.jsx';
@@ -71,6 +72,9 @@ export default function Dashboard({ members, zip, onNavigate }) {
         </div>
         <div key="whiteboard">
           <WhiteboardPreview onExpand={() => onNavigate('whiteboard')} />
+        </div>
+        <div key="smarthome">
+          <SmartHomeWidget compact onExpand={() => onNavigate('smarthome')} />
         </div>
       </AutoWidthGridLayout>
     </div>

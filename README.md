@@ -53,6 +53,13 @@ shopping list from another device.
   dashboard automatically. Clearing the board archives whatever was on it
   first, so past notes are browsable (on the full page) instead of just
   thrown away.
+- **Smart Home (mockup)** — a Lutron Caseta / LIFX control widget: add your
+  switches and bulbs once in Settings → Smart Home Setup (name, room, and
+  LIFX vs. Caseta dimmer/switch), then toggle them, drag brightness, and
+  pick a LIFX bulb's color from the dashboard or the full page (grouped by
+  room). This is currently a prototype of the control UI and data model -
+  nothing is sent to a real bulb or bridge yet; see "Known limitations"
+  below for what a real integration would need.
 - **Weather** — a "Today" card (high/low, precipitation chance, a
   morning/afternoon/evening timeline, and a clothing hint) on the dashboard,
   plus a full 7-day forecast on its own sidebar tab. Geocoded from a US zip
@@ -233,6 +240,14 @@ other file on the Pi.
 
 ## Known limitations (v1)
 
+- The Smart Home widget is a mockup: toggling a device, dragging brightness,
+  or picking a color only updates FamilyHub's own database, not a real bulb
+  or switch. A real integration would add: for LIFX, calls to the
+  [LIFX Cloud API](https://api.developer.lifx.com/) (needs a personal access
+  token) or its LAN protocol; for Lutron Caseta, the Smart Bridge has no
+  public local API, so the usual path is a
+  [Home Assistant](https://www.home-assistant.io/) instance with the Caseta
+  integration, with FamilyHub calling *that* instead of the bridge directly.
 - Google Calendar sync is one-way (Google → agenda). Two-way sync could be
   added later if you want events created in FamilyHub to also appear on
   Google Calendar.
