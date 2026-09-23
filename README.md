@@ -77,7 +77,10 @@ shopping list from another device.
 - **Screensaver** — per-device (Settings → Screensaver): idle timeout, photo
   interval, and theme (landscapes/mountains/waterfalls/lakes/forests), with
   a clock/date/weather overlay and a Preview button. Off by default on every
-  device; turn it on for the wall display only.
+  device; turn it on for the wall display only. Optionally overlays the
+  shared whiteboard as a semi-transparent sticky note in the corner - the
+  same live drawing as everywhere else, so a message left on the board is
+  still visible while the screensaver's up.
 - **Editable Settings** — rename household members, change the weather zip,
   and set the day/night schedule, all from the app (no `.env` editing or
   restart required after first setup).

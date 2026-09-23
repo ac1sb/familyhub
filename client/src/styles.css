@@ -171,19 +171,13 @@ button {
   display: flex;
   align-items: center;
   gap: 6px;
-  background: var(--color-bg);
-  border: 1px solid var(--color-border);
-  border-radius: 999px;
-  padding: 6px 12px;
   font-size: 0.82rem;
   font-weight: 600;
   color: var(--color-text-muted);
 }
-.header-info-chip-now {
-  background: color-mix(in srgb, var(--color-primary) 14%, var(--color-bg));
-  border-color: var(--color-primary);
-  color: var(--color-text);
-}
+.header-info-chip::before { content: '\00b7'; margin-right: 8px; color: var(--color-border); }
+.header-info-chip:first-child::before { content: none; margin-right: 0; }
+.header-info-chip-now { color: var(--color-primary); font-weight: 700; }
 .header-toggle-wrap { position: relative; }
 .header-toggle {
   display: flex;
@@ -1005,6 +999,33 @@ button {
   font-size: 0.8rem;
   color: rgba(255,255,255,0.75);
   text-shadow: 0 1px 4px rgba(0,0,0,0.6);
+}
+.screensaver-postit {
+  position: absolute;
+  top: 28px;
+  right: 28px;
+  width: 240px;
+  background: rgba(255, 244, 189, 0.8);
+  border-radius: 4px;
+  padding: 12px 12px 14px;
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.35);
+  transform: rotate(-3deg);
+  color: #4a3f22;
+  text-shadow: none;
+}
+.screensaver-postit-label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  opacity: 0.65;
+  margin-bottom: 6px;
+}
+.screensaver-postit img {
+  display: block;
+  width: 100%;
+  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.5);
 }
 
 /* ---------- Reminder banner ---------- */

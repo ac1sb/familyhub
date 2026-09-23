@@ -6,6 +6,26 @@ export default function Screensaver({ settings, zip, onDismiss }) {
   const [photo, setPhoto] = useState(null);
   const [weather, setWeather] = useState(null);
   const [now, setNow] = useState(new Date());
+  const [whiteboard, setWhiteboard] = useState(null);
+
+  // A live reflection of the shared whiteboard, not a separate copy - draw
+  // on the board from any device and it shows up here too, the same as
+  // everywhere else it appears.
+  useEffect(() => {
+    if (!settings.showWhiteboard) return;
+    let cancelled = false;
+    function load() {
+      api.whiteboard().then((data) => {
+        if (!cancelled) setWhiteboard(data);
+      }).catch(() => {});
+    }
+    load();
+    const id = setInterval(load, 30000);
+    return () => {
+      cancelled = true;
+      clearInterval(id);
+    };
+  }, [settings.showWhiteboard]);
 
   useEffect(() => {
     let cancelled = false;
@@ -55,6 +75,12 @@ export default function Screensaver({ settings, zip, onDismiss }) {
         <div className="screensaver-credit">
           📷 {photo.credit}
           {photo.license ? ` · ${photo.license}` : ''}
+        </div>
+      )}
+      {settings.showWhiteboard && whiteboard?.image_path && (
+        <div className="screensaver-postit">
+          <div className="screensaver-postit-label">📝 Whiteboard</div>
+          <img src={whiteboard.image_path} alt="Whiteboard note" />
         </div>
       )}
       <div className="screensaver-tap-hint">Tap anywhere to continue</div>

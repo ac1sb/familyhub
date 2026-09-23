@@ -29,6 +29,20 @@ export default function ScreensaverSettings({ zip, settings, onChange }) {
       </div>
 
       <div className="field">
+        <div className="checkbox-row">
+          <input
+            id="ss-whiteboard"
+            type="checkbox"
+            checked={settings.showWhiteboard}
+            onChange={(e) => update({ showWhiteboard: e.target.checked })}
+          />
+          <label htmlFor="ss-whiteboard" style={{ margin: 0 }}>
+            Show the whiteboard as a sticky note overlay
+          </label>
+        </div>
+      </div>
+
+      <div className="field">
         <label htmlFor="ss-idle">Start after idle for</label>
         <select id="ss-idle" value={settings.idleMinutes} onChange={(e) => update({ idleMinutes: Number(e.target.value) })}>
           {[5, 10, 15, 30].map((m) => (

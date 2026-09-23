@@ -16,6 +16,7 @@ const DEFAULTS = {
   idleMinutes: 10,
   photoIntervalSeconds: 30,
   theme: 'landscapes',
+  showWhiteboard: true,
 };
 
 export function getScreensaverSettings() {
