@@ -23,17 +23,16 @@ export const WIDGET_CATALOG = [
 export const DEFAULT_LAYOUT = [
   { i: 'calendar', x: 0, y: 0, w: 8, h: 15, minW: 3, minH: 6 },
   { i: 'weather', x: 8, y: 0, w: 4, h: 5, minW: 2, minH: 3 },
-  // lunch and shopping are taller than their old defaults - both now show
-  // enough rows/items by default without an internal scrollbar, matching
-  // the bigger text/spacing those widgets grew since these numbers were
-  // first picked.
   { i: 'lunch', x: 8, y: 5, w: 4, h: 6, minW: 2, minH: 3 },
-  { i: 'chores', x: 8, y: 11, w: 4, h: 7, minW: 2, minH: 3 },
-  { i: 'daily', x: 8, y: 18, w: 4, h: 7, minW: 2, minH: 3 },
-  { i: 'meals', x: 8, y: 25, w: 4, h: 6, minW: 2, minH: 3 },
-  { i: 'shopping', x: 8, y: 31, w: 4, h: 10, minW: 2, minH: 3 },
-  { i: 'whiteboard', x: 8, y: 41, w: 4, h: 8, minW: 2, minH: 4 },
-  { i: 'smarthome', x: 8, y: 49, w: 4, h: 7, minW: 2, minH: 3 },
+  // Chores/Daily/Shopping show only a completed-count line on the
+  // dashboard now (the full item list moved to "See all"), so they only
+  // need enough height for one header row.
+  { i: 'chores', x: 8, y: 11, w: 4, h: 3, minW: 2, minH: 2 },
+  { i: 'daily', x: 8, y: 14, w: 4, h: 3, minW: 2, minH: 2 },
+  { i: 'meals', x: 8, y: 17, w: 4, h: 6, minW: 2, minH: 3 },
+  { i: 'shopping', x: 8, y: 23, w: 4, h: 3, minW: 2, minH: 2 },
+  { i: 'whiteboard', x: 8, y: 26, w: 4, h: 8, minW: 2, minH: 4 },
+  { i: 'smarthome', x: 8, y: 34, w: 4, h: 7, minW: 2, minH: 3 },
 ];
 
 export function getDashboardLayout() {

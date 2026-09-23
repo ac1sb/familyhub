@@ -258,6 +258,11 @@ button {
   margin: 0;
 }
 
+/* A compact dashboard widget's completed-count/tally, shown next to its
+   title instead of the item-by-item list - see the "See all" page for that. */
+.widget-header-actions { display: flex; align-items: center; gap: 10px; }
+.widget-status { font-size: 0.82rem; font-weight: 600; color: var(--color-text-muted); white-space: nowrap; }
+
 .widget-card {
   background: var(--color-surface);
   border: 1px solid var(--color-border);

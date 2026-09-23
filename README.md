@@ -11,12 +11,15 @@ shopping list from another device.
 - **Home dashboard** — a full-height weekly calendar alongside today's
   weather, today/tomorrow's lunch status, chores, dinner menu, shopping
   list, and whiteboard, all in one glance. Any flagged reminder (see below)
-  shows as a big banner across the top. Every widget can be dragged and
-  resized to your own layout, which is saved per-device (in the browser)
-  and survives `git pull`/rebuilds. Pick which widgets appear at all in
-  Settings → Dashboard Widgets (also per-device, so a phone can show fewer
-  than the wall display); a widget that's undersized for its own content
-  (e.g. a longer shopping list) grows itself to fit automatically.
+  shows as a big banner across the top. To keep the main screen from
+  turning into a wall of text, Chores/Daily Checklist/Shopping List show
+  just a completed-count (or item tally) next to their name on the
+  dashboard — tap "See all" to open the full list. Every widget can be
+  dragged and resized to your own layout, which is saved per-device (in
+  the browser) and survives `git pull`/rebuilds. Pick which widgets appear
+  at all in Settings → Dashboard Widgets (also per-device, so a phone can
+  show fewer than the wall display); a widget that's undersized for its
+  own content grows itself to fit automatically.
 - **Built-in calendar** with an **agenda view**: three tappable columns for
   the household members (Mom / Dad / Child by default — rename in Settings).
   Tapping a member's name opens **Add Event**, preselected for that person.

@@ -28,11 +28,32 @@ export default function DailyChecklist({ members, compact = false, onExpand }) {
   const allMembers = { ...members, family: 'Family' };
   const tasks = data?.tasks || [];
 
+  // Kept down to a single completed-count line on the dashboard so the main
+  // screen stays uncluttered - the full page (opened from "See all") still
+  // lists every item.
+  if (compact) {
+    const doneCount = tasks.filter((t) => t.done).length;
+    return (
+      <section className="widget-card compact">
+        <div className="widget-header">
+          <h2>Daily Checklist</h2>
+          <div className="widget-header-actions">
+            {data && (
+              <span className="widget-status">
+                {tasks.length === 0 ? "Nothing on today's list" : `${doneCount} of ${tasks.length} done`}
+              </span>
+            )}
+            {onExpand && <button className="see-all" onClick={onExpand}>See all &rarr;</button>}
+          </div>
+        </div>
+      </section>
+    );
+  }
+
   return (
-    <section className={`widget-card${compact ? ' compact' : ''}`}>
+    <section className="widget-card">
       <div className="widget-header">
         <h2>Today's Checklist</h2>
-        {compact && onExpand && <button className="see-all" onClick={onExpand}>See all &rarr;</button>}
       </div>
 
       {tasks.map((task) => (
@@ -47,28 +68,24 @@ export default function DailyChecklist({ members, compact = false, onExpand }) {
       ))}
       {data && tasks.length === 0 && <p style={{ color: 'var(--color-text-muted)' }}>Nothing on today's list.</p>}
 
-      {!compact && (
-        <>
-          <div className="add-row">
-            <input
-              type="text"
-              placeholder="Add a one-time item…"
-              value={newTitle}
-              onChange={(e) => setNewTitle(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && addTask()}
-            />
-            <select value={assignedTo} onChange={(e) => setAssignedTo(e.target.value)}>
-              {Object.entries(allMembers).map(([key, name]) => (
-                <option key={key} value={key}>{name}</option>
-              ))}
-            </select>
-            <button className="btn btn-primary" onClick={addTask}>Add</button>
-          </div>
-          <p style={{ color: 'var(--color-text-muted)', fontSize: '0.8rem', marginTop: 10, marginBottom: 0 }}>
-            Want something to repeat every day (or just school days)? Set it up once in Settings &rarr; Daily Checklist Setup.
-          </p>
-        </>
-      )}
+      <div className="add-row">
+        <input
+          type="text"
+          placeholder="Add a one-time item…"
+          value={newTitle}
+          onChange={(e) => setNewTitle(e.target.value)}
+          onKeyDown={(e) => e.key === 'Enter' && addTask()}
+        />
+        <select value={assignedTo} onChange={(e) => setAssignedTo(e.target.value)}>
+          {Object.entries(allMembers).map(([key, name]) => (
+            <option key={key} value={key}>{name}</option>
+          ))}
+        </select>
+        <button className="btn btn-primary" onClick={addTask}>Add</button>
+      </div>
+      <p style={{ color: 'var(--color-text-muted)', fontSize: '0.8rem', marginTop: 10, marginBottom: 0 }}>
+        Want something to repeat every day (or just school days)? Set it up once in Settings &rarr; Daily Checklist Setup.
+      </p>
     </section>
   );
 }

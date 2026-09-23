@@ -42,13 +42,35 @@ export default function ShoppingList({ compact = false, onExpand }) {
     refresh();
   }
 
+  const items = data?.items || [];
+
+  // Kept down to a total-item tally on the dashboard so the main screen
+  // stays uncluttered - the full page (opened from "See all") still lists
+  // and lets you check off/write/delete individual items.
+  if (compact) {
+    return (
+      <section className="widget-card compact">
+        <div className="widget-header">
+          <h2>Shopping List</h2>
+          <div className="widget-header-actions">
+            {data && (
+              <span className="widget-status">
+                {items.length === 0 ? 'List is empty' : `${items.length} item${items.length === 1 ? '' : 's'}`}
+              </span>
+            )}
+            {onExpand && <button className="see-all" onClick={onExpand}>See all &rarr;</button>}
+          </div>
+        </div>
+      </section>
+    );
+  }
+
   return (
-    <section className={`widget-card${compact ? ' compact' : ''}`}>
+    <section className="widget-card">
       <div className="widget-header">
         <h2>Shopping List</h2>
-        {compact && onExpand && <button className="see-all" onClick={onExpand}>See all &rarr;</button>}
       </div>
-      {(data?.items || []).map((item) => (
+      {items.map((item) => (
         <div className="shopping-row" key={item.id}>
           <input type="checkbox" checked={item.checked} onChange={() => toggleChecked(item)} />
           {item.image_path ? (
@@ -66,7 +88,7 @@ export default function ShoppingList({ compact = false, onExpand }) {
           <button className="btn-icon" onClick={() => removeItem(item.id)}>✕</button>
         </div>
       ))}
-      {data && data.items.length === 0 && <p style={{ color: 'var(--color-text-muted)' }}>List is empty.</p>}
+      {data && items.length === 0 && <p style={{ color: 'var(--color-text-muted)' }}>List is empty.</p>}
       <div className="add-row">
         <input
           type="text"

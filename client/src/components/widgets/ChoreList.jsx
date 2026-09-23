@@ -69,37 +69,40 @@ export default function ChoreList({ members, compact = false, onExpand }) {
 
   const allMembers = { ...members, family: 'Family' };
   const weekChores = data?.chores || [];
-  // The dashboard widget is a "what's due today" glance; the full page (not
-  // compact) still shows the whole week for planning ahead.
-  const scopedChores = compact
-    ? weekChores.filter((c) => c.day_of_week == null || c.day_of_week === TODAY_DAY_INDEX)
-    : weekChores;
 
-  const rows = compact
-    ? scopedChores.map((chore) => ({ type: 'single', chore }))
-    : groupChores(scopedChores);
+  // The dashboard widget is a "what's due today" glance, kept down to a
+  // single completed-count line so the main screen stays uncluttered - the
+  // full page (opened from "See all") still lists every chore for the week.
+  if (compact) {
+    const todayChores = weekChores.filter((c) => c.day_of_week == null || c.day_of_week === TODAY_DAY_INDEX);
+    const doneToday = todayChores.filter((c) => c.done).length;
+    return (
+      <section className="widget-card compact">
+        <div className="widget-header">
+          <h2>Chores</h2>
+          <div className="widget-header-actions">
+            {data && (
+              <span className="widget-status">
+                {todayChores.length === 0 ? 'Nothing due today' : `${doneToday} of ${todayChores.length} done`}
+              </span>
+            )}
+            {onExpand && <button className="see-all" onClick={onExpand}>See all &rarr;</button>}
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  const rows = groupChores(weekChores);
   const openRows = rows.filter((r) => !isRowDone(r));
   const doneCount = rows.length - openRows.length;
-  // The dashboard widget keeps a chore visible (checked off) for the rest of
-  // the day once it's done, instead of hiding it - it disappears on its own
-  // once the day rolls over and it's no longer in today's scopedChores. The
-  // full page keeps its "Show completed" toggle since it covers a whole week.
-  const visibleRows = compact ? rows : (showDone ? rows : openRows);
-  const allDone = rows.length > 0 && openRows.length === 0;
+  const visibleRows = showDone ? rows : openRows;
 
   return (
-    <section className={`widget-card${compact ? ' compact' : ''}`}>
+    <section className="widget-card">
       <div className="widget-header">
-        <h2>{compact ? "Today's Chores" : 'Chore List'}</h2>
-        {compact && onExpand && <button className="see-all" onClick={onExpand}>See all &rarr;</button>}
+        <h2>Chore List</h2>
       </div>
-
-      {compact && data && allDone && (
-        <p style={{ color: 'var(--color-text-muted)' }}>All done for today! 🎉</p>
-      )}
-      {compact && data && rows.length === 0 && (
-        <p style={{ color: 'var(--color-text-muted)' }}>Nothing due today.</p>
-      )}
 
       {visibleRows.map((row) =>
         row.type === 'group' ? (
@@ -123,7 +126,7 @@ export default function ChoreList({ members, compact = false, onExpand }) {
         ) : (
           <div className="chore-row" key={row.chore.id}>
             <input type="checkbox" checked={row.chore.done} onChange={() => toggleDone(row.chore)} />
-            {!compact && row.chore.day_of_week != null && (
+            {row.chore.day_of_week != null && (
               <span className="chore-day-tag">{WEEKDAY_SHORT[row.chore.day_of_week]}</span>
             )}
             <span className={`chore-title${row.chore.done ? ' done' : ''}`}>{row.chore.title}</span>
@@ -133,40 +136,36 @@ export default function ChoreList({ members, compact = false, onExpand }) {
           </div>
         )
       )}
-      {!compact && data && openRows.length === 0 && !showDone && (
+      {data && openRows.length === 0 && !showDone && (
         <p style={{ color: 'var(--color-text-muted)' }}>
           {rows.length === 0 ? 'No chores yet this week.' : 'All done for this week! 🎉'}
         </p>
       )}
 
-      {!compact && doneCount > 0 && (
+      {doneCount > 0 && (
         <button className="btn-link" onClick={() => setShowDone((v) => !v)} style={{ marginTop: 4 }}>
           {showDone ? 'Hide completed' : `Show completed (${doneCount})`}
         </button>
       )}
 
-      {!compact && (
-        <>
-          <div className="add-row">
-            <input
-              type="text"
-              placeholder="Add a one-time chore…"
-              value={newTitle}
-              onChange={(e) => setNewTitle(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && addChore()}
-            />
-            <select value={assignedTo} onChange={(e) => setAssignedTo(e.target.value)}>
-              {Object.entries(allMembers).map(([key, name]) => (
-                <option key={key} value={key}>{name}</option>
-              ))}
-            </select>
-            <button className="btn btn-primary" onClick={addChore}>Add</button>
-          </div>
-          <p style={{ color: 'var(--color-text-muted)', fontSize: '0.8rem', marginTop: 10, marginBottom: 0 }}>
-            Want a chore to repeat every week? Set it up once in Settings &rarr; Chore Setup. Week starts Sunday.
-          </p>
-        </>
-      )}
+      <div className="add-row">
+        <input
+          type="text"
+          placeholder="Add a one-time chore…"
+          value={newTitle}
+          onChange={(e) => setNewTitle(e.target.value)}
+          onKeyDown={(e) => e.key === 'Enter' && addChore()}
+        />
+        <select value={assignedTo} onChange={(e) => setAssignedTo(e.target.value)}>
+          {Object.entries(allMembers).map(([key, name]) => (
+            <option key={key} value={key}>{name}</option>
+          ))}
+        </select>
+        <button className="btn btn-primary" onClick={addChore}>Add</button>
+      </div>
+      <p style={{ color: 'var(--color-text-muted)', fontSize: '0.8rem', marginTop: 10, marginBottom: 0 }}>
+        Want a chore to repeat every week? Set it up once in Settings &rarr; Chore Setup. Week starts Sunday.
+      </p>
     </section>
   );
 }
