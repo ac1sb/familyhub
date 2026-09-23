@@ -1,12 +1,37 @@
 import { useEffect, useState } from 'react';
 import { fetchScreensaverPhoto } from '../lib/screensaverPhotos.js';
 import { api } from '../api.js';
+import { formatTime, todayISO } from '../lib/week.js';
+
+const BRIEFING_START_HOUR = 5;
+const BRIEFING_ITEM_LIMIT = 5;
 
 export default function Screensaver({ settings, zip, onDismiss }) {
   const [photo, setPhoto] = useState(null);
   const [weather, setWeather] = useState(null);
   const [now, setNow] = useState(new Date());
   const [whiteboard, setWhiteboard] = useState(null);
+  const [todayEvents, setTodayEvents] = useState([]);
+
+  // Today's calendar, refreshed periodically so a screensaver left running
+  // overnight still has the right day's events once it rolls past midnight
+  // - only actually shown once it's past BRIEFING_START_HOUR, so it reads as
+  // a "here's your day" briefing rather than showing up at 11pm.
+  useEffect(() => {
+    if (!settings.showDailyBriefing) return;
+    let cancelled = false;
+    function load() {
+      api.eventsRange(todayISO(), 1).then((data) => {
+        if (!cancelled) setTodayEvents(data.events || []);
+      }).catch(() => {});
+    }
+    load();
+    const id = setInterval(load, 5 * 60000);
+    return () => {
+      cancelled = true;
+      clearInterval(id);
+    };
+  }, [settings.showDailyBriefing]);
 
   // A live reflection of the shared whiteboard, not a separate copy - draw
   // on the board from any device and it shows up here too, the same as
@@ -81,6 +106,20 @@ export default function Screensaver({ settings, zip, onDismiss }) {
         <div className="screensaver-postit">
           <div className="screensaver-postit-label">📝 Whiteboard</div>
           <img src={whiteboard.image_path} alt="Whiteboard note" />
+        </div>
+      )}
+      {settings.showDailyBriefing && now.getHours() >= BRIEFING_START_HOUR && todayEvents.length > 0 && (
+        <div className="screensaver-briefing">
+          <div className="screensaver-briefing-label">📅 Today</div>
+          {todayEvents.slice(0, BRIEFING_ITEM_LIMIT).map((ev) => (
+            <div className="screensaver-briefing-row" key={`${ev.id}-${ev.occurrence_start}`}>
+              <span className="screensaver-briefing-time">{ev.all_day ? 'All day' : formatTime(ev.occurrence_start)}</span>
+              <span className="screensaver-briefing-title">{ev.title}</span>
+            </div>
+          ))}
+          {todayEvents.length > BRIEFING_ITEM_LIMIT && (
+            <div className="screensaver-briefing-more">+{todayEvents.length - BRIEFING_ITEM_LIMIT} more</div>
+          )}
         </div>
       )}
       <div className="screensaver-tap-hint">Tap anywhere to continue</div>

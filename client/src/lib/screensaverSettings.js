@@ -17,6 +17,7 @@ const DEFAULTS = {
   photoIntervalSeconds: 30,
   theme: 'landscapes',
   showWhiteboard: true,
+  showDailyBriefing: true,
 };
 
 export function getScreensaverSettings() {

@@ -85,7 +85,9 @@ shopping list from another device.
   device; turn it on for the wall display only. Optionally overlays the
   shared whiteboard as a semi-transparent sticky note in the corner - the
   same live drawing as everywhere else, so a message left on the board is
-  still visible while the screensaver's up.
+  still visible while the screensaver's up. Also optionally shows a daily
+  briefing card listing today's calendar events, which starts appearing at
+  5am (so it reads as "here's your day" rather than showing up overnight).
 - **Editable Settings** — rename household members, change the weather zip,
   and set the day/night schedule, all from the app (no `.env` editing or
   restart required after first setup).

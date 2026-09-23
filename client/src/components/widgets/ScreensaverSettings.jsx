@@ -43,6 +43,20 @@ export default function ScreensaverSettings({ zip, settings, onChange }) {
       </div>
 
       <div className="field">
+        <div className="checkbox-row">
+          <input
+            id="ss-briefing"
+            type="checkbox"
+            checked={settings.showDailyBriefing}
+            onChange={(e) => update({ showDailyBriefing: e.target.checked })}
+          />
+          <label htmlFor="ss-briefing" style={{ margin: 0 }}>
+            Show today's calendar events starting at 5am (daily briefing)
+          </label>
+        </div>
+      </div>
+
+      <div className="field">
         <label htmlFor="ss-idle">Start after idle for</label>
         <select id="ss-idle" value={settings.idleMinutes} onChange={(e) => update({ idleMinutes: Number(e.target.value) })}>
           {[5, 10, 15, 30].map((m) => (

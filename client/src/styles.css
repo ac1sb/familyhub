@@ -1032,6 +1032,44 @@ button {
   border-radius: 3px;
   background: rgba(255, 255, 255, 0.5);
 }
+.screensaver-briefing {
+  position: absolute;
+  top: 28px;
+  left: 28px;
+  width: 260px;
+  background: rgba(255, 255, 255, 0.14);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 10px;
+  padding: 14px 16px;
+  color: #fff;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
+}
+.screensaver-briefing-label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  opacity: 0.8;
+  margin-bottom: 8px;
+}
+.screensaver-briefing-row {
+  display: flex;
+  gap: 8px;
+  font-size: 0.85rem;
+  padding: 3px 0;
+  align-items: baseline;
+}
+.screensaver-briefing-time { font-weight: 700; flex-shrink: 0; opacity: 0.9; }
+.screensaver-briefing-title {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.screensaver-briefing-more {
+  font-size: 0.75rem;
+  opacity: 0.75;
+  margin-top: 4px;
+}
 
 /* ---------- Reminder banner ---------- */
 .reminder-banner-stack {
