@@ -88,6 +88,8 @@ shopping list from another device.
   still visible while the screensaver's up. Also optionally shows a daily
   briefing card listing today's calendar events, which starts appearing at
   5am (so it reads as "here's your day" rather than showing up overnight).
+  Both overlays periodically relocate to a different corner of the screen
+  to avoid burn-in on a display that's on all day.
 - **Editable Settings** — rename household members, change the weather zip,
   and set the day/night schedule, all from the app (no `.env` editing or
   restart required after first setup).

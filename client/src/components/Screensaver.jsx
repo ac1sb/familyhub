@@ -6,12 +6,33 @@ import { formatTime, todayISO } from '../lib/week.js';
 const BRIEFING_START_HOUR = 5;
 const BRIEFING_ITEM_LIMIT = 5;
 
+// Both overlays periodically relocate to a different corner so nothing
+// sits in the exact same pixels for hours on end (screen burn-in on a
+// display that's on all day). They always sit two corners apart from each
+// other, so they can never land on top of one another.
+const CORNERS = ['top-left', 'top-right', 'bottom-left', 'bottom-right'];
+const MOVE_INTERVAL_MS = 4 * 60000;
+const MOVE_FADE_MS = 600;
+
 export default function Screensaver({ settings, zip, onDismiss }) {
   const [photo, setPhoto] = useState(null);
   const [weather, setWeather] = useState(null);
   const [now, setNow] = useState(new Date());
   const [whiteboard, setWhiteboard] = useState(null);
   const [todayEvents, setTodayEvents] = useState([]);
+  const [cornerIndex, setCornerIndex] = useState(0);
+  const [moving, setMoving] = useState(false);
+
+  useEffect(() => {
+    const id = setInterval(() => {
+      setMoving(true);
+      setTimeout(() => {
+        setCornerIndex((i) => (i + 1) % CORNERS.length);
+        setMoving(false);
+      }, MOVE_FADE_MS);
+    }, MOVE_INTERVAL_MS);
+    return () => clearInterval(id);
+  }, []);
 
   // Today's calendar, refreshed periodically so a screensaver left running
   // overnight still has the right day's events once it rolls past midnight
@@ -103,13 +124,19 @@ export default function Screensaver({ settings, zip, onDismiss }) {
         </div>
       )}
       {settings.showWhiteboard && whiteboard?.image_path && (
-        <div className="screensaver-postit">
+        <div
+          className={`screensaver-postit corner-${CORNERS[cornerIndex]}`}
+          style={{ opacity: moving ? 0 : 1 }}
+        >
           <div className="screensaver-postit-label">📝 Whiteboard</div>
           <img src={whiteboard.image_path} alt="Whiteboard note" />
         </div>
       )}
       {settings.showDailyBriefing && now.getHours() >= BRIEFING_START_HOUR && todayEvents.length > 0 && (
-        <div className="screensaver-briefing">
+        <div
+          className={`screensaver-briefing corner-${CORNERS[(cornerIndex + 2) % CORNERS.length]}`}
+          style={{ opacity: moving ? 0 : 1 }}
+        >
           <div className="screensaver-briefing-label">📅 Today</div>
           {todayEvents.slice(0, BRIEFING_ITEM_LIMIT).map((ev) => (
             <div className="screensaver-briefing-row" key={`${ev.id}-${ev.occurrence_start}`}>

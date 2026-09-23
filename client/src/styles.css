@@ -1005,26 +1005,36 @@ button {
   color: rgba(255,255,255,0.75);
   text-shadow: 0 1px 4px rgba(0,0,0,0.6);
 }
+/* Both overlays cycle through these four corners (see CORNERS in
+   Screensaver.jsx) so nothing sits in the same pixels for hours on an
+   always-on display - a fade (opacity, set inline while moving) hides the
+   jump itself, since top/left/right/bottom can't be smoothly animated
+   between "set" and "auto". The bottom corners sit above the photo credit/
+   tap-hint line rather than on top of it. */
+.corner-top-left { top: 28px; left: 28px; right: auto; bottom: auto; }
+.corner-top-right { top: 28px; right: 28px; left: auto; bottom: auto; }
+.corner-bottom-left { bottom: 72px; left: 28px; top: auto; right: auto; }
+.corner-bottom-right { bottom: 72px; right: 28px; top: auto; left: auto; }
+
 .screensaver-postit {
   position: absolute;
-  top: 28px;
-  right: 28px;
-  width: 240px;
+  width: 320px;
   background: rgba(255, 244, 189, 0.8);
   border-radius: 4px;
-  padding: 12px 12px 14px;
+  padding: 14px 14px 16px;
   box-shadow: 0 12px 28px rgba(0, 0, 0, 0.35);
   transform: rotate(-3deg);
   color: #4a3f22;
   text-shadow: none;
+  transition: opacity 0.6s ease;
 }
 .screensaver-postit-label {
-  font-size: 0.7rem;
+  font-size: 0.8rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.05em;
   opacity: 0.65;
-  margin-bottom: 6px;
+  margin-bottom: 8px;
 }
 .screensaver-postit img {
   display: block;
@@ -1034,29 +1044,28 @@ button {
 }
 .screensaver-briefing {
   position: absolute;
-  top: 28px;
-  left: 28px;
-  width: 260px;
+  width: 340px;
   background: rgba(255, 255, 255, 0.14);
   border: 1px solid rgba(255, 255, 255, 0.25);
   border-radius: 10px;
-  padding: 14px 16px;
+  padding: 16px 18px;
   color: #fff;
   text-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
+  transition: opacity 0.6s ease;
 }
 .screensaver-briefing-label {
-  font-size: 0.7rem;
+  font-size: 0.8rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.05em;
   opacity: 0.8;
-  margin-bottom: 8px;
+  margin-bottom: 10px;
 }
 .screensaver-briefing-row {
   display: flex;
-  gap: 8px;
-  font-size: 0.85rem;
-  padding: 3px 0;
+  gap: 10px;
+  font-size: 1.05rem;
+  padding: 4px 0;
   align-items: baseline;
 }
 .screensaver-briefing-time { font-weight: 700; flex-shrink: 0; opacity: 0.9; }
@@ -1066,9 +1075,9 @@ button {
   white-space: nowrap;
 }
 .screensaver-briefing-more {
-  font-size: 0.75rem;
+  font-size: 0.85rem;
   opacity: 0.75;
-  margin-top: 4px;
+  margin-top: 6px;
 }
 
 /* ---------- Reminder banner ---------- */
