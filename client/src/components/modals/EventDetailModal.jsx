@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import AddEventModal from './AddEventModal.jsx';
+import Modal from '../Modal.jsx';
 import { formatTime } from '../../lib/week.js';
 
 export default function EventDetailModal({ event, members, onClose, onChanged }) {
@@ -22,8 +23,7 @@ export default function EventDetailModal({ event, members, onClose, onChanged })
   const eventDate = new Date(occurrence);
 
   return (
-    <div className="modal-backdrop" onClick={onClose}>
-      <div className="modal-panel" onClick={(e) => e.stopPropagation()}>
+    <Modal onClose={onClose}>
         <h3 className="modal-title">{event.title}</h3>
 
         <span className={`member-choice ${event.member} event-detail-badge`}>{memberLabel}</span>
@@ -84,7 +84,6 @@ export default function EventDetailModal({ event, members, onClose, onChanged })
             <button className="btn btn-primary" onClick={() => setEditing(true)}>Edit</button>
           )}
         </div>
-      </div>
-    </div>
+    </Modal>
   );
 }

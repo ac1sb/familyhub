@@ -552,47 +552,46 @@ button {
 }
 
 /* ---------- Meal planner ---------- */
-.meal-slot {
+.meal-box-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.meal-box-row-compact {
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  padding-bottom: 4px;
+}
+.meal-box {
   background: var(--color-bg);
   border: 1px solid var(--color-border);
   border-radius: 12px;
-  padding: 12px;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-bottom: 8px;
+  overflow: hidden;
+  flex: 1 1 120px;
+  min-width: 100px;
+}
+.meal-box-row-compact .meal-box { flex: 0 0 128px; }
+.meal-box.dragging { box-shadow: 0 6px 16px rgba(0,0,0,0.15); z-index: 2; position: relative; }
+.meal-box-day {
+  text-align: center;
+  font-weight: 700;
+  color: #fff;
+  background: var(--color-primary);
+  padding: 8px 4px;
+  cursor: grab;
   touch-action: none;
 }
-.meal-slot .drag-handle {
-  font-size: 1.3rem;
-  color: var(--color-text-muted);
-  padding: 4px 8px;
+.meal-box-input {
+  width: 100%;
+  border: none;
+  border-top: 1px solid var(--color-border);
+  padding: 10px 8px;
+  text-align: center;
+  font-size: 0.85rem;
+  min-height: 44px;
+  background: var(--color-surface);
+  color: var(--color-text);
 }
-.meal-slot .day-badge {
-  min-width: 64px;
-  font-weight: 700;
-  color: var(--color-primary-dark);
-}
-.meal-slot input {
-  flex: 1;
-  border: 1px solid var(--color-border);
-  border-radius: 8px;
-  padding: 10px;
-  min-height: 40px;
-}
-.meal-slot.dragging { box-shadow: 0 6px 16px rgba(0,0,0,0.15); }
-
-.meal-slot-mini-list { display: flex; flex-direction: column; gap: 4px; }
-.meal-slot-mini {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 6px 4px;
-  border-bottom: 1px solid var(--color-border);
-  font-size: 0.9rem;
-}
-.meal-slot-mini .day-badge { min-width: 64px; font-weight: 700; color: var(--color-primary-dark); }
-.meal-slot-mini-empty { color: var(--color-text-muted); font-style: italic; }
 
 /* ---------- Lunch calendar (full month view) ---------- */
 .lunch-import-row {

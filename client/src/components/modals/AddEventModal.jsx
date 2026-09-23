@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { api } from '../../api.js';
 import { WEEKDAY_SHORT } from '../../lib/week.js';
+import Modal from '../Modal.jsx';
 
 function toLocalInputValue(date) {
   const d = new Date(date);
@@ -113,8 +114,7 @@ export default function AddEventModal({ members, defaultMember, existingEvent, o
   }
 
   return (
-    <div className="modal-backdrop" onClick={onClose}>
-      <div className="modal-panel" onClick={(e) => e.stopPropagation()}>
+    <Modal onClose={onClose}>
         <h3 className="modal-title">{isEditing ? 'Edit Calendar Event' : 'Add Calendar Event'}</h3>
 
         <div className="field">
@@ -234,7 +234,6 @@ export default function AddEventModal({ members, defaultMember, existingEvent, o
             {saving ? 'Saving…' : isEditing ? 'Save Changes' : 'Add Event'}
           </button>
         </div>
-      </div>
-    </div>
+    </Modal>
   );
 }

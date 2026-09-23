@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { usePolling } from '../../hooks/usePolling.js';
 import { api } from '../../api.js';
 import DrawingCanvas from '../DrawingCanvas.jsx';
+import Modal from '../Modal.jsx';
 
 export default function ShoppingList({ compact = false, onExpand }) {
   const { data, setData, refresh } = usePolling(() => api.shopping(), [], 10000);
@@ -79,20 +80,18 @@ export default function ShoppingList({ compact = false, onExpand }) {
       </div>
 
       {showPad && (
-        <div className="modal-backdrop" onClick={() => setShowPad(false)}>
-          <div className="modal-panel" onClick={(e) => e.stopPropagation()}>
-            <h3 className="modal-title">Write an item</h3>
-            <DrawingCanvas
-              width={640}
-              height={220}
-              colors={['#1a1a1a']}
-              sizes={[4, 10, 20]}
-              saveLabel="Add to List"
-              onSave={handleInkSave}
-              onCancel={() => setShowPad(false)}
-            />
-          </div>
-        </div>
+        <Modal onClose={() => setShowPad(false)}>
+          <h3 className="modal-title">Write an item</h3>
+          <DrawingCanvas
+            width={640}
+            height={220}
+            colors={['#1a1a1a']}
+            sizes={[4, 10, 20]}
+            saveLabel="Add to List"
+            onSave={handleInkSave}
+            onCancel={() => setShowPad(false)}
+          />
+        </Modal>
       )}
     </section>
   );

@@ -66,7 +66,7 @@ router.post('/scan', upload.single('photo'), async (req, res) => {
     const { data } = await withTimeout(worker.recognize(req.file.path), 30000, 'Timed out reading the photo.');
     await worker.terminate();
 
-    const parsed = parseFlyerText(data.text || '');
+    const parsed = parseFlyerText(data.text || '', data.lines || []);
     const foundAnything = !!(parsed.title || parsed.start_datetime);
     res.json({
       success: true,
