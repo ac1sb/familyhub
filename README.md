@@ -31,11 +31,13 @@ shopping list from another device.
   tiles side by side, however the widget is resized - the tiles stretch to
   fill whatever width/height that gives them rather than shrinking to fit
   more per row; each tile leads with an icon guessed from the task's title
-  (see `client/src/lib/taskIcons.js` for the keyword library - e.g. "Brush
-  teeth" gets a tooth, "Feed the dog" gets a dog; anything unrecognized
-  falls back to a star) instead of being text-only, and a long title clamps
-  to 2 lines with an ellipsis instead of overflowing the tile, full text via
-  hover or "See all"), or **Carousel** (one big tile at a time -
+  (see `client/src/lib/taskIcons.js` for the keyword library covering
+  common kid/household tasks - backpack, lunchbox, brushing teeth, feeding
+  the dog, chores like trash/laundry/vacuuming, and more; anything
+  unrecognized falls back to a plain notepad icon) instead of being
+  text-only, and a long title clamps to 2 lines with an ellipsis instead of
+  overflowing the tile, full text via hover or "See all"), or **Carousel**
+  (one big tile at a time -
   swipe it left/right, use the arrow buttons, or tap a dot to jump to a
   specific item). Tapping a tile/bar itself always marks it done, in any
   style - these are just different skins on the same list, not separate
