@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { usePolling } from '../../hooks/usePolling.js';
 import { api } from '../../api.js';
 import { WEEKDAY_SHORT } from '../../lib/week.js';
+import IconPicker from '../IconPicker.jsx';
 
 const ALL_DAYS = [0, 1, 2, 3, 4, 5, 6];
 
@@ -64,6 +65,14 @@ export default function DailyTaskSetup() {
     refresh();
   }
 
+  async function changeIcon(templateId, icon) {
+    setData((prev) => ({
+      templates: prev.templates.map((t) => (t.id === templateId ? { ...t, icon } : t)),
+    }));
+    await api.updateDailyTaskTemplate(templateId, { icon });
+    refresh();
+  }
+
   async function toggleActive(template) {
     setData((prev) => ({
       templates: prev.templates.map((t) => (t.id === template.id ? { ...t, active: !t.active } : t)),
@@ -108,6 +117,7 @@ export default function DailyTaskSetup() {
         <div className="chore-setup-row" key={template.id}>
           <div className="chore-row">
             <input type="checkbox" checked={template.active} onChange={() => toggleActive(template)} title="Active" />
+            <IconPicker icon={template.icon} title={template.title} onChange={(icon) => changeIcon(template.id, icon)} />
             <input
               type="text"
               className={`chore-title-input${template.active ? '' : ' done'}`}

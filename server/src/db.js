@@ -46,6 +46,7 @@ CREATE TABLE IF NOT EXISTS chore_templates (
   assigned_to TEXT NOT NULL DEFAULT 'family',
   active INTEGER NOT NULL DEFAULT 1,
   days TEXT NOT NULL DEFAULT '[0,1,2,3,4,5,6]', -- JSON array of 0-6 (Mon=0); which days it recurs on
+  icon TEXT, -- manually-picked Squares-mode icon; NULL = guess one from the title
   sort_order INTEGER NOT NULL DEFAULT 0,
   created_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
@@ -60,6 +61,7 @@ CREATE TABLE IF NOT EXISTS chores (
   week_start TEXT NOT NULL,
   sort_order INTEGER NOT NULL DEFAULT 0,
   template_id INTEGER REFERENCES chore_templates(id), -- set when auto-generated from a recurring template
+  icon TEXT, -- copied from the template at generation time, if it had one set
   created_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
 
@@ -94,6 +96,7 @@ CREATE TABLE IF NOT EXISTS daily_task_templates (
   assigned_to TEXT NOT NULL DEFAULT 'family',
   active INTEGER NOT NULL DEFAULT 1,
   days TEXT NOT NULL DEFAULT '[0,1,2,3,4,5,6]', -- JSON array of 0-6 (Mon=0); which days it applies
+  icon TEXT, -- manually-picked Squares-mode icon; NULL = guess one from the title
   sort_order INTEGER NOT NULL DEFAULT 0,
   created_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
@@ -109,6 +112,7 @@ CREATE TABLE IF NOT EXISTS daily_tasks (
   date TEXT NOT NULL,
   sort_order INTEGER NOT NULL DEFAULT 0,
   template_id INTEGER REFERENCES daily_task_templates(id),
+  icon TEXT, -- copied from the template at generation time, if it had one set
   created_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
 
@@ -183,6 +187,13 @@ try {
   db.exec('ALTER TABLE shopping_items ADD COLUMN checked_at TEXT');
 } catch {
   // column already exists
+}
+for (const table of ['chore_templates', 'chores', 'daily_task_templates', 'daily_tasks']) {
+  try {
+    db.exec(`ALTER TABLE ${table} ADD COLUMN icon TEXT`);
+  } catch {
+    // column already exists
+  }
 }
 
 // Seed a handful of example smart-home devices once, so the header quick-

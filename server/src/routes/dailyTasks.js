@@ -22,7 +22,7 @@ function ensureDayTasks(date) {
 
   const maxOrder = db.prepare('SELECT COALESCE(MAX(sort_order), -1) as m FROM daily_tasks WHERE date = ?').get(date).m;
   const insert = db.prepare(
-    'INSERT INTO daily_tasks (title, assigned_to, template_id, date, sort_order) VALUES (?, ?, ?, ?, ?)'
+    'INSERT INTO daily_tasks (title, assigned_to, template_id, date, sort_order, icon) VALUES (?, ?, ?, ?, ?, ?)'
   );
 
   withTransaction(() => {
@@ -39,7 +39,7 @@ function ensureDayTasks(date) {
       if (!days.includes(weekday)) continue;
 
       order += 1;
-      insert.run(t.title, t.assigned_to, t.id, date, order);
+      insert.run(t.title, t.assigned_to, t.id, date, order, t.icon);
     }
   });
 }

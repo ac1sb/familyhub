@@ -53,7 +53,7 @@ function ensureWeekChores(week_start) {
 
   const maxOrder = db.prepare('SELECT COALESCE(MAX(sort_order), -1) as m FROM chores WHERE week_start = ?').get(week_start).m;
   const insert = db.prepare(
-    'INSERT INTO chores (title, assigned_to, recurring, template_id, day_of_week, week_start, sort_order) VALUES (?, ?, 1, ?, ?, ?, ?)'
+    'INSERT INTO chores (title, assigned_to, recurring, template_id, day_of_week, week_start, sort_order, icon) VALUES (?, ?, 1, ?, ?, ?, ?, ?)'
   );
 
   withTransaction(() => {
@@ -63,7 +63,7 @@ function ensureWeekChores(week_start) {
         const key = `${t.id}:${day}`;
         if (existingKeys.has(key)) continue;
         order += 1;
-        insert.run(t.title, t.assigned_to, t.id, day, week_start, order);
+        insert.run(t.title, t.assigned_to, t.id, day, week_start, order, t.icon);
         existingKeys.add(key);
       }
     }

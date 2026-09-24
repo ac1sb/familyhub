@@ -31,14 +31,14 @@ router.get('/', (req, res) => {
 });
 
 router.post('/', (req, res) => {
-  const { title, assigned_to = 'family', days = [0, 1, 2, 3, 4, 5, 6] } = req.body;
+  const { title, assigned_to = 'family', days = [0, 1, 2, 3, 4, 5, 6], icon = null } = req.body;
   if (!title) return res.status(400).json({ error: 'title is required' });
   if (!validDays(days)) return res.status(400).json({ error: 'days must be a non-empty array of 0-6' });
 
   const maxOrder = db.prepare('SELECT COALESCE(MAX(sort_order), -1) as m FROM chore_templates').get().m;
   const info = db
-    .prepare('INSERT INTO chore_templates (title, assigned_to, days, sort_order) VALUES (?, ?, ?, ?)')
-    .run(title, assigned_to, JSON.stringify(days), maxOrder + 1);
+    .prepare('INSERT INTO chore_templates (title, assigned_to, days, icon, sort_order) VALUES (?, ?, ?, ?, ?)')
+    .run(title, assigned_to, JSON.stringify(days), icon, maxOrder + 1);
 
   const row = db.prepare('SELECT * FROM chore_templates WHERE id = ?').get(info.lastInsertRowid);
   res.status(201).json(rowToTemplate(row));
@@ -57,9 +57,14 @@ router.put('/:id', (req, res) => {
     assigned_to: req.body.assigned_to ?? existing.assigned_to,
     active: req.body.active !== undefined ? (req.body.active ? 1 : 0) : existing.active,
     days: req.body.days !== undefined ? JSON.stringify(req.body.days) : existing.days,
+    // icon: null clears back to auto-guessed - distinct from omitting the
+    // field entirely, which leaves whatever was already saved untouched.
+    icon: req.body.icon !== undefined ? req.body.icon : existing.icon,
   };
 
-  db.prepare('UPDATE chore_templates SET title=@title, assigned_to=@assigned_to, active=@active, days=@days WHERE id=@id').run({
+  db.prepare(
+    'UPDATE chore_templates SET title=@title, assigned_to=@assigned_to, active=@active, days=@days, icon=@icon WHERE id=@id'
+  ).run({
     ...merged,
     id: req.params.id,
   });

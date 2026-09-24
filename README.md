@@ -30,14 +30,17 @@ shopping list from another device.
   (the classic stacked full-width bars), **Squares** (always exactly 2
   tiles side by side, however the widget is resized - the tiles stretch to
   fill whatever width/height that gives them rather than shrinking to fit
-  more per row; each tile leads with a large icon (guessed from the task's
-  title and taking up most of the tile - see `client/src/lib/taskIcons.js`
-  for the keyword library covering common kid/household tasks: backpack,
-  lunchbox, brushing teeth, feeding the dog, chores like
-  trash/laundry/vacuuming, and more; anything unrecognized falls back to a
-  plain notepad icon) instead of being text-only, and a long title clamps
-  to 2 lines with an ellipsis instead of
-  overflowing the tile, full text via hover or "See all"), or **Carousel**
+  more per row; each tile leads with a large icon taking up most of the
+  tile instead of being text-only - guessed from the task's title against a
+  ~130-icon library (`client/src/lib/taskIcons.js`) organized into 14
+  categories (Personal Care, School, Pets, Kitchen, Cleaning, and so on;
+  anything unrecognized falls back to a plain notepad icon), or picked by
+  hand per recurring chore/daily item in Settings → Chore Setup / Daily
+  Checklist Setup - tap the icon next to its name to browse the same
+  categorized library and override the guess (or pick "Auto-guess from
+  name" to go back to it). A long title clamps to 2 lines with an ellipsis
+  instead of overflowing the tile, full text via hover or "See all"), or
+  **Carousel**
   (one big tile at a time -
   swipe it left/right, use the arrow buttons, or tap a dot to jump to a
   specific item). Tapping a tile/bar itself always marks it done, in any

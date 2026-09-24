@@ -132,7 +132,7 @@ export default function ChoreList({ compact = false, onExpand }) {
                 title={chore.title}
                 onClick={() => toggleDone(chore)}
               >
-                <span className="tile-icon">{getTaskIcon(chore.title)}</span>
+                <span className="tile-icon">{chore.icon || getTaskIcon(chore.title)}</span>
                 <span className="tile-title">{chore.title}</span>
                 {chore.done && <span className="tile-check">✓</span>}
               </button>
