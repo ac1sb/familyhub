@@ -51,6 +51,21 @@ export default function ChoreSetup() {
     }
   }
 
+  function handleTitleChange(templateId, title) {
+    setData((prev) => ({
+      templates: prev.templates.map((t) => (t.id === templateId ? { ...t, title } : t)),
+    }));
+  }
+
+  async function commitTitle(templateId, title) {
+    if (!title.trim()) {
+      refresh(); // empty name isn't saved - snap back to the last real value
+      return;
+    }
+    await api.updateChoreTemplate(templateId, { title: title.trim() });
+    refresh();
+  }
+
   async function toggleActive(template) {
     setData((prev) => ({
       templates: prev.templates.map((t) => (t.id === template.id ? { ...t, active: !t.active } : t)),
@@ -95,7 +110,13 @@ export default function ChoreSetup() {
         <div className="chore-setup-row" key={template.id}>
           <div className="chore-row">
             <input type="checkbox" checked={template.active} onChange={() => toggleActive(template)} title="Active" />
-            <span className={`chore-title${template.active ? '' : ' done'}`}>{template.title}</span>
+            <input
+              type="text"
+              className={`chore-title-input${template.active ? '' : ' done'}`}
+              value={template.title}
+              onChange={(e) => handleTitleChange(template.id, e.target.value)}
+              onBlur={(e) => commitTitle(template.id, e.target.value)}
+            />
             <button className="btn-icon" onClick={() => removeTemplate(template.id)}>✕</button>
           </div>
           <div className="chore-day-picker">

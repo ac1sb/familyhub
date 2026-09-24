@@ -30,12 +30,13 @@ shopping list from another device.
   (the classic stacked full-width bars), **Squares** (always exactly 2
   tiles side by side, however the widget is resized - the tiles stretch to
   fill whatever width/height that gives them rather than shrinking to fit
-  more per row; each tile leads with an icon guessed from the task's title
-  (see `client/src/lib/taskIcons.js` for the keyword library covering
-  common kid/household tasks - backpack, lunchbox, brushing teeth, feeding
-  the dog, chores like trash/laundry/vacuuming, and more; anything
-  unrecognized falls back to a plain notepad icon) instead of being
-  text-only, and a long title clamps to 2 lines with an ellipsis instead of
+  more per row; each tile leads with a large icon (guessed from the task's
+  title and taking up most of the tile - see `client/src/lib/taskIcons.js`
+  for the keyword library covering common kid/household tasks: backpack,
+  lunchbox, brushing teeth, feeding the dog, chores like
+  trash/laundry/vacuuming, and more; anything unrecognized falls back to a
+  plain notepad icon) instead of being text-only, and a long title clamps
+  to 2 lines with an ellipsis instead of
   overflowing the tile, full text via hover or "See all"), or **Carousel**
   (one big tile at a time -
   swipe it left/right, use the arrow buttons, or tap a dot to jump to a
@@ -76,8 +77,10 @@ shopping list from another device.
   before saving. The photo itself is kept and attached to the event.
 - **Chore list** for the week (no per-person assignment - it's one shared
   list, not split up by name), plus **recurring chores** set up once in
-  Settings → Chore Setup that
-  automatically reappear (unchecked) every week. Both Chores and the Daily
+  Settings → Chore Setup (Daily Checklist has its own equivalent Setup tab)
+  that automatically reappear (unchecked) every week/day. A recurring
+  item's name is editable right there in Settings - click into it and type,
+  no need to delete and re-add just to fix a typo or rename it. Both Chores and the Daily
   Checklist show as tappable tiles (like the Lunch today/tomorrow cards) -
   tap one to mark it done and a green checkmark appears on it, rather than a
   small checkbox to hit. A chore that repeats on several days (e.g.

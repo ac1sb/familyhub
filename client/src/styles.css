@@ -744,8 +744,12 @@ button {
 .tile-square:active { filter: brightness(0.95); }
 .tile-square.done { background: rgba(63, 145, 90, 0.22); border-color: var(--color-primary); }
 .tile-square .tile-icon {
-  flex: none;
-  font-size: 1.8rem;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2.6rem;
   line-height: 1;
 }
 .tile-square .tile-title {
@@ -862,6 +866,21 @@ button {
 }
 .chore-setup-row { border-bottom: 1px solid var(--color-border); padding-bottom: 6px; margin-bottom: 6px; }
 .chore-setup-row .chore-row { border-bottom: none; padding-bottom: 4px; }
+/* Same look as the plain .chore-title text it replaces, but editable in
+   place - tap in, rename, tap away (onBlur) to save. */
+.chore-title-input {
+  flex: 1;
+  min-width: 0;
+  font-size: 0.92rem;
+  font-family: inherit;
+  color: var(--color-text);
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  padding: 4px 6px;
+}
+.chore-title-input:focus { background: var(--color-bg); outline: 2px solid var(--color-primary); }
+.chore-title-input.done { text-decoration: line-through; color: var(--color-text-muted); }
 .chore-day-picker { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; padding: 0 8px 8px; }
 .chore-day-chips { display: flex; gap: 4px; flex-wrap: wrap; }
 .chore-day-chip {
