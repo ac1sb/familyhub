@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { DndContext, closestCenter, PointerSensor, TouchSensor, useSensor, useSensors } from '@dnd-kit/core';
-import { SortableContext, horizontalListSortingStrategy, useSortable, arrayMove } from '@dnd-kit/sortable';
+import { SortableContext, rectSortingStrategy, useSortable, arrayMove } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { usePolling } from '../../hooks/usePolling.js';
 import { api } from '../../api.js';
@@ -88,7 +88,7 @@ export default function MealPlanner({ compact = false, onExpand }) {
         </p>
       )}
       <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-        <SortableContext items={visibleOrder} strategy={horizontalListSortingStrategy}>
+        <SortableContext items={visibleOrder} strategy={rectSortingStrategy}>
           <div className={compact ? 'meal-box-row meal-box-row-compact' : 'meal-box-row'}>
             {visibleOrder.map((id) => {
               const dayIndex = order.indexOf(id);

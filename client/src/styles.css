@@ -875,10 +875,15 @@ button {
   flex-wrap: wrap;
   gap: 10px;
 }
+/* On the dashboard, boxes flow into a grid instead of one long scrolling
+   row - a wide/rectangular widget shows them in a single row same as
+   before, but resize the widget toward square (react-grid-layout's resize
+   handle) and they wrap into 2x2/3x2, etc., using whatever width and
+   height the widget is given. */
 .meal-box-row-compact {
-  flex-wrap: nowrap;
-  overflow-x: auto;
-  padding-bottom: 4px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(90px, 1fr));
+  gap: 10px;
 }
 .meal-box {
   background: var(--color-bg);
