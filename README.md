@@ -13,9 +13,12 @@ shopping list from another device.
   list, and whiteboard, all in one glance. Any flagged reminder (see below)
   shows as a big banner across the top. To keep the main screen from
   turning into a wall of text, Chores and Daily Checklist show a
-  completed-count next to their name plus only up to 3 still-open items
-  (checking one off cycles the next open one into view on its own), and
-  Shopping List just shows a plain item tally plus a quick-add box (typing
+  completed-count next to their name plus up to 3 items. Checking one off
+  shows its strikethrough right in place instead of yanking it away - it
+  only rolls off (making room for the next open item) once there's an open
+  item waiting that isn't already shown, so with 3 or fewer items nothing
+  ever disappears, it just accumulates strikethroughs. Shopping List just
+  shows a plain item tally plus a quick-add box (typing
   a name and hitting Add/Enter drops it straight onto the list) — tap
   "See all" for the full list either way. Every widget can be
   dragged and resized to your own layout, which is saved per-device (in

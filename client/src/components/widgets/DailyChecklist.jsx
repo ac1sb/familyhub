@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { usePolling } from '../../hooks/usePolling.js';
+import { useStickyCompactSlots } from '../../hooks/useStickyCompactSlots.js';
 import { api } from '../../api.js';
 import { todayISO } from '../../lib/week.js';
 
@@ -31,16 +32,19 @@ export default function DailyChecklist({ members, compact = false, onExpand }) {
 
   const allMembers = { ...members, family: 'Family' };
   const tasks = data?.tasks || [];
+  // Called unconditionally (not inside the `if (compact)` branch below) so
+  // it stays a valid hook call on the full-page render too, even though its
+  // result only matters for the compact widget.
+  const visible = useStickyCompactSlots(tasks, COMPACT_ITEM_LIMIT);
 
   // The dashboard widget is a glance: a completed-count line plus up to
-  // COMPACT_ITEM_LIMIT still-open items. Checking one off just drops it out
-  // of that not-done filter, so the next open one (if any) takes its place
-  // on its own - no separate "cycle" logic needed. The full page (opened
-  // from "See all") still lists every item.
+  // COMPACT_ITEM_LIMIT items, checked or not. Checking one off shows its
+  // strikethrough right in place - it only rolls off (making room for the
+  // next open one) once there's an open item waiting that isn't already
+  // shown; see useStickyCompactSlots. The full page (opened from "See all")
+  // still lists every item.
   if (compact) {
     const doneCount = tasks.filter((t) => t.done).length;
-    const notDone = tasks.filter((t) => !t.done);
-    const visible = notDone.slice(0, COMPACT_ITEM_LIMIT);
     return (
       <section className="widget-card compact">
         <div className="widget-header">
@@ -55,14 +59,14 @@ export default function DailyChecklist({ members, compact = false, onExpand }) {
           </div>
         </div>
 
-        {data && tasks.length > 0 && notDone.length === 0 && (
+        {data && tasks.length > 0 && doneCount === tasks.length && (
           <p style={{ color: 'var(--color-text-muted)' }}>All done for today! 🎉</p>
         )}
 
         {visible.map((task) => (
           <label className="chore-row" key={task.id}>
             <input type="checkbox" checked={task.done} onChange={() => toggleDone(task)} />
-            <span className="chore-title">
+            <span className={`chore-title${task.done ? ' done' : ''}`}>
               {task.template_id && <span title="Repeats on selected days">🔁 </span>}
               {task.title}
             </span>

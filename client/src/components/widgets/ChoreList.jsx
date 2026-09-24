@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { usePolling } from '../../hooks/usePolling.js';
+import { useStickyCompactSlots } from '../../hooks/useStickyCompactSlots.js';
 import { api } from '../../api.js';
 import { currentWeekStartSunday, WEEKDAY_SHORT } from '../../lib/week.js';
 
@@ -72,17 +73,20 @@ export default function ChoreList({ members, compact = false, onExpand }) {
 
   const allMembers = { ...members, family: 'Family' };
   const weekChores = data?.chores || [];
+  const todayChores = weekChores.filter((c) => c.day_of_week == null || c.day_of_week === TODAY_DAY_INDEX);
+  // Called unconditionally (not inside the `if (compact)` branch below) so
+  // it stays a valid hook call on the full-page render too, even though its
+  // result only matters for the compact widget.
+  const visible = useStickyCompactSlots(todayChores, COMPACT_ITEM_LIMIT);
 
   // The dashboard widget is a "what's due today" glance: a completed-count
-  // line plus up to COMPACT_ITEM_LIMIT still-open chores. Checking one off
-  // just drops it out of that not-done filter, so the next open one (if
-  // any) takes its place on its own - no separate "cycle" logic needed. The
-  // full page (opened from "See all") still lists every chore for the week.
+  // line plus up to COMPACT_ITEM_LIMIT chores, checked or not. Checking one
+  // off shows its strikethrough right in place - it only rolls off (making
+  // room for the next open one) once there's an open chore waiting that
+  // isn't already shown; see useStickyCompactSlots. The full page (opened
+  // from "See all") still lists every chore for the week.
   if (compact) {
-    const todayChores = weekChores.filter((c) => c.day_of_week == null || c.day_of_week === TODAY_DAY_INDEX);
     const doneToday = todayChores.filter((c) => c.done).length;
-    const notDone = todayChores.filter((c) => !c.done);
-    const visible = notDone.slice(0, COMPACT_ITEM_LIMIT);
     return (
       <section className="widget-card compact">
         <div className="widget-header">
@@ -97,14 +101,14 @@ export default function ChoreList({ members, compact = false, onExpand }) {
           </div>
         </div>
 
-        {data && todayChores.length > 0 && notDone.length === 0 && (
+        {data && todayChores.length > 0 && doneToday === todayChores.length && (
           <p style={{ color: 'var(--color-text-muted)' }}>All done for today! 🎉</p>
         )}
 
         {visible.map((chore) => (
           <label className="chore-row" key={chore.id}>
             <input type="checkbox" checked={chore.done} onChange={() => toggleDone(chore)} />
-            <span className="chore-title">{chore.title}</span>
+            <span className={`chore-title${chore.done ? ' done' : ''}`}>{chore.title}</span>
             <span className={`chore-tag ${chore.assigned_to}`}>{allMembers[chore.assigned_to] || chore.assigned_to}</span>
           </label>
         ))}
