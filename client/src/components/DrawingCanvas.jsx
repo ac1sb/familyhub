@@ -28,11 +28,32 @@ export default function DrawingCanvas({
   const strokesRef = useRef([]);
   const currentStrokeRef = useRef(null);
   const drawingRef = useRef(false);
+  const colorPickerRef = useRef(null);
 
   const [color, setColor] = useState(colors[0]);
   const [size, setSize] = useState(sizes[Math.floor(sizes.length / 2)]);
   const [erasing, setErasing] = useState(false);
   const [canUndo, setCanUndo] = useState(false);
+  // Only the current color shows by default - with up to 8 choices (5 base
+  // colors + one per family member), always showing every swatch ate up a
+  // lot of the narrow side toolbar. Tapping the current swatch reveals the
+  // rest; picking one collapses back down to just that swatch again.
+  const [colorPickerOpen, setColorPickerOpen] = useState(false);
+
+  useEffect(() => {
+    if (!colorPickerOpen) return;
+    function handleOutside(e) {
+      if (colorPickerRef.current && !colorPickerRef.current.contains(e.target)) setColorPickerOpen(false);
+    }
+    document.addEventListener('pointerdown', handleOutside, true);
+    return () => document.removeEventListener('pointerdown', handleOutside, true);
+  }, [colorPickerOpen]);
+
+  function selectColor(c) {
+    setColor(c);
+    setErasing(false);
+    setColorPickerOpen(false);
+  }
 
   function paintStroke(ctx, stroke, w, h) {
     if (stroke.points.length === 0) return;
@@ -167,19 +188,26 @@ export default function DrawingCanvas({
     <div className="drawing-canvas-wrap">
       <div className="drawing-toolbar">
         {colors.length > 1 && (
-          <div className="drawing-colors">
-            {colors.map((c) => (
-              <button
-                key={c}
-                type="button"
-                className={`drawing-color-swatch${!erasing && color === c ? ' selected' : ''}`}
-                style={{ background: c }}
-                onClick={() => {
-                  setColor(c);
-                  setErasing(false);
-                }}
-              />
-            ))}
+          <div className="drawing-colors" ref={colorPickerRef}>
+            <button
+              type="button"
+              className="drawing-color-swatch selected"
+              style={{ background: color }}
+              onClick={() => setColorPickerOpen((v) => !v)}
+              title="Choose a color"
+            />
+            {colorPickerOpen &&
+              colors
+                .filter((c) => c !== color)
+                .map((c) => (
+                  <button
+                    key={c}
+                    type="button"
+                    className="drawing-color-swatch"
+                    style={{ background: c }}
+                    onClick={() => selectColor(c)}
+                  />
+                ))}
           </div>
         )}
         <div className="drawing-sizes">
