@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { fetchScreensaverPhoto } from '../lib/screensaverPhotos.js';
+import { fetchThemedPhoto } from '../lib/photoLibrary.js';
 import { api } from '../api.js';
 import { formatTime, todayISO } from '../lib/week.js';
 
@@ -76,7 +76,7 @@ export default function Screensaver({ settings, zip, onDismiss }) {
   useEffect(() => {
     let cancelled = false;
     async function loadPhoto() {
-      const next = await fetchScreensaverPhoto(settings.theme);
+      const next = await fetchThemedPhoto(settings.theme);
       if (!cancelled) setPhoto(next);
     }
     loadPhoto();

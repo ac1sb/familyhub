@@ -19,6 +19,8 @@ import {
   getWidgetColors,
 } from '../lib/dashboardLayout.js';
 import { getWidgetDisplayMode } from '../lib/widgetDisplayMode.js';
+import { getDashboardBackgroundSettings, setDashboardBackgroundSettings } from '../lib/dashboardBackgroundSettings.js';
+import { fetchThemedPhoto } from '../lib/photoLibrary.js';
 
 const AutoWidthGridLayout = WidthProvider(GridLayout);
 
@@ -43,7 +45,45 @@ export default function Dashboard({ members, zip, onNavigate }) {
   const [layout, setLayout] = useState(getDashboardLayout());
   const [enabledWidgets] = useState(() => getEnabledWidgets());
   const [widgetColors] = useState(() => getWidgetColors());
+  const [background] = useState(() => getDashboardBackgroundSettings());
+  const [backgroundPhoto, setBackgroundPhoto] = useState(background.photo);
   const wrapRef = useRef(null);
+
+  // Off: nothing to do. Static: reuse whatever's cached for the current
+  // theme (Settings clears it when the theme changes or "New photo" is
+  // tapped), only fetching if there's nothing yet. Rotating: fetch right
+  // away and again on the configured interval, same pattern as the
+  // screensaver's own photo rotation.
+  useEffect(() => {
+    if (background.mode === 'off') return undefined;
+
+    if (background.mode === 'static') {
+      if (background.photo) return undefined;
+      let cancelled = false;
+      fetchThemedPhoto(background.theme).then((photo) => {
+        if (cancelled) return;
+        setBackgroundPhoto(photo);
+        setDashboardBackgroundSettings({ ...background, photo });
+      });
+      return () => {
+        cancelled = true;
+      };
+    }
+
+    let cancelled = false;
+    function loadPhoto() {
+      fetchThemedPhoto(background.theme).then((photo) => {
+        if (!cancelled) setBackgroundPhoto(photo);
+      });
+    }
+    loadPhoto();
+    const id = setInterval(loadPhoto, Math.max(1, background.intervalMinutes) * 60000);
+    return () => {
+      cancelled = true;
+      clearInterval(id);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // react-grid-layout only ever knows about the currently-visible items (it's
   // handed `visibleLayout`, not the full set), so its own onLayoutChange
@@ -105,7 +145,11 @@ export default function Dashboard({ members, zip, onNavigate }) {
   const visibleLayout = layout.filter((item) => enabledWidgets.has(item.i));
 
   return (
-    <div className="dashboard-wrap" ref={wrapRef}>
+    <div
+      className={`dashboard-wrap${backgroundPhoto ? ' has-background-photo' : ''}`}
+      ref={wrapRef}
+      style={backgroundPhoto ? { backgroundImage: `url(${backgroundPhoto.url})` } : undefined}
+    >
       <ReminderBanner members={members} />
 
       <AutoWidthGridLayout

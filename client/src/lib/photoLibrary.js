@@ -1,3 +1,14 @@
+// Shared photo-fetching used by both the Screensaver and the dashboard
+// background - a themed nature photo, pulled from Wikimedia Commons with a
+// no-API-key-needed Picsum fallback if that fails or returns nothing.
+export const THEMES = [
+  { id: 'landscapes', label: 'Landscapes' },
+  { id: 'mountains', label: 'Mountains' },
+  { id: 'waterfalls', label: 'Waterfalls' },
+  { id: 'lakes', label: 'Lakes' },
+  { id: 'forests', label: 'Forests' },
+];
+
 // Wikimedia Commons category to pull "Featured pictures" from for each theme,
 // with a broader (non-featured) category as a second try before giving up
 // and falling back to Picsum, which needs no API call and basically never fails.
@@ -51,7 +62,7 @@ function picsumPhoto() {
   };
 }
 
-export async function fetchScreensaverPhoto(theme) {
+export async function fetchThemedPhoto(theme) {
   const attempts = CATEGORY_ATTEMPTS[theme] || CATEGORY_ATTEMPTS.landscapes;
   for (const category of attempts) {
     try {

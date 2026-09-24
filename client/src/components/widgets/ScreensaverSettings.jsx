@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { THEMES } from '../../lib/screensaverSettings.js';
+import { THEMES } from '../../lib/photoLibrary.js';
 import Screensaver from '../Screensaver.jsx';
 
 export default function ScreensaverSettings({ zip, settings, onChange }) {

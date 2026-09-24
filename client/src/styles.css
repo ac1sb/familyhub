@@ -299,6 +299,15 @@ button {
   min-height: 0;
   overflow-y: auto;
 }
+/* Settings -> Dashboard Widgets: Static/Rotating background. Shows through
+   the gaps between widgets, and through any widget given its own frosted
+   custom color (.has-custom-color, above) - opaque default-themed widgets
+   just sit on top of it like normal. */
+.dashboard-wrap.has-background-photo {
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
 
 .dashboard-rgl {
   position: relative;

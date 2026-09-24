@@ -1,13 +1,5 @@
 const KEY = 'familyhub.screensaver.v1';
 
-export const THEMES = [
-  { id: 'landscapes', label: 'Landscapes' },
-  { id: 'mountains', label: 'Mountains' },
-  { id: 'waterfalls', label: 'Waterfalls' },
-  { id: 'lakes', label: 'Lakes' },
-  { id: 'forests', label: 'Forests' },
-];
-
 const DEFAULTS = {
   // Per-device on purpose: there's no reliable way to tell "this is the wall
   // display" from "this is someone's phone" automatically, so it defaults off
