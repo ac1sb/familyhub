@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import GridLayout, { WidthProvider } from 'react-grid-layout/legacy';
+import { collides } from 'react-grid-layout';
 import 'react-grid-layout/css/styles.css';
 import CalendarAgenda from './widgets/CalendarAgenda.jsx';
 import ChoreList from './widgets/ChoreList.jsx';
@@ -42,6 +43,36 @@ const NO_AUTO_GROW = new Set(['calendar', 'shopping']);
 // those self-filling display modes.
 const SELF_FILLING_MODES = new Set(['carousel', 'squares']);
 const SELF_FILLING_CAPABLE_WIDGETS = new Set(['chores', 'daily']);
+
+// With auto-compaction off (see compactType={null} below - it's what lets
+// widgets keep whatever gaps you leave instead of always snapping together),
+// growing a widget's height in the auto-grow effect below would otherwise
+// just overlap whatever sits beneath it, since nothing else pushes those
+// widgets out of the way automatically anymore. Cascades a minimal
+// push-down to only the widgets actually in the way, leaving every other
+// gap on the board untouched - not a full re-pack of the layout.
+function pushDownOverlaps(layout, grownIds) {
+  const byId = new Map(layout.map((item) => [item.i, { ...item }]));
+  const queue = [...grownIds];
+  const queued = new Set(queue);
+  while (queue.length > 0) {
+    const id = queue.shift();
+    queued.delete(id);
+    const item = byId.get(id);
+    for (const other of byId.values()) {
+      if (other.i === item.i || other.static) continue;
+      if (!collides(item, other)) continue;
+      const shift = item.y + item.h - other.y;
+      if (shift <= 0) continue;
+      other.y += shift;
+      if (!queued.has(other.i)) {
+        queue.push(other.i);
+        queued.add(other.i);
+      }
+    }
+  }
+  return layout.map((item) => byId.get(item.i));
+}
 
 export default function Dashboard({ members, zip, onNavigate }) {
   const [layout, setLayout] = useState(getDashboardLayout());
@@ -112,19 +143,20 @@ export default function Dashboard({ members, zip, onNavigate }) {
       const container = wrapRef.current;
       if (!container) return;
       setLayout((prevLayout) => {
-        let changed = false;
-        const next = prevLayout.map((item) => {
+        const grownIds = [];
+        let next = prevLayout.map((item) => {
           if (NO_AUTO_GROW.has(item.i)) return item;
           if (SELF_FILLING_CAPABLE_WIDGETS.has(item.i) && SELF_FILLING_MODES.has(getWidgetDisplayMode(item.i))) return item;
           const card = container.querySelector(`[data-grid-id="${item.i}"] .widget-card`);
           if (!card) return item;
           const deficit = card.scrollHeight - card.clientHeight;
           if (deficit <= 4) return item;
-          changed = true;
           const extraRows = Math.ceil(deficit / (ROW_HEIGHT + ROW_MARGIN));
+          grownIds.push(item.i);
           return { ...item, h: item.h + extraRows };
         });
-        if (!changed) return prevLayout;
+        if (grownIds.length === 0) return prevLayout;
+        next = pushDownOverlaps(next, grownIds);
         setDashboardLayout(next);
         return next;
       });
@@ -152,7 +184,15 @@ export default function Dashboard({ members, zip, onNavigate }) {
       ref={wrapRef}
       style={
         backgroundPhoto
-          ? { backgroundImage: `url(${backgroundPhoto.url})`, '--frost-opacity': `${background.frostOpacity}%` }
+          ? {
+              backgroundImage: `url(${backgroundPhoto.url})`,
+              '--frost-opacity': `${background.frostOpacity}%`,
+              // Blur scales down with the frost slider too - at 0% that
+              // means an actually crisp, unblurred photo (not just an
+              // untinted one), so the low end of the slider reads as
+              // "clear" rather than merely "less tinted."
+              '--frost-blur': `${(background.frostOpacity / 100) * 12}px`,
+            }
           : undefined
       }
     >
@@ -168,7 +208,7 @@ export default function Dashboard({ members, zip, onNavigate }) {
         draggableHandle=".widget-header"
         draggableCancel="button, input, select, textarea, a"
         resizeHandles={['se']}
-        compactType="vertical"
+        compactType={null}
         onLayoutChange={handleLayoutChange}
       >
         {WIDGET_CATALOG.filter((w) => enabledWidgets.has(w.id)).map((w) => (

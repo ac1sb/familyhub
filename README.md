@@ -50,13 +50,18 @@ shopping list from another device.
   style - these are just different skins on the same list, not separate
   features, so switching back and forth never loses anything. Every widget
   can be dragged and resized to your own layout, which is saved per-device
-  (in the browser) and survives `git pull`/rebuilds. Pick which widgets
-  appear at all — and give any of them their own background color,
+  (in the browser) and survives `git pull`/rebuilds. Widgets free-float
+  rather than snapping tightly together - moving one out of the way, or
+  hiding it in Settings, leaves the gap it left behind instead of the rest
+  of the board auto-packing to close it up; dragging one onto another still
+  pushes that one out of the way, so nothing ends up overlapping. Pick which
+  widgets appear at all — and give any of them their own background color,
   overriding the normal day/night theme for just that one — in Settings →
   Dashboard Widgets (also per-device, so a phone can show fewer than the
   wall display, or its own color scheme, or a different widget style); a
   widget that's undersized for its own content grows itself to fit
-  automatically (Carousel-mode widgets are exempt from this, since a
+  automatically, nudging anything directly in its way further down rather
+  than overlapping it (Carousel-mode widgets are exempt from this, since a
   carousel tile is designed to fill whatever height it's given rather than
   ever needing more room). Also in Settings → Dashboard Widgets: a
   **dashboard background photo**, from the same free nature-photo library
@@ -70,8 +75,9 @@ shopping list from another device.
   widgets; with the background off, widgets stay fully opaque as normal. A
   **frost level slider** (0-100%) controls how see-through that frosting is,
   per-device like the rest of these settings - lower lets more of the photo
-  through (0% is fully see-through, no color tint at all, just the blurred
-  photo behind the widget's text), higher keeps widgets more solid/readable.
+  through and also reduces the blur along with it, so 0% is a genuinely
+  crisp, fully see-through widget (no tint, no blur), not just an untinted
+  blurry one; higher keeps widgets more solid/readable, and more blurred.
   Widget header titles switch to the theme's stronger text color plus a
   glow (a light halo behind dark text, or a dark halo behind light text in
   night mode) whenever a background photo is on, since their normal muted
