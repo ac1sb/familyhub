@@ -82,22 +82,25 @@ export default function DailyChecklist({ members, compact = false, onExpand }) {
             )}
           />
         ) : (
-          visible.map((task) => (
-            <button
-              type="button"
-              className={`tile-row${task.done ? ' done' : ''}`}
-              key={task.id}
-              aria-pressed={task.done}
-              onClick={() => toggleDone(task)}
-            >
-              <span className="tile-title">
-                {task.template_id && <span title="Repeats on selected days">🔁 </span>}
-                {task.title}
-              </span>
-              <span className={`chore-tag ${task.assigned_to}`}>{allMembers[task.assigned_to] || task.assigned_to}</span>
-              {task.done && <span className="tile-check">✓</span>}
-            </button>
-          ))
+          <div className="tile-grid">
+            {visible.map((task) => (
+              <button
+                type="button"
+                className={`tile-square${task.done ? ' done' : ''}`}
+                key={task.id}
+                aria-pressed={task.done}
+                title={task.title}
+                onClick={() => toggleDone(task)}
+              >
+                <span className="tile-title">
+                  {task.template_id && <span title="Repeats on selected days">🔁 </span>}
+                  {task.title}
+                </span>
+                <span className={`chore-tag ${task.assigned_to}`}>{allMembers[task.assigned_to] || task.assigned_to}</span>
+                {task.done && <span className="tile-check">✓</span>}
+              </button>
+            ))}
+          </div>
         )}
       </section>
     );

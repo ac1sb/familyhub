@@ -121,19 +121,22 @@ export default function ChoreList({ members, compact = false, onExpand }) {
             )}
           />
         ) : (
-          visible.map((chore) => (
-            <button
-              type="button"
-              className={`tile-row${chore.done ? ' done' : ''}`}
-              key={chore.id}
-              aria-pressed={chore.done}
-              onClick={() => toggleDone(chore)}
-            >
-              <span className="tile-title">{chore.title}</span>
-              <span className={`chore-tag ${chore.assigned_to}`}>{allMembers[chore.assigned_to] || chore.assigned_to}</span>
-              {chore.done && <span className="tile-check">✓</span>}
-            </button>
-          ))
+          <div className="tile-grid">
+            {visible.map((chore) => (
+              <button
+                type="button"
+                className={`tile-square${chore.done ? ' done' : ''}`}
+                key={chore.id}
+                aria-pressed={chore.done}
+                title={chore.title}
+                onClick={() => toggleDone(chore)}
+              >
+                <span className="tile-title">{chore.title}</span>
+                <span className={`chore-tag ${chore.assigned_to}`}>{allMembers[chore.assigned_to] || chore.assigned_to}</span>
+                {chore.done && <span className="tile-check">✓</span>}
+              </button>
+            ))}
+          </div>
         )}
       </section>
     );

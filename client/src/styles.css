@@ -707,6 +707,55 @@ button {
   flex-shrink: 0;
 }
 
+/* List mode for Chores/Daily Checklist: a small-square grid, like the
+   Weekly Dinner Menu widget, instead of stacked full-width bars - flows
+   into more/fewer columns as the widget is resized toward square. A long
+   title clamps to 3 lines with an ellipsis rather than blowing up the
+   square or overflowing the widget; the full text is always a tap away
+   on "See all", and the native title attribute shows it on hover too. */
+.tile-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(90px, 1fr));
+  gap: 8px;
+}
+.tile-square {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 92px;
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  padding: 10px 8px;
+  background: var(--color-bg);
+  text-align: center;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+.tile-square:active { filter: brightness(0.95); }
+.tile-square.done { background: rgba(63, 145, 90, 0.22); border-color: var(--color-primary); }
+.tile-square .tile-title {
+  flex: none;
+  font-size: 0.85rem;
+  font-weight: 700;
+  line-height: 1.25;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.tile-square .chore-tag { font-size: 0.65rem; padding: 3px 8px; }
+.tile-square .tile-check {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 20px;
+  height: 20px;
+  font-size: 0.7rem;
+}
+
 /* ---------- Tile carousel (Settings -> Dashboard Widgets: Carousel mode) ----------
    One big tile at a time instead of a stacked list - swipe it (touch drag,
    handled in JS via pointer events) or use the arrow buttons to move
