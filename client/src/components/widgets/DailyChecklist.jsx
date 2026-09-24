@@ -4,6 +4,7 @@ import { useStickyCompactSlots } from '../../hooks/useStickyCompactSlots.js';
 import { api } from '../../api.js';
 import { todayISO } from '../../lib/week.js';
 import { getWidgetDisplayMode } from '../../lib/widgetDisplayMode.js';
+import { getTaskIcon } from '../../lib/taskIcons.js';
 import TileCarousel from '../TileCarousel.jsx';
 
 // The dashboard tile is a glance, not the whole list - past this many
@@ -93,10 +94,11 @@ export default function DailyChecklist({ compact = false, onExpand }) {
                 title={task.title}
                 onClick={() => toggleDone(task)}
               >
-                <span className="tile-title">
-                  {task.template_id && <span title="Repeats on selected days">🔁 </span>}
-                  {task.title}
-                </span>
+                {task.template_id && (
+                  <span className="tile-repeat-badge" title="Repeats on selected days">🔁</span>
+                )}
+                <span className="tile-icon">{getTaskIcon(task.title)}</span>
+                <span className="tile-title">{task.title}</span>
                 {task.done && <span className="tile-check">✓</span>}
               </button>
             ))}

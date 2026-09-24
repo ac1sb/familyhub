@@ -34,9 +34,14 @@ export function useStickyCompactSlots(items, limit) {
         return id;
       });
 
-      // Fill any empty slots (first load, or a slot's item was deleted).
-      while (ids.length < limit && waiting.length > 0) {
-        const next = waiting.shift();
+      // Fill any empty slots (first load, or a slot's item was deleted) from
+      // whatever's left, done or not - not just `waiting` - so a widget
+      // that starts out with `limit` or fewer items, some already checked
+      // off, shows all of them right away instead of hiding the done ones
+      // until something else needs their slot.
+      const remaining = items.filter((i) => !shown.has(i.id));
+      while (ids.length < limit && remaining.length > 0) {
+        const next = remaining.shift();
         ids.push(next.id);
         shown.add(next.id);
       }

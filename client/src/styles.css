@@ -711,10 +711,12 @@ button {
    Weekly Dinner Menu widget, instead of stacked full-width bars - always
    exactly 2 columns (never more, regardless of how wide the widget is
    resized) and the tiles stretch to fill however tall/wide the widget's
-   frame is, rather than sizing to a fixed min-height. A long title clamps
-   to 3 lines with an ellipsis rather than overflowing the tile; the full
-   text is always a tap away on "See all", and the native title attribute
-   shows it on hover too. */
+   frame is, rather than sizing to a fixed min-height. Each tile leads with
+   an icon (see lib/taskIcons.js - guessed from the task's title, e.g.
+   "Brush teeth" -> a tooth) rather than being text-only. A long title
+   clamps to 2 lines with an ellipsis rather than overflowing the tile; the
+   full text is always a tap away on "See all", and the native title
+   attribute shows it on hover too. */
 .tile-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
@@ -741,13 +743,18 @@ button {
 }
 .tile-square:active { filter: brightness(0.95); }
 .tile-square.done { background: rgba(63, 145, 90, 0.22); border-color: var(--color-primary); }
+.tile-square .tile-icon {
+  flex: none;
+  font-size: 1.8rem;
+  line-height: 1;
+}
 .tile-square .tile-title {
   flex: none;
-  font-size: 0.85rem;
+  font-size: 0.8rem;
   font-weight: 700;
   line-height: 1.25;
   display: -webkit-box;
-  -webkit-line-clamp: 3;
+  -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
@@ -758,6 +765,12 @@ button {
   width: 20px;
   height: 20px;
   font-size: 0.7rem;
+}
+.tile-square .tile-repeat-badge {
+  position: absolute;
+  top: 6px;
+  left: 6px;
+  font-size: 0.75rem;
 }
 
 /* ---------- Tile carousel (Settings -> Dashboard Widgets: Carousel mode) ----------

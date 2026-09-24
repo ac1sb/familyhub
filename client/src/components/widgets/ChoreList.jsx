@@ -4,6 +4,7 @@ import { useStickyCompactSlots } from '../../hooks/useStickyCompactSlots.js';
 import { api } from '../../api.js';
 import { currentWeekStartSunday, WEEKDAY_SHORT } from '../../lib/week.js';
 import { getWidgetDisplayMode } from '../../lib/widgetDisplayMode.js';
+import { getTaskIcon } from '../../lib/taskIcons.js';
 import TileCarousel from '../TileCarousel.jsx';
 
 const SUNDAY_FIRST_RANK = (dayOfWeek) => (dayOfWeek == null ? 7 : (dayOfWeek + 1) % 7);
@@ -131,6 +132,7 @@ export default function ChoreList({ compact = false, onExpand }) {
                 title={chore.title}
                 onClick={() => toggleDone(chore)}
               >
+                <span className="tile-icon">{getTaskIcon(chore.title)}</span>
                 <span className="tile-title">{chore.title}</span>
                 {chore.done && <span className="tile-check">✓</span>}
               </button>
