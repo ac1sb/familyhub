@@ -1117,9 +1117,14 @@ button {
   cursor: pointer;
 }
 .shopping-row:active { background: var(--color-bg); }
-.shopping-row input[type=checkbox] { width: 24px; height: 24px; flex-shrink: 0; }
 .shopping-row .name { font-size: 1.15rem; }
 .shopping-row .name.checked { text-decoration: line-through; color: var(--color-text-muted); }
+.shopping-checked-date {
+  flex-shrink: 0;
+  font-size: 0.78rem;
+  color: var(--color-text-muted);
+  white-space: nowrap;
+}
 .shopping-ink-item { display: flex; align-items: center; gap: 10px; }
 .shopping-ink-img {
   max-height: 44px;

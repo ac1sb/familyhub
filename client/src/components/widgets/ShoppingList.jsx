@@ -1,12 +1,15 @@
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import { usePolling } from '../../hooks/usePolling.js';
-import { useStickyCompactSlots } from '../../hooks/useStickyCompactSlots.js';
 import { api } from '../../api.js';
 import DrawingCanvas from '../DrawingCanvas.jsx';
 import Modal from '../Modal.jsx';
 
 // Same glance-widget limit Chores/Daily Checklist use.
 const COMPACT_ITEM_LIMIT = 3;
+
+function formatCheckedDate(iso) {
+  return new Date(iso).toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+}
 
 export default function ShoppingList({ compact = false, onExpand }) {
   const { data, setData, refresh } = usePolling(() => api.shopping(), [], 10000);
@@ -47,17 +50,18 @@ export default function ShoppingList({ compact = false, onExpand }) {
   }
 
   const items = data?.items || [];
-  // useStickyCompactSlots keys off `.done`, so give it that alongside the
-  // item's own `.checked` (kept for the delete/type-it logic already using
-  // it elsewhere). Called unconditionally so it's still a valid hook call on
-  // the full-page render too, even though its result only matters below.
-  const itemsForSlots = useMemo(() => items.map((i) => ({ ...i, done: i.checked })), [items]);
-  const visible = useStickyCompactSlots(itemsForSlots, COMPACT_ITEM_LIMIT);
+  // Crossing an item off means it's purchased - it disappears from the
+  // dashboard glance right away (no strikethrough lingering, unlike
+  // Chores/Daily Checklist) since there's nothing left to shop for. The
+  // still-needed items are what's worth a quick glance at.
+  const stillNeeded = items.filter((i) => !i.checked);
+  const visible = stillNeeded.slice(0, COMPACT_ITEM_LIMIT);
 
-  // Up to 3 items show right on the dashboard (checking one off shows its
-  // strikethrough in place, same as Chores/Daily Checklist) plus a total
-  // tally and quick-add box; the full page (opened from "See all") lists
-  // and lets you check off/write/delete every item.
+  // Up to 3 still-needed items show right on the dashboard, tapped to cross
+  // off (no checkbox - the whole row is the tap target) plus a tally of
+  // what's left and a quick-add box; the full page (opened from "See all")
+  // keeps purchased items visible (dated, sorted to the bottom) until the ✕
+  // removes one for good.
   if (compact) {
     return (
       <section className="widget-card compact">
@@ -66,7 +70,7 @@ export default function ShoppingList({ compact = false, onExpand }) {
           <div className="widget-header-actions">
             {data && (
               <span className="widget-status">
-                {items.length === 0 ? 'List is empty' : `${items.length} item${items.length === 1 ? '' : 's'}`}
+                {stillNeeded.length === 0 ? 'List is empty' : `${stillNeeded.length} item${stillNeeded.length === 1 ? '' : 's'}`}
               </span>
             )}
             {onExpand && <button className="see-all" onClick={onExpand}>See all &rarr;</button>}
@@ -74,17 +78,16 @@ export default function ShoppingList({ compact = false, onExpand }) {
         </div>
 
         {visible.map((item) => (
-          <label className="shopping-row" key={item.id}>
-            <input type="checkbox" checked={item.checked} onChange={() => toggleChecked(item)} />
+          <div className="shopping-row" key={item.id} onClick={() => toggleChecked(item)}>
             {item.image_path ? (
               <span className="shopping-ink-item" style={{ flex: 1 }}>
                 <img className="shopping-ink-img" src={item.image_path} alt="Handwritten item" />
-                {item.name && <span className={`name${item.checked ? ' checked' : ''}`}>{item.name}</span>}
+                {item.name && <span className="name">{item.name}</span>}
               </span>
             ) : (
-              <span className={`name${item.checked ? ' checked' : ''}`} style={{ flex: 1 }}>{item.name}</span>
+              <span className="name" style={{ flex: 1 }}>{item.name}</span>
             )}
-          </label>
+          </div>
         ))}
 
         <div className="add-row">
@@ -107,22 +110,24 @@ export default function ShoppingList({ compact = false, onExpand }) {
         <h2>Shopping List</h2>
       </div>
       {items.map((item) => (
-        <label className="shopping-row" key={item.id}>
-          <input type="checkbox" checked={item.checked} onChange={() => toggleChecked(item)} />
+        <div className="shopping-row" key={item.id} onClick={() => toggleChecked(item)}>
           {item.image_path ? (
             <span className="shopping-ink-item" style={{ flex: 1 }}>
               <img className="shopping-ink-img" src={item.image_path} alt="Handwritten item" />
               {item.name ? (
                 <span className={`name${item.checked ? ' checked' : ''}`}>{item.name}</span>
               ) : (
-                <button className="btn-link" onClick={() => handleTypeIt(item)}>⌨️ Type it</button>
+                <button className="btn-link" onClick={(e) => { e.stopPropagation(); handleTypeIt(item); }}>⌨️ Type it</button>
               )}
             </span>
           ) : (
             <span className={`name${item.checked ? ' checked' : ''}`} style={{ flex: 1 }}>{item.name}</span>
           )}
-          <button className="btn-icon" onClick={() => removeItem(item.id)}>✕</button>
-        </label>
+          {item.checked && item.checked_at && (
+            <span className="shopping-checked-date">Got it {formatCheckedDate(item.checked_at)}</span>
+          )}
+          <button className="btn-icon" onClick={(e) => { e.stopPropagation(); removeItem(item.id); }}>✕</button>
+        </div>
       ))}
       {data && items.length === 0 && <p style={{ color: 'var(--color-text-muted)' }}>List is empty.</p>}
       <div className="add-row">

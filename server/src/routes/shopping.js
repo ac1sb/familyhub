@@ -47,7 +47,16 @@ router.put('/:id', (req, res) => {
   if (!existing) return res.status(404).json({ error: 'not found' });
   const checked = req.body.checked !== undefined ? (req.body.checked ? 1 : 0) : existing.checked;
   const name = req.body.name ?? existing.name;
-  db.prepare('UPDATE shopping_items SET name=?, checked=? WHERE id=?').run(name, checked, req.params.id);
+  // Crossing an item off means "purchased" - stamp when that happened; un-crossing
+  // (tapping it again) clears the stamp rather than keeping a stale one around.
+  const checked_at =
+    req.body.checked !== undefined ? (checked ? new Date().toISOString() : null) : existing.checked_at;
+  db.prepare('UPDATE shopping_items SET name=?, checked=?, checked_at=? WHERE id=?').run(
+    name,
+    checked,
+    checked_at,
+    req.params.id
+  );
   const row = db.prepare('SELECT * FROM shopping_items WHERE id = ?').get(req.params.id);
   res.json({ ...row, checked: !!row.checked });
 });

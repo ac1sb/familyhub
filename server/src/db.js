@@ -116,6 +116,7 @@ CREATE TABLE IF NOT EXISTS shopping_items (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   name TEXT NOT NULL,
   checked INTEGER NOT NULL DEFAULT 0,
+  checked_at TEXT, -- when it was crossed off (assumed purchased); cleared if un-crossed
   sort_order INTEGER NOT NULL DEFAULT 0,
   image_path TEXT, -- set for a handwritten (ink) item instead of/alongside a typed name
   created_at TEXT NOT NULL DEFAULT (datetime('now'))
@@ -175,6 +176,11 @@ try {
 }
 try {
   db.exec('ALTER TABLE shopping_items ADD COLUMN image_path TEXT');
+} catch {
+  // column already exists
+}
+try {
+  db.exec('ALTER TABLE shopping_items ADD COLUMN checked_at TEXT');
 } catch {
   // column already exists
 }

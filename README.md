@@ -18,10 +18,14 @@ shopping list from another device.
   right on the tile instead of yanking it out of view. It only rolls off
   (making room for the next open item) once there's an open item waiting
   that isn't already shown, so with 4 or fewer items nothing ever
-  disappears, it just accumulates checkmarks. Shopping List works the same
-  way (checkbox + strikethrough instead of a tile), plus a total item tally
-  and a quick-add box (typing a name and hitting Add/Enter drops it straight
-  onto the list) — tap "See all" for the full list either way. Chores and
+  disappears, it just accumulates checkmarks. Shopping List is different by
+  design: there's no checkbox, tapping an item crosses it off as purchased
+  and it disappears from the dashboard glance immediately (nothing left to
+  buy, nothing to show), leaving a tally of what's still needed plus a
+  quick-add box (typing a name and hitting Add/Enter drops it straight onto
+  the list). The full list ("See all") still shows purchased items -
+  struck through, dated ("Got it Sep 24"), and sorted to the bottom - until
+  the ✕ removes one for good. Chores and
   Daily Checklist can each independently switch to a **Carousel** mode in
   Settings → Dashboard Widgets (e.g. Chores as a list, Daily Checklist as a
   carousel): one big tile at a time instead of a stacked list - swipe it
@@ -80,7 +84,9 @@ shopping list from another device.
   since each sync always walks forward to the current + next couple of
   months regardless of what's saved.
 - **Shopping list**, editable from any device, with support for quick
-  handwritten/drawn items in addition to typed ones.
+  handwritten/drawn items in addition to typed ones. Tap an item to cross it
+  off as purchased (no checkbox) - the full list keeps it visible, dated and
+  sorted to the bottom, until the ✕ deletes it outright.
 - **Whiteboard** — a shared drawing pad synced to every screen and phone;
   draw right in the dashboard widget for a quick note, or open the full
   page for a bigger canvas. Saving from the full page returns you to the
