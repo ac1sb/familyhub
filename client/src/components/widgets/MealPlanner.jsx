@@ -99,7 +99,10 @@ export default function MealPlanner({ compact = false, onExpand }) {
         </p>
       )}
       <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-        <div className={compact ? 'meal-box-row meal-box-row-compact' : 'meal-box-row'}>
+        <div
+          className={compact ? 'meal-box-row meal-box-row-compact' : 'meal-box-row'}
+          style={compact ? { gridTemplateColumns: `repeat(${visibleCount}, minmax(0, 1fr))` } : undefined}
+        >
           {visibleDayIndexes.map((dayIndex) => (
             <DaySlot
               key={dayIndex}

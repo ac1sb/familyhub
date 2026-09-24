@@ -22,7 +22,10 @@ shopping list from another device.
   and it disappears from the dashboard glance immediately (nothing left to
   buy, nothing to show), leaving a tally of what's still needed plus a
   quick-add box (typing a name and hitting Add/Enter drops it straight onto
-  the list). The full list ("See all") still shows purchased items -
+  the list). Every still-needed item renders in its own scrolling area (no
+  fixed cap) - how many show without scrolling just depends on how tall
+  you've dragged the widget (its resize handle, bottom-right corner), same
+  idea as the Calendar widget. The full list ("See all") still shows purchased items -
   struck through, dated ("Got it Sep 24"), and sorted to the bottom - until
   the ✕ removes one for good. Chores and Daily Checklist can each
   independently pick one of three widget styles in Settings → Dashboard
@@ -109,8 +112,11 @@ shopping list from another device.
   below), with today's day tab highlighted so it stands out from the rest
   of the week. The day tabs are fixed - drag a meal box by its ⠿ handle
   onto a different day to swap the two, and only the meal box itself
-  visibly moves; the day tabs never do. The boxes reflow into a grid and
-  resize themselves to fill however you resize the widget.
+  visibly moves; the day tabs never do. On the dashboard the boxes always
+  stay in one row and shrink or grow to exactly fill however wide you
+  resize the widget, rather than wrapping into extra rows or overflowing
+  past its edge - meal names ellipsize (…) if a box gets too narrow to show
+  the whole thing.
 - **Lunch calendar** for one child — a full monthly view (tap a day to toggle
   School/Pack-from-home, mark no-school days, jot the menu item), plus a
   dashboard card that shows *today's* status until 3pm and then flips to

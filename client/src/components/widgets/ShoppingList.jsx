@@ -4,9 +4,6 @@ import { api } from '../../api.js';
 import DrawingCanvas from '../DrawingCanvas.jsx';
 import Modal from '../Modal.jsx';
 
-// Same glance-widget limit Chores/Daily Checklist use.
-const COMPACT_ITEM_LIMIT = 3;
-
 function formatCheckedDate(iso) {
   return new Date(iso).toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
 }
@@ -55,13 +52,11 @@ export default function ShoppingList({ compact = false, onExpand }) {
   // Chores/Daily Checklist) since there's nothing left to shop for. The
   // still-needed items are what's worth a quick glance at.
   const stillNeeded = items.filter((i) => !i.checked);
-  const visible = stillNeeded.slice(0, COMPACT_ITEM_LIMIT);
 
-  // Up to 3 still-needed items show right on the dashboard, tapped to cross
-  // off (no checkbox - the whole row is the tap target) plus a tally of
-  // what's left and a quick-add box; the full page (opened from "See all")
-  // keeps purchased items visible (dated, sorted to the bottom) until the ✕
-  // removes one for good.
+  // Every still-needed item renders (no fixed cap) inside its own scrolling
+  // region, same idea as the Calendar widget's agenda: how many are visible
+  // without scrolling just depends on how tall the widget is resized to, and
+  // the rest are one scroll away rather than invisible.
   if (compact) {
     return (
       <section className="widget-card compact">
@@ -77,18 +72,20 @@ export default function ShoppingList({ compact = false, onExpand }) {
           </div>
         </div>
 
-        {visible.map((item) => (
-          <div className="shopping-row" key={item.id} onClick={() => toggleChecked(item)}>
-            {item.image_path ? (
-              <span className="shopping-ink-item" style={{ flex: 1 }}>
-                <img className="shopping-ink-img" src={item.image_path} alt="Handwritten item" />
-                {item.name && <span className="name">{item.name}</span>}
-              </span>
-            ) : (
-              <span className="name" style={{ flex: 1 }}>{item.name}</span>
-            )}
-          </div>
-        ))}
+        <div className="shopping-items-scroll">
+          {stillNeeded.map((item) => (
+            <div className="shopping-row" key={item.id} onClick={() => toggleChecked(item)}>
+              {item.image_path ? (
+                <span className="shopping-ink-item" style={{ flex: 1 }}>
+                  <img className="shopping-ink-img" src={item.image_path} alt="Handwritten item" />
+                  {item.name && <span className="name">{item.name}</span>}
+                </span>
+              ) : (
+                <span className="name" style={{ flex: 1 }}>{item.name}</span>
+              )}
+            </div>
+          ))}
+        </div>
 
         <div className="add-row">
           <input

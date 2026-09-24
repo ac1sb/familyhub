@@ -26,10 +26,12 @@ const AutoWidthGridLayout = WidthProvider(GridLayout);
 
 const ROW_HEIGHT = 26;
 const ROW_MARGIN = 8;
-// The "next few days" agenda is meant to scroll internally - it can span an
-// unbounded number of upcoming events/days, so it should never dictate the
-// dashboard's height the way a short list widget should.
-const NO_AUTO_GROW = new Set(['calendar']);
+// The "next few days" agenda and the shopping list are both meant to scroll
+// internally - each can span an unbounded number of upcoming events/days or
+// still-needed items, so neither should dictate the dashboard's height the
+// way a short list widget should; how much shows before scrolling is just
+// whatever height the widget is manually resized to.
+const NO_AUTO_GROW = new Set(['calendar', 'shopping']);
 // A Carousel or Squares tile (see TileCarousel.jsx / .tile-grid in
 // styles.css) is built to stretch and fill however much height its widget
 // is given, down to a small floor - unlike a stacked list, it never

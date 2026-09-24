@@ -1041,14 +1041,12 @@ button {
   flex-wrap: wrap;
   gap: 10px;
 }
-/* On the dashboard, boxes flow into a grid instead of one long scrolling
-   row - a wide/rectangular widget shows them in a single row same as
-   before, but resize the widget toward square (react-grid-layout's resize
-   handle) and they wrap into 2x2/3x2, etc., using whatever width and
-   height the widget is given. */
+/* On the dashboard, the visible days always share one row - MealPlanner.jsx
+   sets an explicit column count (repeat(visibleCount, minmax(0, 1fr))) so
+   the boxes shrink or grow to fill however wide the widget is resized to,
+   rather than wrapping into extra rows or overflowing past its edge. */
 .meal-box-row-compact {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(90px, 1fr));
   gap: 10px;
 }
 .meal-box {
@@ -1056,8 +1054,7 @@ button {
   border: 1px solid var(--color-border);
   border-radius: 12px;
   overflow: hidden;
-  flex: 1 1 120px;
-  min-width: 100px;
+  min-width: 0;
 }
 /* Boxes grow to fill however wide the widget gets resized (shrinking back
    down to min-width, then scrolling, if the widget is narrower than that) -
@@ -1092,13 +1089,15 @@ button {
 }
 .meal-box-input {
   width: 100%;
+  min-width: 0;
   border: none;
-  padding: 8px;
+  padding: 8px 4px;
   text-align: center;
   font-size: 0.85rem;
   min-height: 40px;
   background: var(--color-surface);
   color: var(--color-text);
+  text-overflow: ellipsis;
 }
 
 /* ---------- Lunch calendar (full month view) ---------- */
@@ -1290,6 +1289,16 @@ button {
   color: var(--color-text-muted);
 }
 /* ---------- Shopping list ---------- */
+/* The compact dashboard widget's item list is its own scrolling region, not
+   the whole card - the header and quick-add row stay put, and this area
+   just shows however many rows fit in whatever height the widget is
+   resized to (scrolling for the rest), instead of always hard-capping at a
+   fixed count regardless of the widget's actual size. */
+.shopping-items-scroll {
+  flex: 1;
+  overflow-y: auto;
+  min-height: 0;
+}
 .shopping-row {
   display: flex;
   align-items: center;
