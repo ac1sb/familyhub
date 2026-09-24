@@ -71,8 +71,8 @@ export default function App() {
         <main className={`main-content${active === 'dashboard' ? ' dashboard-mode' : ''}${active === 'calendar' ? ' calendar-mode' : ''}`}>
           {active === 'dashboard' && <Dashboard members={members} zip={zip} onNavigate={setActive} />}
           {active === 'calendar' && <CalendarAgenda members={members} />}
-          {active === 'chores' && <ChoreList members={members} />}
-          {active === 'daily' && <DailyChecklist members={members} />}
+          {active === 'chores' && <ChoreList />}
+          {active === 'daily' && <DailyChecklist />}
           {active === 'meals' && <MealPlanner />}
           {active === 'lunch' && <LunchCalendar childName={members.member_3} />}
           {active === 'weather' && <WeatherWidget zip={zip} />}

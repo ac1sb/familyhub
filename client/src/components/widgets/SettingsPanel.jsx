@@ -351,8 +351,8 @@ export default function SettingsPanel({ config, onConfigUpdated, screensaverSett
       {tab === 'general' && <GeneralSettings config={config} onConfigUpdated={onConfigUpdated} />}
       {tab === 'appearance' && <AppearanceSettings config={config} onConfigUpdated={onConfigUpdated} />}
       {tab === 'widgets' && <DashboardWidgetsSetup />}
-      {tab === 'chores' && <ChoreSetup members={config?.members} />}
-      {tab === 'daily' && <DailyTaskSetup members={config?.members} />}
+      {tab === 'chores' && <ChoreSetup />}
+      {tab === 'daily' && <DailyTaskSetup />}
       {tab === 'smarthome' && <SmartHomeSetup />}
       {tab === 'screensaver' && (
         <ScreensaverSettings zip={config?.weather_zip} settings={screensaverSettings} onChange={onScreensaverSettingsChange} />

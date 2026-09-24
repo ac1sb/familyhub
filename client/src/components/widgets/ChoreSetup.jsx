@@ -24,14 +24,11 @@ function DayChips({ days, onToggle }) {
   );
 }
 
-export default function ChoreSetup({ members }) {
+export default function ChoreSetup() {
   const { data, setData, refresh } = usePolling(() => api.choreTemplates(), [], 20000);
   const [newTitle, setNewTitle] = useState('');
-  const [assignedTo, setAssignedTo] = useState('family');
   const [newDays, setNewDays] = useState(ALL_DAYS);
   const [addError, setAddError] = useState(null);
-
-  const allMembers = { ...(members || {}), family: 'Family' };
 
   function toggleNewDay(day) {
     setNewDays((prev) =>
@@ -43,7 +40,9 @@ export default function ChoreSetup({ members }) {
     if (!newTitle.trim() || newDays.length === 0) return;
     setAddError(null);
     try {
-      await api.createChoreTemplate({ title: newTitle.trim(), assigned_to: assignedTo, days: newDays });
+      // No assigned_to here - chores are all for one household, not split up
+      // by name, so the server just defaults it.
+      await api.createChoreTemplate({ title: newTitle.trim(), days: newDays });
       setNewTitle('');
       setNewDays(ALL_DAYS);
       refresh();
@@ -97,9 +96,6 @@ export default function ChoreSetup({ members }) {
           <div className="chore-row">
             <input type="checkbox" checked={template.active} onChange={() => toggleActive(template)} title="Active" />
             <span className={`chore-title${template.active ? '' : ' done'}`}>{template.title}</span>
-            <span className={`chore-tag ${template.assigned_to}`}>
-              {allMembers[template.assigned_to] || template.assigned_to}
-            </span>
             <button className="btn-icon" onClick={() => removeTemplate(template.id)}>✕</button>
           </div>
           <div className="chore-day-picker">
@@ -120,11 +116,6 @@ export default function ChoreSetup({ members }) {
           onChange={(e) => setNewTitle(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && addTemplate()}
         />
-        <select value={assignedTo} onChange={(e) => setAssignedTo(e.target.value)}>
-          {Object.entries(allMembers).map(([key, name]) => (
-            <option key={key} value={key}>{name}</option>
-          ))}
-        </select>
         <button className="btn btn-primary" onClick={addTemplate} disabled={newDays.length === 0}>Add</button>
       </div>
       <div className="chore-day-picker">

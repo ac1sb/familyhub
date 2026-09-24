@@ -67,8 +67,9 @@ shopping list from another device.
   paper calendar page from the Add Event form; the server OCRs it, guesses a
   title/date/time/location with `chrono-node`, and lets you review/edit
   before saving. The photo itself is kept and attached to the event.
-- **Chore list** for the week, assignable to a household member, plus
-  **recurring chores** set up once in Settings → Chore Setup that
+- **Chore list** for the week (no per-person assignment - it's one shared
+  list, not split up by name), plus **recurring chores** set up once in
+  Settings → Chore Setup that
   automatically reappear (unchecked) every week. Both Chores and the Daily
   Checklist show as tappable tiles (like the Lunch today/tomorrow cards) -
   tap one to mark it done and a green checkmark appears on it, rather than a

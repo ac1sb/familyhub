@@ -10,11 +10,10 @@ import TileCarousel from '../TileCarousel.jsx';
 // still-open items, the rest are only a tap away on "See all".
 const COMPACT_ITEM_LIMIT = 4;
 
-export default function DailyChecklist({ members, compact = false, onExpand }) {
+export default function DailyChecklist({ compact = false, onExpand }) {
   const today = todayISO();
   const { data, setData, refresh } = usePolling(() => api.dailyTasks(today), [today], 15000);
   const [newTitle, setNewTitle] = useState('');
-  const [assignedTo, setAssignedTo] = useState('family');
   const [displayMode] = useState(() => getWidgetDisplayMode('daily'));
 
   async function toggleDone(task) {
@@ -28,12 +27,13 @@ export default function DailyChecklist({ members, compact = false, onExpand }) {
 
   async function addTask() {
     if (!newTitle.trim()) return;
-    await api.createDailyTask(today, { title: newTitle.trim(), assigned_to: assignedTo });
+    // No assigned_to here - this list is for one household, not split up by
+    // name, so the server just defaults it.
+    await api.createDailyTask(today, { title: newTitle.trim() });
     setNewTitle('');
     refresh();
   }
 
-  const allMembers = { ...members, family: 'Family' };
   const tasks = data?.tasks || [];
   // Called unconditionally (not inside the `if (compact)` branch below) so
   // it stays a valid hook call on the full-page render too, even though its
@@ -76,7 +76,6 @@ export default function DailyChecklist({ members, compact = false, onExpand }) {
                   {task.template_id && <span title="Repeats on selected days">🔁 </span>}
                   {task.title}
                 </span>
-                <span className={`chore-tag ${task.assigned_to}`}>{allMembers[task.assigned_to] || task.assigned_to}</span>
                 {task.done && <span className="tile-check">✓</span>}
               </>
             )}
@@ -98,7 +97,6 @@ export default function DailyChecklist({ members, compact = false, onExpand }) {
                   {task.template_id && <span title="Repeats on selected days">🔁 </span>}
                   {task.title}
                 </span>
-                <span className={`chore-tag ${task.assigned_to}`}>{allMembers[task.assigned_to] || task.assigned_to}</span>
                 {task.done && <span className="tile-check">✓</span>}
               </button>
             ))}
@@ -117,7 +115,6 @@ export default function DailyChecklist({ members, compact = false, onExpand }) {
               {task.template_id && <span title="Repeats on selected days">🔁 </span>}
               {task.title}
             </span>
-            <span className={`chore-tag ${task.assigned_to}`}>{allMembers[task.assigned_to] || task.assigned_to}</span>
             {task.done && <span className="tile-check">✓</span>}
           </button>
         ))}
@@ -143,7 +140,6 @@ export default function DailyChecklist({ members, compact = false, onExpand }) {
             {task.template_id && <span title="Repeats on selected days">🔁 </span>}
             {task.title}
           </span>
-          <span className={`chore-tag ${task.assigned_to}`}>{allMembers[task.assigned_to] || task.assigned_to}</span>
           {task.done && <span className="tile-check">✓</span>}
         </button>
       ))}
@@ -157,11 +153,6 @@ export default function DailyChecklist({ members, compact = false, onExpand }) {
           onChange={(e) => setNewTitle(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && addTask()}
         />
-        <select value={assignedTo} onChange={(e) => setAssignedTo(e.target.value)}>
-          {Object.entries(allMembers).map(([key, name]) => (
-            <option key={key} value={key}>{name}</option>
-          ))}
-        </select>
         <button className="btn btn-primary" onClick={addTask}>Add</button>
       </div>
       <p style={{ color: 'var(--color-text-muted)', fontSize: '0.8rem', marginTop: 10, marginBottom: 0 }}>

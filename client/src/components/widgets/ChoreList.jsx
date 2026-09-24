@@ -33,7 +33,6 @@ function groupChores(chores) {
       type: 'group',
       template_id: chore.template_id,
       title: chore.title,
-      assigned_to: chore.assigned_to,
       instances,
       sortKey: Math.min(...instances.map((i) => SUNDAY_FIRST_RANK(i.day_of_week))),
     });
@@ -46,7 +45,7 @@ function isRowDone(row) {
   return row.type === 'group' ? row.instances.every((i) => i.done) : row.chore.done;
 }
 
-export default function ChoreList({ members, compact = false, onExpand }) {
+export default function ChoreList({ compact = false, onExpand }) {
   // Computed fresh every render (not once at module load) so the widget
   // picks up the new day right after midnight instead of needing a page
   // reload - the parent app already re-renders every minute for the clock.
@@ -54,7 +53,6 @@ export default function ChoreList({ members, compact = false, onExpand }) {
   const weekStart = currentWeekStartSunday();
   const { data, setData, refresh } = usePolling(() => api.chores(weekStart), [weekStart], 15000);
   const [newTitle, setNewTitle] = useState('');
-  const [assignedTo, setAssignedTo] = useState('family');
   const [showDone, setShowDone] = useState(false);
   const [displayMode] = useState(() => getWidgetDisplayMode('chores'));
 
@@ -69,12 +67,13 @@ export default function ChoreList({ members, compact = false, onExpand }) {
 
   async function addChore() {
     if (!newTitle.trim()) return;
-    await api.createChore(weekStart, { title: newTitle.trim(), assigned_to: assignedTo });
+    // No assigned_to here - chores are all for one household, not split up
+    // by name, so the server just defaults it.
+    await api.createChore(weekStart, { title: newTitle.trim() });
     setNewTitle('');
     refresh();
   }
 
-  const allMembers = { ...members, family: 'Family' };
   const weekChores = data?.chores || [];
   const todayChores = weekChores.filter((c) => c.day_of_week == null || c.day_of_week === TODAY_DAY_INDEX);
   // Called unconditionally (not inside the `if (compact)` branch below) so
@@ -115,7 +114,6 @@ export default function ChoreList({ members, compact = false, onExpand }) {
             renderTile={(chore) => (
               <>
                 <span className="tile-title">{chore.title}</span>
-                <span className={`chore-tag ${chore.assigned_to}`}>{allMembers[chore.assigned_to] || chore.assigned_to}</span>
                 {chore.done && <span className="tile-check">✓</span>}
               </>
             )}
@@ -134,7 +132,6 @@ export default function ChoreList({ members, compact = false, onExpand }) {
                 onClick={() => toggleDone(chore)}
               >
                 <span className="tile-title">{chore.title}</span>
-                <span className={`chore-tag ${chore.assigned_to}`}>{allMembers[chore.assigned_to] || chore.assigned_to}</span>
                 {chore.done && <span className="tile-check">✓</span>}
               </button>
             ))}
@@ -150,7 +147,6 @@ export default function ChoreList({ members, compact = false, onExpand }) {
             onClick={() => toggleDone(chore)}
           >
             <span className="tile-title">{chore.title}</span>
-            <span className={`chore-tag ${chore.assigned_to}`}>{allMembers[chore.assigned_to] || chore.assigned_to}</span>
             {chore.done && <span className="tile-check">✓</span>}
           </button>
         ))}
@@ -186,7 +182,6 @@ export default function ChoreList({ members, compact = false, onExpand }) {
                 </button>
               ))}
             </div>
-            <span className={`chore-tag ${row.assigned_to}`}>{allMembers[row.assigned_to] || row.assigned_to}</span>
           </div>
         ) : (
           <button
@@ -200,9 +195,6 @@ export default function ChoreList({ members, compact = false, onExpand }) {
               <span className="chore-day-tag">{WEEKDAY_SHORT[row.chore.day_of_week]}</span>
             )}
             <span className="tile-title">{row.chore.title}</span>
-            <span className={`chore-tag ${row.chore.assigned_to}`}>
-              {allMembers[row.chore.assigned_to] || row.chore.assigned_to}
-            </span>
             {row.chore.done && <span className="tile-check">✓</span>}
           </button>
         )
@@ -227,11 +219,6 @@ export default function ChoreList({ members, compact = false, onExpand }) {
           onChange={(e) => setNewTitle(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && addChore()}
         />
-        <select value={assignedTo} onChange={(e) => setAssignedTo(e.target.value)}>
-          {Object.entries(allMembers).map(([key, name]) => (
-            <option key={key} value={key}>{name}</option>
-          ))}
-        </select>
         <button className="btn btn-primary" onClick={addChore}>Add</button>
       </div>
       <p style={{ color: 'var(--color-text-muted)', fontSize: '0.8rem', marginTop: 10, marginBottom: 0 }}>
