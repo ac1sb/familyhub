@@ -60,17 +60,15 @@ export default function App() {
     <div className="app-shell">
       <Sidebar active={active} onSelect={setActive} />
       <div className="main-area">
-        <header className="topbar">
-          <div className="datetime">
+        <div className="topbar-strip">
+          <HeaderSmartHomeToggles />
+          <div className="topbar-datetime">
             {now.toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' })} &middot;{' '}
             {now.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' })}
           </div>
-        </header>
-        <div className="topbar-strip">
-          <HeaderSmartHomeToggles />
           <HeaderWeather zip={zip} />
         </div>
-        <main className={`main-content${active === 'dashboard' ? ' dashboard-mode' : ''}`}>
+        <main className={`main-content${active === 'dashboard' ? ' dashboard-mode' : ''}${active === 'calendar' ? ' calendar-mode' : ''}`}>
           {active === 'dashboard' && <Dashboard members={members} zip={zip} onNavigate={setActive} />}
           {active === 'calendar' && <CalendarAgenda members={members} />}
           {active === 'chores' && <ChoreList members={members} />}

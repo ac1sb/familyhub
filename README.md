@@ -17,10 +17,10 @@ shopping list from another device.
   shows its strikethrough right in place instead of yanking it away - it
   only rolls off (making room for the next open item) once there's an open
   item waiting that isn't already shown, so with 3 or fewer items nothing
-  ever disappears, it just accumulates strikethroughs. Shopping List just
-  shows a plain item tally plus a quick-add box (typing
-  a name and hitting Add/Enter drops it straight onto the list) — tap
-  "See all" for the full list either way. Every widget can be
+  ever disappears, it just accumulates strikethroughs. Shopping List works
+  the same way, plus a total item tally and a quick-add box (typing a name
+  and hitting Add/Enter drops it straight onto the list) — tap "See all" for
+  the full list either way. Every widget can be
   dragged and resized to your own layout, which is saved per-device (in
   the browser) and survives `git pull`/rebuilds. Pick which widgets appear
   at all — and give any of them their own background color, overriding the
@@ -32,7 +32,10 @@ shopping list from another device.
   the household members (Mom / Dad / Child by default — rename in Settings).
   Tapping a member's name opens **Add Event**, preselected for that person.
   Tapping an existing event opens its full details (including its saved
-  flyer photo, if it has one), with Edit and Delete right there.
+  flyer photo, if it has one), with Edit and Delete right there. The full
+  page shows more than the default 7 days when there's room for it - it
+  measures the window and grows to fill the available height (up to 21 days)
+  instead of leaving blank space below a fixed week on a tall screen.
 - **Calendar sync** — two ways to bring in outside events: paste one or more
   calendars' secret iCal feed URLs (one per family member, say) for a simple
   read-only merge with no sign-in needed, or connect a Google account via
@@ -78,15 +81,16 @@ shopping list from another device.
   switches and bulbs once in Settings → Smart Home Setup (name, room, and
   LIFX vs. Caseta dimmer/switch), then toggle them, drag brightness, and
   pick a LIFX bulb's color from the dashboard or the full page (grouped by
-  room). A quick-access strip of the same devices sits right below the
-  date/time on every page — tap one to flip it on/off, or press and hold a
+  room). A quick-access strip of the same devices sits in the header on
+  every page — tap one to flip it on/off, or press and hold a
   dimmable one to pull up a brightness slider. Four example devices (Dining
   Room, Living Room, Lamp, Kitchen Counter) are seeded in on first run.
   This is currently a prototype of the control UI and data model - nothing
   is sent to a real bulb or bridge yet; see "Known limitations" below for
   what a real integration would need.
-- **Weather** — a row of quick-glance chips right below the date/time on
-  every page (current temp, high/low, precipitation chance, a
+- **Weather** — a row of quick-glance chips in the header on every page,
+  opposite the smart-home toggles with a prominent date/time between them
+  (current temp, high/low, precipitation chance, a
   morning/afternoon/evening timeline, and a clothing hint), a "Today" card
   on the dashboard, and a full 7-day forecast on its own sidebar tab.
   Geocoded from a US zip code via Open-Meteo (no API key required).

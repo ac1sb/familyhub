@@ -132,28 +132,18 @@ button {
   overflow: hidden;
 }
 
-.topbar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 5px 10px;
-  background: var(--color-surface);
-  flex-shrink: 0;
-}
-
-.topbar .datetime { font-size: 0.95rem; color: var(--color-text-muted); }
-
-/* ---------- Header info/toggle strip (always visible, right below the date/time) ----------
-   Smart-home toggles on the left, weather chips justified to the right - if
-   the window's too narrow for both on one line, the whole weather group
-   wraps down below the toggles rather than the two interleaving. */
+/* ---------- Header strip (smart-home toggles, date/time, weather) ----------
+   Smart-home toggles on the left, weather chips on the right, and the
+   date/time between them (centered, since either side can be a different
+   width or even absent entirely - no smart devices, or weather unavailable).
+   If the window's too narrow for all three on one line, later items wrap
+   onto their own row underneath instead of squeezing together. */
 .topbar-strip {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  justify-content: space-between;
   gap: 8px 16px;
-  padding: 6px 10px;
+  padding: 8px 10px;
   background: var(--color-surface);
   border-bottom: 1px solid var(--color-border);
   flex-shrink: 0;
@@ -164,8 +154,17 @@ button {
   flex-wrap: wrap;
   align-items: center;
   gap: 8px;
+  flex: 0 0 auto;
 }
-.topbar-weather-group { margin-left: auto; justify-content: flex-end; }
+.topbar-weather-group { justify-content: flex-end; }
+
+.topbar-datetime {
+  flex: 1 1 auto;
+  text-align: center;
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: var(--color-text);
+}
 
 .header-info-chip {
   display: flex;
@@ -240,6 +239,27 @@ button {
   flex-direction: column;
   overflow: hidden;
   padding-bottom: 8px;
+}
+
+/* The full Calendar page fills the available height instead of just taking
+   its 7-days content height and leaving the rest blank on a tall window -
+   CalendarAgenda measures .agenda-days-scroll.page (below) to decide how
+   many days actually fit. */
+.main-content.calendar-mode {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.main-content.calendar-mode .widget-card {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+.agenda-days-scroll.page {
+  flex: 1;
+  overflow-y: auto;
+  min-height: 0;
 }
 
 /* ---------- Widget header (kept small per design request) ---------- */

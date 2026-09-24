@@ -1,8 +1,12 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { usePolling } from '../../hooks/usePolling.js';
+import { useStickyCompactSlots } from '../../hooks/useStickyCompactSlots.js';
 import { api } from '../../api.js';
 import DrawingCanvas from '../DrawingCanvas.jsx';
 import Modal from '../Modal.jsx';
+
+// Same glance-widget limit Chores/Daily Checklist use.
+const COMPACT_ITEM_LIMIT = 3;
 
 export default function ShoppingList({ compact = false, onExpand }) {
   const { data, setData, refresh } = usePolling(() => api.shopping(), [], 10000);
@@ -43,10 +47,17 @@ export default function ShoppingList({ compact = false, onExpand }) {
   }
 
   const items = data?.items || [];
+  // useStickyCompactSlots keys off `.done`, so give it that alongside the
+  // item's own `.checked` (kept for the delete/type-it logic already using
+  // it elsewhere). Called unconditionally so it's still a valid hook call on
+  // the full-page render too, even though its result only matters below.
+  const itemsForSlots = useMemo(() => items.map((i) => ({ ...i, done: i.checked })), [items]);
+  const visible = useStickyCompactSlots(itemsForSlots, COMPACT_ITEM_LIMIT);
 
-  // Kept down to a total-item tally on the dashboard so the main screen
-  // stays uncluttered - the full page (opened from "See all") still lists
-  // and lets you check off/write/delete individual items.
+  // Up to 3 items show right on the dashboard (checking one off shows its
+  // strikethrough in place, same as Chores/Daily Checklist) plus a total
+  // tally and quick-add box; the full page (opened from "See all") lists
+  // and lets you check off/write/delete every item.
   if (compact) {
     return (
       <section className="widget-card compact">
@@ -61,6 +72,21 @@ export default function ShoppingList({ compact = false, onExpand }) {
             {onExpand && <button className="see-all" onClick={onExpand}>See all &rarr;</button>}
           </div>
         </div>
+
+        {visible.map((item) => (
+          <label className="shopping-row" key={item.id}>
+            <input type="checkbox" checked={item.checked} onChange={() => toggleChecked(item)} />
+            {item.image_path ? (
+              <span className="shopping-ink-item" style={{ flex: 1 }}>
+                <img className="shopping-ink-img" src={item.image_path} alt="Handwritten item" />
+                {item.name && <span className={`name${item.checked ? ' checked' : ''}`}>{item.name}</span>}
+              </span>
+            ) : (
+              <span className={`name${item.checked ? ' checked' : ''}`} style={{ flex: 1 }}>{item.name}</span>
+            )}
+          </label>
+        ))}
+
         <div className="add-row">
           <input
             type="text"
