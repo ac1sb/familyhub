@@ -71,7 +71,7 @@ export default function DailyChecklist({ members, compact = false, onExpand }) {
             aria-pressed={task.done}
             onClick={() => toggleDone(task)}
           >
-            <span className={`tile-title${task.done ? ' done' : ''}`}>
+            <span className="tile-title">
               {task.template_id && <span title="Repeats on selected days">🔁 </span>}
               {task.title}
             </span>
@@ -97,7 +97,7 @@ export default function DailyChecklist({ members, compact = false, onExpand }) {
           aria-pressed={task.done}
           onClick={() => toggleDone(task)}
         >
-          <span className={`tile-title${task.done ? ' done' : ''}`}>
+          <span className="tile-title">
             {task.template_id && <span title="Repeats on selected days">🔁 </span>}
             {task.title}
           </span>

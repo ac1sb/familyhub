@@ -13,14 +13,16 @@ shopping list from another device.
   list, and whiteboard, all in one glance. Any flagged reminder (see below)
   shows as a big banner across the top. To keep the main screen from
   turning into a wall of text, Chores and Daily Checklist show a
-  completed-count next to their name plus up to 3 items. Checking one off
-  shows its strikethrough right in place instead of yanking it away - it
-  only rolls off (making room for the next open item) once there's an open
-  item waiting that isn't already shown, so with 3 or fewer items nothing
-  ever disappears, it just accumulates strikethroughs. Shopping List works
-  the same way, plus a total item tally and a quick-add box (typing a name
-  and hitting Add/Enter drops it straight onto the list) — tap "See all" for
-  the full list either way. Every widget can be
+  completed-count next to their name plus up to 3 items as tiles (styled
+  like the Lunch today/tomorrow cards) - tapping one shows a green checkmark
+  right on the tile instead of yanking it out of view. It only rolls off
+  (making room for the next open item) once there's an open item waiting
+  that isn't already shown, so with 3 or fewer items nothing ever
+  disappears, it just accumulates checkmarks. Shopping List works the same
+  way (checkbox + strikethrough instead of a tile), plus a total item tally
+  and a quick-add box (typing a name and hitting Add/Enter drops it straight
+  onto the list) — tap "See all" for the full list either way. Every widget
+  can be
   dragged and resized to your own layout, which is saved per-device (in
   the browser) and survives `git pull`/rebuilds. Pick which widgets appear
   at all — and give any of them their own background color, overriding the

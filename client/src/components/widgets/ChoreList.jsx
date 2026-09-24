@@ -113,7 +113,7 @@ export default function ChoreList({ members, compact = false, onExpand }) {
             aria-pressed={chore.done}
             onClick={() => toggleDone(chore)}
           >
-            <span className={`tile-title${chore.done ? ' done' : ''}`}>{chore.title}</span>
+            <span className="tile-title">{chore.title}</span>
             <span className={`chore-tag ${chore.assigned_to}`}>{allMembers[chore.assigned_to] || chore.assigned_to}</span>
             {chore.done && <span className="tile-check">✓</span>}
           </button>
@@ -163,7 +163,7 @@ export default function ChoreList({ members, compact = false, onExpand }) {
             {row.chore.day_of_week != null && (
               <span className="chore-day-tag">{WEEKDAY_SHORT[row.chore.day_of_week]}</span>
             )}
-            <span className={`tile-title${row.chore.done ? ' done' : ''}`}>{row.chore.title}</span>
+            <span className="tile-title">{row.chore.title}</span>
             <span className={`chore-tag ${row.chore.assigned_to}`}>
               {allMembers[row.chore.assigned_to] || row.chore.assigned_to}
             </span>

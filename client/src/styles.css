@@ -654,7 +654,6 @@ button {
 .tile-row:active { filter: brightness(0.95); }
 .tile-row.done { background: rgba(63, 145, 90, 0.22); border-color: var(--color-primary); }
 .tile-title { flex: 1; font-size: 0.92rem; }
-.tile-title.done { text-decoration: line-through; color: var(--color-text-muted); }
 .tile-check {
   display: flex;
   align-items: center;
