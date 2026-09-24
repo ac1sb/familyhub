@@ -4,6 +4,7 @@ import { api } from '../../api.js';
 import AddEventModal from '../modals/AddEventModal.jsx';
 import EventDetailModal from '../modals/EventDetailModal.jsx';
 import { addDays, formatTime, todayISO, toISODate } from '../../lib/week.js';
+import { getCalendarWidgetDays } from '../../lib/calendarWidgetSettings.js';
 
 const MEMBER_KEYS = ['member_1', 'member_2', 'member_3'];
 // The full page only ever shows a fixed 7 days when it's cramped for room -
@@ -23,9 +24,10 @@ export default function CalendarAgenda({ members, compact = false, onExpand, fil
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [confirmation, setConfirmation] = useState(null);
   const [autoDayCount, setAutoDayCount] = useState(MIN_DAYS);
+  const [compactDayCount] = useState(() => getCalendarWidgetDays());
   const scrollAreaRef = useRef(null);
   const firstRowRef = useRef(null);
-  const dayCount = compact ? 4 : autoDayCount;
+  const dayCount = compact ? compactDayCount : autoDayCount;
   const { data, refresh } = usePolling(() => api.eventsRange(rangeStart, dayCount), [rangeStart, dayCount], 20000);
 
   // Re-measures whenever the scroll area's own size changes (window resize,
@@ -91,7 +93,7 @@ export default function CalendarAgenda({ members, compact = false, onExpand, fil
   return (
     <section className={`widget-card${compact ? ' compact' : ''}${fillHeight ? ' fill-height' : ''}`}>
       <div className="widget-header">
-        <h2>{compact ? 'Calendar — Next Few Days' : `Calendar — Next ${dayCount} Days`}</h2>
+        <h2>Calendar — Next {dayCount} Days</h2>
         {compact ? (
           onExpand && <button className="see-all" onClick={onExpand}>Full week &rarr;</button>
         ) : (

@@ -67,7 +67,10 @@ shopping list from another device.
   widgets; with the background off, widgets stay fully opaque as normal. A
   **frost level slider** (10-95%) controls how see-through that frosting is,
   per-device like the rest of these settings - lower lets more of the photo
-  through, higher keeps widgets more solid/readable.
+  through, higher keeps widgets more solid/readable. Also here: a **days
+  shown slider** (2-10) for the compact Calendar widget on Home - the full
+  Calendar page isn't affected, since it already auto-grows on its own to
+  fill the screen.
 - **Built-in calendar** with an **agenda view**: three tappable columns for
   the household members (Mom / Dad / Child by default — rename in Settings).
   Tapping a member's name opens **Add Event**, preselected for that person.
