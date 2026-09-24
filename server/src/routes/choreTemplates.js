@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import db from '../db.js';
+import db, { withTransaction } from '../db.js';
 
 const router = Router();
 
@@ -74,7 +74,15 @@ router.put('/:id', (req, res) => {
 });
 
 router.delete('/:id', (req, res) => {
-  db.prepare('DELETE FROM chore_templates WHERE id = ?').run(req.params.id);
+  // Same reasoning as the daily-task-templates route: a generated chore
+  // instance almost always already exists and references this template by
+  // the time anyone deletes it, which would otherwise trip the template_id
+  // foreign key. Clear the link on those instances instead of deleting
+  // them, so already-checked-off chores don't just disappear.
+  withTransaction(() => {
+    db.prepare('UPDATE chores SET template_id = NULL WHERE template_id = ?').run(req.params.id);
+    db.prepare('DELETE FROM chore_templates WHERE id = ?').run(req.params.id);
+  });
   res.status(204).end();
 });
 

@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import db from '../db.js';
+import db, { withTransaction } from '../db.js';
 
 const router = Router();
 
@@ -71,7 +71,18 @@ router.put('/:id', (req, res) => {
 });
 
 router.delete('/:id', (req, res) => {
-  db.prepare('DELETE FROM daily_task_templates WHERE id = ?').run(req.params.id);
+  // Every active template gets a fresh instance auto-generated on each of
+  // its days (see ensureDayTasks() in routes/dailyTasks.js) - by the time
+  // anyone deletes a template, today's instance almost always already
+  // exists and references it, so deleting the template row alone trips the
+  // template_id foreign key. Clear that link on any generated instances
+  // first (they become plain one-off items, same as a manually-typed
+  // task) rather than deleting the instances themselves, so a day's
+  // already-checked history doesn't just vanish.
+  withTransaction(() => {
+    db.prepare('UPDATE daily_tasks SET template_id = NULL WHERE template_id = ?').run(req.params.id);
+    db.prepare('DELETE FROM daily_task_templates WHERE id = ?').run(req.params.id);
+  });
   res.status(204).end();
 });
 
