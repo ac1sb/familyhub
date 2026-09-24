@@ -88,6 +88,13 @@ export default function DashboardWidgetsSetup() {
             </button>
             <button
               type="button"
+              className={`mode-toggle-btn${displayModes[widget.id] === 'squares' ? ' active' : ''}`}
+              onClick={() => chooseDisplayMode(widget.id, 'squares')}
+            >
+              Squares
+            </button>
+            <button
+              type="button"
               className={`mode-toggle-btn${displayModes[widget.id] === 'carousel' ? ' active' : ''}`}
               onClick={() => chooseDisplayMode(widget.id, 'carousel')}
             >
@@ -97,9 +104,10 @@ export default function DashboardWidgetsSetup() {
         </div>
       ))}
       <p style={{ color: 'var(--color-text-muted)', fontSize: '0.8rem', marginTop: 0 }}>
-        List shows several items stacked at once. Carousel shows one big tile at a time - swipe it
-        left/right (or use the arrow buttons) to move through the items, and tap the tile itself to
-        mark it done. Set independently for each, per-device, like everything else on this page.
+        List shows several items stacked as full-width bars. Squares shows them as a small-tile grid,
+        like the Weekly Dinner Menu widget. Carousel shows one big tile at a time - swipe it left/right
+        (or use the arrow buttons) to move through the items. Tapping a tile/bar itself always marks it
+        done, in any style. Set independently for each, per-device, like everything else on this page.
       </p>
 
       {WIDGET_CATALOG.map((widget) => (

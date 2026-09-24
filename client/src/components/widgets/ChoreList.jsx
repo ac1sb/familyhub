@@ -108,7 +108,7 @@ export default function ChoreList({ members, compact = false, onExpand }) {
           <p style={{ color: 'var(--color-text-muted)' }}>All done for today! 🎉</p>
         )}
 
-        {displayMode === 'carousel' ? (
+        {displayMode === 'carousel' && (
           <TileCarousel
             items={visible}
             onToggle={toggleDone}
@@ -120,7 +120,9 @@ export default function ChoreList({ members, compact = false, onExpand }) {
               </>
             )}
           />
-        ) : (
+        )}
+
+        {displayMode === 'squares' && (
           <div className="tile-grid">
             {visible.map((chore) => (
               <button
@@ -138,6 +140,20 @@ export default function ChoreList({ members, compact = false, onExpand }) {
             ))}
           </div>
         )}
+
+        {displayMode === 'list' && visible.map((chore) => (
+          <button
+            type="button"
+            className={`tile-row${chore.done ? ' done' : ''}`}
+            key={chore.id}
+            aria-pressed={chore.done}
+            onClick={() => toggleDone(chore)}
+          >
+            <span className="tile-title">{chore.title}</span>
+            <span className={`chore-tag ${chore.assigned_to}`}>{allMembers[chore.assigned_to] || chore.assigned_to}</span>
+            {chore.done && <span className="tile-check">✓</span>}
+          </button>
+        ))}
       </section>
     );
   }

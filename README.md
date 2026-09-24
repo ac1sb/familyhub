@@ -13,14 +13,10 @@ shopping list from another device.
   list, and whiteboard, all in one glance. Any flagged reminder (see below)
   shows as a big banner across the top. To keep the main screen from
   turning into a wall of text, Chores and Daily Checklist show a
-  completed-count next to their name plus up to 4 items as small square
-  tiles in a grid (styled like the Weekly Dinner Menu widget's day boxes) -
-  tapping one shows a green checkmark badge right on the tile instead of
-  yanking it out of view. A long title clamps to 3 lines with an ellipsis
-  rather than blowing up the square (hover or tap "See all" for the full
-  text). It only rolls off
-  (making room for the next open item) once there's an open item waiting
-  that isn't already shown, so with 4 or fewer items nothing ever
+  completed-count next to their name plus up to 4 items - tapping one shows
+  a green checkmark right there instead of yanking it out of view. It only
+  rolls off (making room for the next open item) once there's an open item
+  waiting that isn't already shown, so with 4 or fewer items nothing ever
   disappears, it just accumulates checkmarks. Shopping List is different by
   design: there's no checkbox, tapping an item crosses it off as purchased
   and it disappears from the dashboard glance immediately (nothing left to
@@ -28,20 +24,27 @@ shopping list from another device.
   quick-add box (typing a name and hitting Add/Enter drops it straight onto
   the list). The full list ("See all") still shows purchased items -
   struck through, dated ("Got it Sep 24"), and sorted to the bottom - until
-  the ✕ removes one for good. Chores and
-  Daily Checklist can each independently switch to a **Carousel** mode in
-  Settings → Dashboard Widgets (e.g. Chores as a list, Daily Checklist as a
-  carousel): one big tile at a time instead of a stacked list - swipe it
-  left or right (touch or mouse drag), use the arrow buttons, or tap a dot
-  to jump to a specific item; tapping the tile itself still toggles it done.
-  Every widget can be
-  dragged and resized to your own layout, which is saved per-device (in
-  the browser) and survives `git pull`/rebuilds. Pick which widgets appear
-  at all — and give any of them their own background color, overriding the
-  normal day/night theme for just that one — in Settings → Dashboard
-  Widgets (also per-device, so a phone can show fewer than the wall
-  display, or its own color scheme, or List vs. Carousel); a widget that's
-  undersized for its own content grows itself to fit automatically.
+  the ✕ removes one for good. Chores and Daily Checklist can each
+  independently pick one of three widget styles in Settings → Dashboard
+  Widgets (e.g. Chores as Squares, Daily Checklist as a Carousel) - **List**
+  (the classic stacked full-width bars), **Squares** (a small-tile grid,
+  styled like the Weekly Dinner Menu widget's day boxes - a long title
+  clamps to 3 lines with an ellipsis instead of blowing up the square, full
+  text via hover or "See all"), or **Carousel** (one big tile at a time -
+  swipe it left/right, use the arrow buttons, or tap a dot to jump to a
+  specific item). Tapping a tile/bar itself always marks it done, in any
+  style - these are just different skins on the same list, not separate
+  features, so switching back and forth never loses anything. Every widget
+  can be dragged and resized to your own layout, which is saved per-device
+  (in the browser) and survives `git pull`/rebuilds. Pick which widgets
+  appear at all — and give any of them their own background color,
+  overriding the normal day/night theme for just that one — in Settings →
+  Dashboard Widgets (also per-device, so a phone can show fewer than the
+  wall display, or its own color scheme, or a different widget style); a
+  widget that's undersized for its own content grows itself to fit
+  automatically (Carousel-mode widgets are exempt from this, since a
+  carousel tile is designed to fill whatever height it's given rather than
+  ever needing more room).
 - **Built-in calendar** with an **agenda view**: three tappable columns for
   the household members (Mom / Dad / Child by default — rename in Settings).
   Tapping a member's name opens **Add Event**, preselected for that person.
