@@ -86,11 +86,12 @@ shopping list from another device.
   small checkbox to hit. A chore that repeats on several days (e.g.
   Mon/Wed/Thu) shows as a single row with one badge per expected day - tap a
   day's badge to mark it done, and it gets its own checkmark too.
-- **Weekly dinner menu** — a row of day boxes (day on top, meal name below),
-  with today's day tab highlighted so it stands out from the rest of the
-  week; drag a box to reorder which meal lands on which day, and the boxes
-  reflow into a grid and resize themselves to fill however you resize the
-  widget.
+- **Weekly dinner menu** — a row of day boxes (day tab on top, meal name
+  below), with today's day tab highlighted so it stands out from the rest
+  of the week. The day tabs are fixed - drag a meal box by its ⠿ handle
+  onto a different day to swap the two, and only the meal box itself
+  visibly moves; the day tabs never do. The boxes reflow into a grid and
+  resize themselves to fill however you resize the widget.
 - **Lunch calendar** for one child — a full monthly view (tap a day to toggle
   School/Pack-from-home, mark no-school days, jot the menu item), plus a
   dashboard card that shows *today's* status until 3pm and then flips to

@@ -981,26 +981,41 @@ button {
 /* Boxes grow to fill however wide the widget gets resized (shrinking back
    down to min-width, then scrolling, if the widget is narrower than that) -
    not a fixed size regardless of the available space. */
-.meal-box.dragging { box-shadow: 0 6px 16px rgba(0,0,0,0.15); z-index: 2; position: relative; }
+/* A day's box is a fixed drop target, not something that itself gets
+   reordered - highlighted while a dragged meal is hovering over it, so it's
+   clear which day you're about to swap into. */
+.meal-box.drop-target { border-color: var(--color-primary); box-shadow: 0 0 0 2px var(--color-primary) inset; }
 .meal-box-day {
   text-align: center;
   font-weight: 700;
   color: #fff;
   background: var(--color-primary);
   padding: 8px 4px;
-  cursor: grab;
-  touch-action: none;
 }
 /* Today's day tab stands out from the rest of the week at a glance. */
 .meal-box-day.today { background: var(--color-accent); }
+/* Only this wraps the input - the day label above is a separate, static
+   element, so dragging a meal to a different day only ever visibly moves
+   the input box, never the day tab it sits under. */
+.meal-input-wrap.dragging { box-shadow: 0 6px 16px rgba(0,0,0,0.15); z-index: 2; position: relative; }
+.meal-input-handle {
+  text-align: center;
+  padding: 3px 0;
+  font-size: 0.85rem;
+  line-height: 1;
+  color: var(--color-text-muted);
+  background: var(--color-surface);
+  border-top: 1px solid var(--color-border);
+  cursor: grab;
+  touch-action: none;
+}
 .meal-box-input {
   width: 100%;
   border: none;
-  border-top: 1px solid var(--color-border);
-  padding: 10px 8px;
+  padding: 8px;
   text-align: center;
   font-size: 0.85rem;
-  min-height: 44px;
+  min-height: 40px;
   background: var(--color-surface);
   color: var(--color-text);
 }

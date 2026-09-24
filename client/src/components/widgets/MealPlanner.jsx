@@ -1,22 +1,36 @@
 import { useEffect, useState } from 'react';
-import { DndContext, closestCenter, PointerSensor, TouchSensor, useSensor, useSensors } from '@dnd-kit/core';
-import { SortableContext, rectSortingStrategy, useSortable, arrayMove } from '@dnd-kit/sortable';
+import { DndContext, closestCenter, PointerSensor, TouchSensor, useSensor, useSensors, useDraggable, useDroppable } from '@dnd-kit/core';
 import { CSS } from '@dnd-kit/utilities';
 import { usePolling } from '../../hooks/usePolling.js';
 import { api } from '../../api.js';
 import { currentWeekStart, WEEKDAY_SHORT } from '../../lib/week.js';
 
-function SortableMealBox({ id, dayIndex, name, isToday, onChange, onCommit }) {
-  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id });
-  const style = {
-    transform: CSS.Transform.toString(transform),
-    transition,
-  };
+function dayIndexFromId(id) {
+  return Number(id.slice('day-'.length));
+}
+
+// Each day is a fixed drop target - unlike a reorderable list, a day's box
+// never moves in the grid. Dragging a meal onto another day's box just
+// swaps the two typed names; the day tabs above them stay exactly where
+// they are the whole time.
+function DaySlot({ dayIndex, isToday, name, onChange, onCommit }) {
+  const { setNodeRef, isOver } = useDroppable({ id: `day-${dayIndex}` });
+  return (
+    <div ref={setNodeRef} className={`meal-box${isOver ? ' drop-target' : ''}`}>
+      <div className={`meal-box-day${isToday ? ' today' : ''}`}>{WEEKDAY_SHORT[dayIndex]}</div>
+      <DraggableMealInput dayIndex={dayIndex} name={name} onChange={onChange} onCommit={onCommit} />
+    </div>
+  );
+}
+
+function DraggableMealInput({ dayIndex, name, onChange, onCommit }) {
+  const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({ id: `day-${dayIndex}` });
+  const style = transform ? { transform: CSS.Translate.toString(transform) } : undefined;
 
   return (
-    <div ref={setNodeRef} style={style} className={`meal-box${isDragging ? ' dragging' : ''}`}>
-      <div className={`meal-box-day${isToday ? ' today' : ''}`} {...attributes} {...listeners}>
-        {WEEKDAY_SHORT[dayIndex]}
+    <div ref={setNodeRef} style={style} className={`meal-input-wrap${isDragging ? ' dragging' : ''}`}>
+      <div className="meal-input-handle" {...attributes} {...listeners} title="Drag onto another day to swap">
+        ⠿
       </div>
       <input
         type="text"
@@ -34,14 +48,13 @@ export default function MealPlanner({ compact = false, onExpand }) {
   const weekStart = currentWeekStart();
   const { data, refresh } = usePolling(() => api.meals(weekStart), [weekStart], 15000);
   const [names, setNames] = useState(Array(7).fill(''));
-  const [order, setOrder] = useState(Array.from({ length: 7 }, (_, i) => `slot-${i}`));
 
   // Dashboard widget: today's box through the rest of the week, capped at 5 -
   // a quick "what's for dinner soon" glance rather than the full week.
   const todayIndex = (new Date().getDay() + 6) % 7; // 0=Mon..6=Sun
   const visibleCount = compact ? Math.min(5, 7 - todayIndex) : 7;
   const visibleOffset = compact ? todayIndex : 0;
-  const visibleOrder = order.slice(visibleOffset, visibleOffset + visibleCount);
+  const visibleDayIndexes = Array.from({ length: visibleCount }, (_, i) => visibleOffset + i);
 
   useEffect(() => {
     if (data?.meals) setNames(data.meals.sort((a, b) => a.day_of_week - b.day_of_week).map((m) => m.name || ''));
@@ -52,10 +65,8 @@ export default function MealPlanner({ compact = false, onExpand }) {
     useSensor(TouchSensor, { activationConstraint: { delay: 150, tolerance: 8 } })
   );
 
-  async function handleNameChange(dayIndex, value) {
-    const next = [...names];
-    next[dayIndex] = value;
-    setNames(next);
+  function handleNameChange(dayIndex, value) {
+    setNames((prev) => prev.map((n, i) => (i === dayIndex ? value : n)));
   }
 
   async function commitName(dayIndex) {
@@ -66,13 +77,12 @@ export default function MealPlanner({ compact = false, onExpand }) {
   async function handleDragEnd(event) {
     const { active, over } = event;
     if (!over || active.id === over.id) return;
-    const oldIndex = order.indexOf(active.id);
-    const newIndex = order.indexOf(over.id);
-    const newOrder = arrayMove(order, oldIndex, newIndex);
-    const newNames = arrayMove(names, oldIndex, newIndex);
-    setOrder(newOrder);
-    setNames(newNames);
-    await api.reorderMeals(weekStart, newNames);
+    const fromDay = dayIndexFromId(active.id);
+    const toDay = dayIndexFromId(over.id);
+    const next = [...names];
+    [next[fromDay], next[toDay]] = [next[toDay], next[fromDay]];
+    setNames(next);
+    await api.reorderMeals(weekStart, next);
     refresh();
   }
 
@@ -84,31 +94,30 @@ export default function MealPlanner({ compact = false, onExpand }) {
       </div>
       {!compact && (
         <p style={{ color: 'var(--color-text-muted)', fontSize: '0.85rem', marginTop: 0 }}>
-          Type a meal name for each day, then drag a box by its day label to move it to a different day.
+          Type a meal name for each day, then drag a box by its ⠿ handle onto another day to swap them - the
+          day tabs themselves never move.
         </p>
       )}
       <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-        <SortableContext items={visibleOrder} strategy={rectSortingStrategy}>
-          <div className={compact ? 'meal-box-row meal-box-row-compact' : 'meal-box-row'}>
-            {visibleOrder.map((id) => {
-              const dayIndex = order.indexOf(id);
-              return (
-                <SortableMealBox
-                  key={id}
-                  id={id}
-                  dayIndex={dayIndex}
-                  name={names[dayIndex] || ''}
-                  isToday={dayIndex === todayIndex}
-                  onChange={handleNameChange}
-                  onCommit={commitName}
-                />
-              );
-            })}
-          </div>
-        </SortableContext>
+        <div className={compact ? 'meal-box-row meal-box-row-compact' : 'meal-box-row'}>
+          {visibleDayIndexes.map((dayIndex) => (
+            <DaySlot
+              key={dayIndex}
+              dayIndex={dayIndex}
+              isToday={dayIndex === todayIndex}
+              name={names[dayIndex] || ''}
+              onChange={handleNameChange}
+              onCommit={commitName}
+            />
+          ))}
+        </div>
       </DndContext>
       {!compact && (
-        <button className="btn btn-primary" style={{ marginTop: 8 }} onClick={() => Promise.all(names.map((_, i) => commitName(i)))}>
+        <button
+          className="btn btn-primary"
+          style={{ marginTop: 8 }}
+          onClick={() => Promise.all(names.map((_, i) => commitName(i)))}
+        >
           Save Menu
         </button>
       )}
