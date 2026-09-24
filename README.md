@@ -144,9 +144,12 @@ shopping list from another device.
   interval, and theme (landscapes/mountains/waterfalls/lakes/forests), with
   a clock/date/weather overlay and a Preview button. Off by default on every
   device; turn it on for the wall display only. Optionally overlays the
-  shared whiteboard as a semi-transparent sticky note in the corner - the
-  same live drawing as everywhere else, so a message left on the board is
-  still visible while the screensaver's up. Also optionally shows a daily
+  shared whiteboard in a corner - the same live drawing as everywhere else,
+  sized to actually be readable from across the room (scales with the
+  screen, well up from a small thumbnail, without growing large enough to
+  reach the centered clock) rather than a small tan sticky-note prop, so a
+  message left on the board is still visible while the screensaver's up.
+  Also optionally shows a daily
   briefing card listing today's calendar events, which starts appearing at
   5am (so it reads as "here's your day" rather than showing up overnight).
   Both overlays periodically relocate to a different corner of the screen
