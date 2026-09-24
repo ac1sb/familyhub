@@ -71,24 +71,24 @@ export default function DashboardWidgetsSetup() {
         Choose which widgets show on this device's Home dashboard - this is per-device, so a phone
         can show fewer widgets than the wall display. Turning one off doesn't delete its data or its
         saved position, and every widget stays reachable from the sidebar either way. Pick a background
-        color for a widget to pin it to that color regardless of day/night theme; leave it alone and it
-        keeps following the normal theme.
+        color for a widget to pin it to a frosted, translucent version of that color regardless of
+        day/night theme; leave it alone and it keeps following the normal theme.
       </p>
 
       {DISPLAY_MODE_WIDGETS.map((widget) => (
-        <div className="field" key={widget.id}>
-          <label>{widget.label} widget style</label>
-          <div className="member-choice-row">
+        <div className="checkbox-row" key={widget.id} style={{ marginBottom: 10 }}>
+          <span style={{ flex: 1, fontWeight: 600 }}>{widget.label} widget style</span>
+          <div className="mode-toggle-row">
             <button
               type="button"
-              className={`member-choice family${displayModes[widget.id] === 'list' ? ' selected' : ''}`}
+              className={`mode-toggle-btn${displayModes[widget.id] === 'list' ? ' active' : ''}`}
               onClick={() => chooseDisplayMode(widget.id, 'list')}
             >
               List
             </button>
             <button
               type="button"
-              className={`member-choice family${displayModes[widget.id] === 'carousel' ? ' selected' : ''}`}
+              className={`mode-toggle-btn${displayModes[widget.id] === 'carousel' ? ' active' : ''}`}
               onClick={() => chooseDisplayMode(widget.id, 'carousel')}
             >
               Carousel

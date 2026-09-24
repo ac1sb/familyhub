@@ -320,6 +320,16 @@ button {
   background: var(--widget-bg, var(--color-surface));
 }
 
+/* A widget with a custom color (Settings -> Dashboard Widgets) gets a
+   frosted/translucent look instead of a flat fill - keeps it readable while
+   leaving room for a future background-image feature to show through.
+   Default-themed widgets (no --widget-bg set) are untouched by this rule. */
+.dashboard-rgl .react-grid-item.has-custom-color .widget-card {
+  background: color-mix(in srgb, var(--widget-bg) 55%, transparent);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
 .dashboard-rgl .react-grid-item .widget-header {
   cursor: grab;
   touch-action: none;
@@ -551,6 +561,35 @@ button {
 .member-choice.family { background: var(--color-primary); }
 .member-choice.selected { border-color: var(--color-text); }
 
+/* A small pill-style segmented control (Settings -> Dashboard Widgets:
+   List/Carousel choice) - unlike .member-choice above, the inactive option
+   stays visually neutral (transparent) so the active one is unambiguous at
+   a glance, and it's sized for a compact settings row rather than a big
+   touch target. */
+.mode-toggle-row {
+  display: inline-flex;
+  flex-shrink: 0;
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  padding: 3px;
+  gap: 2px;
+  background: var(--color-bg);
+}
+.mode-toggle-btn {
+  border: none;
+  border-radius: 999px;
+  padding: 6px 14px;
+  min-height: 32px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--color-text-muted);
+  background: transparent;
+}
+.mode-toggle-btn.active {
+  background: var(--color-primary);
+  color: #fff;
+}
+
 .event-detail-badge {
   display: inline-block;
   flex: none;
@@ -672,8 +711,8 @@ button {
    One big tile at a time instead of a stacked list - swipe it (touch drag,
    handled in JS via pointer events) or use the arrow buttons to move
    through the items, tap the tile to toggle it done. */
-.tile-carousel { display: flex; flex-direction: column; align-items: center; gap: 8px; }
-.tile-carousel-track { display: flex; align-items: stretch; gap: 6px; width: 100%; }
+.tile-carousel { display: flex; flex-direction: column; align-items: center; gap: 8px; flex: 1; min-height: 0; }
+.tile-carousel-track { display: flex; align-items: stretch; gap: 6px; width: 100%; flex: 1; min-height: 0; }
 .tile-carousel-arrow { flex-shrink: 0; align-self: center; }
 .tile-carousel-tile {
   flex: 1;
