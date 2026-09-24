@@ -7,6 +7,7 @@ import {
   setWidgetColors,
   resetDashboardLayout,
 } from '../../lib/dashboardLayout.js';
+import { getWidgetDisplayMode, setWidgetDisplayMode } from '../../lib/widgetDisplayMode.js';
 
 // Just a neutral starting point for the color picker itself when a widget
 // has no custom color yet - picking a color and saving is what actually
@@ -16,6 +17,12 @@ const PICKER_DEFAULT = '#ffffff';
 export default function DashboardWidgetsSetup() {
   const [enabled, setEnabled] = useState(() => getEnabledWidgets());
   const [colors, setColors] = useState(() => getWidgetColors());
+  const [displayMode, setDisplayMode] = useState(() => getWidgetDisplayMode());
+
+  function chooseDisplayMode(mode) {
+    setDisplayMode(mode);
+    setWidgetDisplayMode(mode);
+  }
 
   function toggle(id) {
     setEnabled((prev) => {
@@ -58,6 +65,31 @@ export default function DashboardWidgetsSetup() {
         color for a widget to pin it to that color regardless of day/night theme; leave it alone and it
         keeps following the normal theme.
       </p>
+
+      <div className="field">
+        <label>Chores / Daily Checklist widget style</label>
+        <div className="member-choice-row">
+          <button
+            type="button"
+            className={`member-choice family${displayMode === 'list' ? ' selected' : ''}`}
+            onClick={() => chooseDisplayMode('list')}
+          >
+            List
+          </button>
+          <button
+            type="button"
+            className={`member-choice family${displayMode === 'carousel' ? ' selected' : ''}`}
+            onClick={() => chooseDisplayMode('carousel')}
+          >
+            Carousel
+          </button>
+        </div>
+        <p style={{ color: 'var(--color-text-muted)', fontSize: '0.8rem', marginTop: 4 }}>
+          List shows several items stacked at once. Carousel shows one big tile at a time - swipe it
+          left/right (or use the arrow buttons) to move through the items, and tap the tile itself to
+          mark it done. Per-device, like everything else on this page.
+        </p>
+      </div>
 
       {WIDGET_CATALOG.map((widget) => (
         <div className="field" key={widget.id}>

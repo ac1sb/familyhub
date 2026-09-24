@@ -3,11 +3,13 @@ import { usePolling } from '../../hooks/usePolling.js';
 import { useStickyCompactSlots } from '../../hooks/useStickyCompactSlots.js';
 import { api } from '../../api.js';
 import { currentWeekStartSunday, WEEKDAY_SHORT } from '../../lib/week.js';
+import { getWidgetDisplayMode } from '../../lib/widgetDisplayMode.js';
+import TileCarousel from '../TileCarousel.jsx';
 
 const SUNDAY_FIRST_RANK = (dayOfWeek) => (dayOfWeek == null ? 7 : (dayOfWeek + 1) % 7);
 // The dashboard tile is a glance, not the whole list - past this many
 // still-open chores, the rest are only a tap away on "See all".
-const COMPACT_ITEM_LIMIT = 3;
+const COMPACT_ITEM_LIMIT = 4;
 
 // The full page groups every instance of a recurring chore (same
 // template_id) into one row with a badge per expected day, instead of a
@@ -54,6 +56,7 @@ export default function ChoreList({ members, compact = false, onExpand }) {
   const [newTitle, setNewTitle] = useState('');
   const [assignedTo, setAssignedTo] = useState('family');
   const [showDone, setShowDone] = useState(false);
+  const [displayMode] = useState(() => getWidgetDisplayMode());
 
   async function toggleDone(chore) {
     setData((prev) => ({
@@ -105,19 +108,33 @@ export default function ChoreList({ members, compact = false, onExpand }) {
           <p style={{ color: 'var(--color-text-muted)' }}>All done for today! 🎉</p>
         )}
 
-        {visible.map((chore) => (
-          <button
-            type="button"
-            className={`tile-row${chore.done ? ' done' : ''}`}
-            key={chore.id}
-            aria-pressed={chore.done}
-            onClick={() => toggleDone(chore)}
-          >
-            <span className="tile-title">{chore.title}</span>
-            <span className={`chore-tag ${chore.assigned_to}`}>{allMembers[chore.assigned_to] || chore.assigned_to}</span>
-            {chore.done && <span className="tile-check">✓</span>}
-          </button>
-        ))}
+        {displayMode === 'carousel' ? (
+          <TileCarousel
+            items={visible}
+            onToggle={toggleDone}
+            renderTile={(chore) => (
+              <>
+                <span className="tile-title">{chore.title}</span>
+                <span className={`chore-tag ${chore.assigned_to}`}>{allMembers[chore.assigned_to] || chore.assigned_to}</span>
+                {chore.done && <span className="tile-check">✓</span>}
+              </>
+            )}
+          />
+        ) : (
+          visible.map((chore) => (
+            <button
+              type="button"
+              className={`tile-row${chore.done ? ' done' : ''}`}
+              key={chore.id}
+              aria-pressed={chore.done}
+              onClick={() => toggleDone(chore)}
+            >
+              <span className="tile-title">{chore.title}</span>
+              <span className={`chore-tag ${chore.assigned_to}`}>{allMembers[chore.assigned_to] || chore.assigned_to}</span>
+              {chore.done && <span className="tile-check">✓</span>}
+            </button>
+          ))
+        )}
       </section>
     );
   }

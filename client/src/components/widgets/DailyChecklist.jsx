@@ -3,16 +3,19 @@ import { usePolling } from '../../hooks/usePolling.js';
 import { useStickyCompactSlots } from '../../hooks/useStickyCompactSlots.js';
 import { api } from '../../api.js';
 import { todayISO } from '../../lib/week.js';
+import { getWidgetDisplayMode } from '../../lib/widgetDisplayMode.js';
+import TileCarousel from '../TileCarousel.jsx';
 
 // The dashboard tile is a glance, not the whole list - past this many
 // still-open items, the rest are only a tap away on "See all".
-const COMPACT_ITEM_LIMIT = 3;
+const COMPACT_ITEM_LIMIT = 4;
 
 export default function DailyChecklist({ members, compact = false, onExpand }) {
   const today = todayISO();
   const { data, setData, refresh } = usePolling(() => api.dailyTasks(today), [today], 15000);
   const [newTitle, setNewTitle] = useState('');
   const [assignedTo, setAssignedTo] = useState('family');
+  const [displayMode] = useState(() => getWidgetDisplayMode());
 
   async function toggleDone(task) {
     setData((prev) => ({
@@ -63,22 +66,39 @@ export default function DailyChecklist({ members, compact = false, onExpand }) {
           <p style={{ color: 'var(--color-text-muted)' }}>All done for today! 🎉</p>
         )}
 
-        {visible.map((task) => (
-          <button
-            type="button"
-            className={`tile-row${task.done ? ' done' : ''}`}
-            key={task.id}
-            aria-pressed={task.done}
-            onClick={() => toggleDone(task)}
-          >
-            <span className="tile-title">
-              {task.template_id && <span title="Repeats on selected days">🔁 </span>}
-              {task.title}
-            </span>
-            <span className={`chore-tag ${task.assigned_to}`}>{allMembers[task.assigned_to] || task.assigned_to}</span>
-            {task.done && <span className="tile-check">✓</span>}
-          </button>
-        ))}
+        {displayMode === 'carousel' ? (
+          <TileCarousel
+            items={visible}
+            onToggle={toggleDone}
+            renderTile={(task) => (
+              <>
+                <span className="tile-title">
+                  {task.template_id && <span title="Repeats on selected days">🔁 </span>}
+                  {task.title}
+                </span>
+                <span className={`chore-tag ${task.assigned_to}`}>{allMembers[task.assigned_to] || task.assigned_to}</span>
+                {task.done && <span className="tile-check">✓</span>}
+              </>
+            )}
+          />
+        ) : (
+          visible.map((task) => (
+            <button
+              type="button"
+              className={`tile-row${task.done ? ' done' : ''}`}
+              key={task.id}
+              aria-pressed={task.done}
+              onClick={() => toggleDone(task)}
+            >
+              <span className="tile-title">
+                {task.template_id && <span title="Repeats on selected days">🔁 </span>}
+                {task.title}
+              </span>
+              <span className={`chore-tag ${task.assigned_to}`}>{allMembers[task.assigned_to] || task.assigned_to}</span>
+              {task.done && <span className="tile-check">✓</span>}
+            </button>
+          ))
+        )}
       </section>
     );
   }

@@ -668,6 +668,52 @@ button {
   flex-shrink: 0;
 }
 
+/* ---------- Tile carousel (Settings -> Dashboard Widgets: Carousel mode) ----------
+   One big tile at a time instead of a stacked list - swipe it (touch drag,
+   handled in JS via pointer events) or use the arrow buttons to move
+   through the items, tap the tile to toggle it done. */
+.tile-carousel { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+.tile-carousel-track { display: flex; align-items: stretch; gap: 6px; width: 100%; }
+.tile-carousel-arrow { flex-shrink: 0; align-self: center; }
+.tile-carousel-tile {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-height: 110px;
+  border: 2px solid var(--color-border);
+  border-radius: 14px;
+  padding: 16px;
+  background: var(--color-bg);
+  text-align: center;
+  cursor: pointer;
+  /* Let the page still scroll vertically over the tile - only horizontal
+     drag is claimed by the swipe handler in JS. */
+  touch-action: pan-y;
+  user-select: none;
+  transition: background-color 0.15s ease;
+}
+.tile-carousel-tile.done { background: rgba(63, 145, 90, 0.22); border-color: var(--color-primary); }
+.tile-carousel-tile .tile-title { flex: none; font-size: 1.2rem; font-weight: 700; }
+.tile-carousel-tile .tile-check { width: 30px; height: 30px; font-size: 1rem; }
+.tile-carousel-dots { display: flex; gap: 10px; }
+.tile-carousel-dot {
+  position: relative;
+  width: 10px;
+  height: 10px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: var(--color-border);
+}
+/* Invisible larger hit area around the small visible dot, so it's still
+   easy to tap precisely without making the dots themselves look oversized. */
+.tile-carousel-dot::before { content: ''; position: absolute; inset: -12px; }
+.tile-carousel-dot.active { background: var(--color-primary); }
+
 .add-row { display: flex; gap: 8px; margin-top: 12px; }
 /* min-width: 0 overrides a text input's flex default of min-width: auto,
    which otherwise refuses to shrink below its intrinsic content width and

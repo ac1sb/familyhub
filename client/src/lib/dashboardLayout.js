@@ -25,13 +25,14 @@ export const DEFAULT_LAYOUT = [
   { i: 'calendar', x: 0, y: 0, w: 8, h: 15, minW: 3, minH: 6 },
   { i: 'weather', x: 8, y: 0, w: 4, h: 5, minW: 2, minH: 3 },
   { i: 'lunch', x: 8, y: 5, w: 4, h: 6, minW: 2, minH: 3 },
-  // Chores/Daily/Shopping all show a status line plus up to 3 items.
-  { i: 'chores', x: 8, y: 11, w: 4, h: 6, minW: 2, minH: 2 },
-  { i: 'daily', x: 8, y: 17, w: 4, h: 6, minW: 2, minH: 2 },
-  { i: 'meals', x: 8, y: 23, w: 4, h: 6, minW: 2, minH: 3 },
-  { i: 'shopping', x: 8, y: 29, w: 4, h: 6, minW: 2, minH: 2 },
-  { i: 'whiteboard', x: 8, y: 35, w: 4, h: 8, minW: 2, minH: 4 },
-  { i: 'smarthome', x: 8, y: 40, w: 4, h: 7, minW: 2, minH: 3 },
+  // Chores/Daily show a status line plus up to 4 items (or one big tile in
+  // Carousel mode); Shopping stays at 3 items plus its quick-add row.
+  { i: 'chores', x: 8, y: 11, w: 4, h: 7, minW: 2, minH: 2 },
+  { i: 'daily', x: 8, y: 18, w: 4, h: 7, minW: 2, minH: 2 },
+  { i: 'meals', x: 8, y: 25, w: 4, h: 6, minW: 2, minH: 3 },
+  { i: 'shopping', x: 8, y: 31, w: 4, h: 6, minW: 2, minH: 2 },
+  { i: 'whiteboard', x: 8, y: 37, w: 4, h: 8, minW: 2, minH: 4 },
+  { i: 'smarthome', x: 8, y: 42, w: 4, h: 7, minW: 2, minH: 3 },
 ];
 
 export function getDashboardLayout() {
