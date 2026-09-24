@@ -81,10 +81,7 @@ shopping list from another device.
   Widget header titles switch to the theme's stronger text color plus a
   glow (a light halo behind dark text, or a dark halo behind light text in
   night mode) whenever a background photo is on, since their normal muted
-  gray washes out over a busy/bright photo. Also here: a **days shown
-  slider** (2-10) for the compact Calendar widget
-  on Home - the full Calendar page isn't affected, since it already
-  auto-grows on its own to fill the screen.
+  gray washes out over a busy/bright photo.
 - **Built-in calendar** with an **agenda view**: three tappable columns for
   the household members (Mom / Dad / Child by default — rename in Settings).
   Tapping a member's name opens **Add Event**, preselected for that person.
@@ -92,7 +89,12 @@ shopping list from another device.
   flyer photo, if it has one), with Edit and Delete right there. The full
   page shows more than the default 7 days when there's room for it - it
   measures the window and grows to fill the available height (up to 21 days)
-  instead of leaving blank space below a fixed week on a tall screen.
+  instead of leaving blank space below a fixed week on a tall screen. The
+  compact widget on Home does the same thing at a much smaller scale
+  (1-10 days): it always shows exactly as many days as fit its current box
+  with no leftover scrollbar, so dragging its resize handle (see "Every
+  widget can be dragged and resized" above) bigger or smaller changes how
+  many days it shows automatically - no separate setting for it.
 - **Calendar sync** — two ways to bring in outside events: paste one or more
   calendars' secret iCal feed URLs (one per family member, say) for a simple
   read-only merge with no sign-in needed, or connect a Google account via

@@ -4,7 +4,6 @@ import { api } from '../../api.js';
 import AddEventModal from '../modals/AddEventModal.jsx';
 import EventDetailModal from '../modals/EventDetailModal.jsx';
 import { addDays, formatTime, todayISO, toISODate } from '../../lib/week.js';
-import { getCalendarWidgetDays } from '../../lib/calendarWidgetSettings.js';
 
 const MEMBER_KEYS = ['member_1', 'member_2', 'member_3'];
 // The full page only ever shows a fixed 7 days when it's cramped for room -
@@ -13,6 +12,12 @@ const MEMBER_KEYS = ['member_1', 'member_2', 'member_3'];
 // enormous display doesn't fetch/render an unreasonable number of days).
 const MIN_DAYS = 7;
 const MAX_DAYS = 21;
+// The compact dashboard widget uses the same fit-to-available-height idea,
+// but its floor/ceiling are much lower - it's a small glance widget in a
+// resizable grid box, not the full page, so 1 day (a tiny box) to 10 days
+// (a very tall one) covers it without ever forcing a page-sized minimum.
+const COMPACT_MIN_DAYS = 1;
+const COMPACT_MAX_DAYS = 10;
 const ROW_HEIGHT_FALLBACK = 64; // px - used only before a real row has rendered to measure
 
 export default function CalendarAgenda({ members, compact = false, onExpand, fillHeight = false }) {
@@ -23,24 +28,28 @@ export default function CalendarAgenda({ members, compact = false, onExpand, fil
   const [modalMember, setModalMember] = useState(null);
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [confirmation, setConfirmation] = useState(null);
-  const [autoDayCount, setAutoDayCount] = useState(MIN_DAYS);
-  const [compactDayCount] = useState(() => getCalendarWidgetDays());
+  const [dayCount, setDayCount] = useState(compact ? COMPACT_MIN_DAYS : MIN_DAYS);
   const scrollAreaRef = useRef(null);
   const firstRowRef = useRef(null);
-  const dayCount = compact ? compactDayCount : autoDayCount;
   const { data, refresh } = usePolling(() => api.eventsRange(rangeStart, dayCount), [rangeStart, dayCount], 20000);
 
-  // Re-measures whenever the scroll area's own size changes (window resize,
-  // sidebar toggling, etc.) and after each render, since a row's real height
-  // depends on how many events land on it that day.
+  // Fits however many days actually fit in the space available - the full
+  // page's own height (minus a page-sized floor/ceiling) or, in compact
+  // mode, however tall the dashboard widget's box has been resized to (a
+  // much lower floor/ceiling, since it's a small glance widget, not the
+  // full page). Re-measures whenever the scroll area's own size changes
+  // (window resize, dragging the widget's resize handle, sidebar toggling,
+  // etc.) and after each render, since a row's real height depends on how
+  // many events land on it that day.
   useLayoutEffect(() => {
-    if (compact) return;
     const el = scrollAreaRef.current;
     if (!el) return;
+    const minDays = compact ? COMPACT_MIN_DAYS : MIN_DAYS;
+    const maxDays = compact ? COMPACT_MAX_DAYS : MAX_DAYS;
     function recompute() {
       const rowHeight = firstRowRef.current?.offsetHeight || ROW_HEIGHT_FALLBACK;
       const fitting = Math.floor(el.clientHeight / rowHeight);
-      setAutoDayCount(Math.max(MIN_DAYS, Math.min(MAX_DAYS, fitting)));
+      setDayCount(Math.max(minDays, Math.min(maxDays, fitting)));
     }
     recompute();
     const observer = new ResizeObserver(recompute);
@@ -116,7 +125,7 @@ export default function CalendarAgenda({ members, compact = false, onExpand, fil
         ))}
       </div>
 
-      <div className={`agenda-days-scroll${compact ? '' : ' page'}`} ref={scrollAreaRef}>
+      <div className="agenda-days-scroll" ref={scrollAreaRef}>
         {days.map((day, i) => {
           const key = toISODate(day);
           const isToday = key === todayISO();

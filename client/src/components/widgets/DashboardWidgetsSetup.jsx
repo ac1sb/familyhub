@@ -10,7 +10,6 @@ import {
 import { getWidgetDisplayMode, setWidgetDisplayMode } from '../../lib/widgetDisplayMode.js';
 import { getDashboardBackgroundSettings, setDashboardBackgroundSettings } from '../../lib/dashboardBackgroundSettings.js';
 import { THEMES } from '../../lib/photoLibrary.js';
-import { getCalendarWidgetDays, setCalendarWidgetDays, MIN_DAYS, MAX_DAYS } from '../../lib/calendarWidgetSettings.js';
 
 // Just a neutral starting point for the color picker itself when a widget
 // has no custom color yet - picking a color and saving is what actually
@@ -31,12 +30,6 @@ export default function DashboardWidgetsSetup() {
     Object.fromEntries(DISPLAY_MODE_WIDGETS.map((w) => [w.id, getWidgetDisplayMode(w.id)]))
   );
   const [background, setBackground] = useState(() => getDashboardBackgroundSettings());
-  const [calendarDays, setCalendarDaysState] = useState(() => getCalendarWidgetDays());
-
-  function changeCalendarDays(days) {
-    setCalendarDaysState(days);
-    setCalendarWidgetDays(days);
-  }
 
   function updateBackground(patch) {
     setBackground((prev) => {
@@ -101,25 +94,6 @@ export default function DashboardWidgetsSetup() {
         widget - custom color or not - goes frosted/translucent instead of a flat fill, so the photo
         shows through the whole dashboard instead of just the gaps between widgets.
       </p>
-
-      <div className="field" style={{ marginBottom: 18 }}>
-        <label style={{ display: 'block', marginBottom: 6 }}>
-          Calendar widget: days shown ({calendarDays})
-        </label>
-        <input
-          type="range"
-          min={MIN_DAYS}
-          max={MAX_DAYS}
-          step={1}
-          value={calendarDays}
-          onChange={(e) => changeCalendarDays(Number(e.target.value))}
-          style={{ width: '100%', maxWidth: 320 }}
-        />
-        <p style={{ color: 'var(--color-text-muted)', fontSize: '0.8rem', marginTop: 4, marginBottom: 0 }}>
-          How many days (starting today) the compact Calendar widget on this device's Home dashboard
-          shows. The full Calendar page isn't affected - it grows on its own to fill the screen.
-        </p>
-      </div>
 
       <div className="field" style={{ marginBottom: 18 }}>
         <label style={{ display: 'block', marginBottom: 6 }}>Dashboard background</label>

@@ -248,8 +248,8 @@ button {
 
 /* The full Calendar page fills the available height instead of just taking
    its 7-days content height and leaving the rest blank on a tall window -
-   CalendarAgenda measures .agenda-days-scroll.page (below) to decide how
-   many days actually fit. */
+   CalendarAgenda measures .agenda-days-scroll (below) to decide how many
+   days actually fit. */
 .main-content.calendar-mode {
   display: flex;
   flex-direction: column;
@@ -261,7 +261,12 @@ button {
   flex-direction: column;
   min-height: 0;
 }
-.agenda-days-scroll.page {
+/* Also used by the compact dashboard widget (its own .widget-card is
+   already a flex column filling the grid box - see the dashboard-rgl rule
+   below), so the same fit-to-available-height measurement works whether
+   "available height" is the full page or however tall the widget's been
+   resized to. */
+.agenda-days-scroll {
   flex: 1;
   overflow-y: auto;
   min-height: 0;
