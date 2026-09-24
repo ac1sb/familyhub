@@ -52,9 +52,12 @@ shopping list from another device.
   before saving. The photo itself is kept and attached to the event.
 - **Chore list** for the week, assignable to a household member, plus
   **recurring chores** set up once in Settings → Chore Setup that
-  automatically reappear (unchecked) every week. A chore that repeats on
-  several days (e.g. Mon/Wed/Thu) shows as a single row with one badge per
-  expected day — tap a day's badge to mark it done, and it turns green.
+  automatically reappear (unchecked) every week. Both Chores and the Daily
+  Checklist show as tappable tiles (like the Lunch today/tomorrow cards) -
+  tap one to mark it done and a green checkmark appears on it, rather than a
+  small checkbox to hit. A chore that repeats on several days (e.g.
+  Mon/Wed/Thu) shows as a single row with one badge per expected day - tap a
+  day's badge to mark it done, and it gets its own checkmark too.
 - **Weekly dinner menu** — a horizontal row of day boxes (day on top, meal
   name below); drag a box to reorder which meal lands on which day, and the
   boxes resize themselves to fill however wide you make the widget.

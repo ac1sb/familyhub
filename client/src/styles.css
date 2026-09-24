@@ -629,6 +629,46 @@ button {
 .chore-tag.member_3 { background: var(--color-member-3); }
 .chore-tag.family { background: var(--color-primary); }
 
+/* A Chores/Daily Checklist item, styled like the Lunch today/tomorrow
+   tiles - a bordered, tappable block rather than a bare checkbox row, with
+   a green checkmark badge appearing once it's done instead of a checked
+   checkbox. Still a single <button> (no separate checkbox element), so the
+   whole tile is the tap target. */
+.tile-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  padding: 10px 12px;
+  min-height: 44px;
+  margin-bottom: 8px;
+  font-size: 0.92rem;
+  text-align: left;
+  color: var(--color-text);
+  background: var(--color-bg);
+  transition: background-color 0.15s ease;
+  cursor: pointer;
+}
+.tile-row:active { filter: brightness(0.95); }
+.tile-row.done { background: rgba(63, 145, 90, 0.22); border-color: var(--color-primary); }
+.tile-title { flex: 1; font-size: 0.92rem; }
+.tile-title.done { text-decoration: line-through; color: var(--color-text-muted); }
+.tile-check {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--color-primary);
+  color: #fff;
+  font-size: 0.8rem;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
 .add-row { display: flex; gap: 8px; margin-top: 12px; }
 /* min-width: 0 overrides a text input's flex default of min-width: auto,
    which otherwise refuses to shrink below its intrinsic content width and

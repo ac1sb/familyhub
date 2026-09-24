@@ -64,14 +64,20 @@ export default function DailyChecklist({ members, compact = false, onExpand }) {
         )}
 
         {visible.map((task) => (
-          <label className="chore-row" key={task.id}>
-            <input type="checkbox" checked={task.done} onChange={() => toggleDone(task)} />
-            <span className={`chore-title${task.done ? ' done' : ''}`}>
+          <button
+            type="button"
+            className={`tile-row${task.done ? ' done' : ''}`}
+            key={task.id}
+            aria-pressed={task.done}
+            onClick={() => toggleDone(task)}
+          >
+            <span className={`tile-title${task.done ? ' done' : ''}`}>
               {task.template_id && <span title="Repeats on selected days">🔁 </span>}
               {task.title}
             </span>
             <span className={`chore-tag ${task.assigned_to}`}>{allMembers[task.assigned_to] || task.assigned_to}</span>
-          </label>
+            {task.done && <span className="tile-check">✓</span>}
+          </button>
         ))}
       </section>
     );
@@ -84,14 +90,20 @@ export default function DailyChecklist({ members, compact = false, onExpand }) {
       </div>
 
       {tasks.map((task) => (
-        <label className="chore-row" key={task.id}>
-          <input type="checkbox" checked={task.done} onChange={() => toggleDone(task)} />
-          <span className={`chore-title${task.done ? ' done' : ''}`}>
+        <button
+          type="button"
+          className={`tile-row${task.done ? ' done' : ''}`}
+          key={task.id}
+          aria-pressed={task.done}
+          onClick={() => toggleDone(task)}
+        >
+          <span className={`tile-title${task.done ? ' done' : ''}`}>
             {task.template_id && <span title="Repeats on selected days">🔁 </span>}
             {task.title}
           </span>
           <span className={`chore-tag ${task.assigned_to}`}>{allMembers[task.assigned_to] || task.assigned_to}</span>
-        </label>
+          {task.done && <span className="tile-check">✓</span>}
+        </button>
       ))}
       {data && tasks.length === 0 && <p style={{ color: 'var(--color-text-muted)' }}>Nothing on today's list.</p>}
 

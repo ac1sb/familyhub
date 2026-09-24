@@ -106,11 +106,17 @@ export default function ChoreList({ members, compact = false, onExpand }) {
         )}
 
         {visible.map((chore) => (
-          <label className="chore-row" key={chore.id}>
-            <input type="checkbox" checked={chore.done} onChange={() => toggleDone(chore)} />
-            <span className={`chore-title${chore.done ? ' done' : ''}`}>{chore.title}</span>
+          <button
+            type="button"
+            className={`tile-row${chore.done ? ' done' : ''}`}
+            key={chore.id}
+            aria-pressed={chore.done}
+            onClick={() => toggleDone(chore)}
+          >
+            <span className={`tile-title${chore.done ? ' done' : ''}`}>{chore.title}</span>
             <span className={`chore-tag ${chore.assigned_to}`}>{allMembers[chore.assigned_to] || chore.assigned_to}</span>
-          </label>
+            {chore.done && <span className="tile-check">✓</span>}
+          </button>
         ))}
       </section>
     );
@@ -140,23 +146,29 @@ export default function ChoreList({ members, compact = false, onExpand }) {
                   onClick={() => toggleDone(inst)}
                   title={inst.done ? 'Mark not done' : 'Mark done'}
                 >
-                  {WEEKDAY_SHORT[inst.day_of_week]}
+                  {inst.done ? '✓ ' : ''}{WEEKDAY_SHORT[inst.day_of_week]}
                 </button>
               ))}
             </div>
             <span className={`chore-tag ${row.assigned_to}`}>{allMembers[row.assigned_to] || row.assigned_to}</span>
           </div>
         ) : (
-          <label className="chore-row" key={row.chore.id}>
-            <input type="checkbox" checked={row.chore.done} onChange={() => toggleDone(row.chore)} />
+          <button
+            type="button"
+            className={`tile-row${row.chore.done ? ' done' : ''}`}
+            key={row.chore.id}
+            aria-pressed={row.chore.done}
+            onClick={() => toggleDone(row.chore)}
+          >
             {row.chore.day_of_week != null && (
               <span className="chore-day-tag">{WEEKDAY_SHORT[row.chore.day_of_week]}</span>
             )}
-            <span className={`chore-title${row.chore.done ? ' done' : ''}`}>{row.chore.title}</span>
+            <span className={`tile-title${row.chore.done ? ' done' : ''}`}>{row.chore.title}</span>
             <span className={`chore-tag ${row.chore.assigned_to}`}>
               {allMembers[row.chore.assigned_to] || row.chore.assigned_to}
             </span>
-          </label>
+            {row.chore.done && <span className="tile-check">✓</span>}
+          </button>
         )
       )}
       {data && openRows.length === 0 && !showDone && (
