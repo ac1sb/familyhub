@@ -1,5 +1,6 @@
 const KEY = 'familyhub.dashboardLayout.v1';
 const WIDGETS_KEY = 'familyhub.dashboardWidgets.v1';
+const COLORS_KEY = 'familyhub.dashboardColors.v1';
 
 // The catalog of every widget the Home dashboard can show, in the order
 // they're offered in Settings - independent of DEFAULT_LAYOUT's ids so
@@ -105,12 +106,35 @@ export function setEnabledWidgets(idsSet) {
   }
 }
 
+// Per-widget background color override, keyed by widget id - per-device like
+// the layout/enabled-widgets choices above. A widget with no entry here just
+// uses the theme's normal card color (and still follows day/night switching);
+// picking a color here pins that one widget to it regardless of theme.
+export function getWidgetColors() {
+  try {
+    const raw = localStorage.getItem(COLORS_KEY);
+    const parsed = raw ? JSON.parse(raw) : null;
+    return parsed && typeof parsed === 'object' ? parsed : {};
+  } catch {
+    return {};
+  }
+}
+
+export function setWidgetColors(colors) {
+  try {
+    localStorage.setItem(COLORS_KEY, JSON.stringify(colors));
+  } catch {
+    // private browsing / storage blocked - choice just won't persist on this device
+  }
+}
+
 // Settings -> Dashboard Widgets' "Reset to default layout" button - restores
-// this device's positions/sizes AND turns every widget back on, undoing both
-// a dragged/resized layout and any hidden widgets in one step.
+// this device's positions/sizes, turns every widget back on, and clears any
+// custom widget colors, undoing everything from the Home dashboard in one step.
 export function resetDashboardLayout() {
   setDashboardLayout(DEFAULT_LAYOUT);
   const allIds = new Set(WIDGET_CATALOG.map((w) => w.id));
   setEnabledWidgets(allIds);
+  setWidgetColors({});
   return allIds;
 }

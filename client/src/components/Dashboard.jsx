@@ -16,6 +16,7 @@ import {
   getDashboardLayout,
   setDashboardLayout,
   getEnabledWidgets,
+  getWidgetColors,
 } from '../lib/dashboardLayout.js';
 
 const AutoWidthGridLayout = WidthProvider(GridLayout);
@@ -30,6 +31,7 @@ const NO_AUTO_GROW = new Set(['calendar']);
 export default function Dashboard({ members, zip, onNavigate }) {
   const [layout, setLayout] = useState(getDashboardLayout());
   const [enabledWidgets] = useState(() => getEnabledWidgets());
+  const [widgetColors] = useState(() => getWidgetColors());
   const wrapRef = useRef(null);
 
   // react-grid-layout only ever knows about the currently-visible items (it's
@@ -108,7 +110,11 @@ export default function Dashboard({ members, zip, onNavigate }) {
         onLayoutChange={handleLayoutChange}
       >
         {WIDGET_CATALOG.filter((w) => enabledWidgets.has(w.id)).map((w) => (
-          <div key={w.id} data-grid-id={w.id}>
+          <div
+            key={w.id}
+            data-grid-id={w.id}
+            style={widgetColors[w.id] ? { '--widget-bg': widgetColors[w.id] } : undefined}
+          >
             {widgetContent[w.id]}
           </div>
         ))}

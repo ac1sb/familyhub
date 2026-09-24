@@ -20,8 +20,10 @@ shopping list from another device.
   "See all" for the full list either way. Every widget can be
   dragged and resized to your own layout, which is saved per-device (in
   the browser) and survives `git pull`/rebuilds. Pick which widgets appear
-  at all in Settings → Dashboard Widgets (also per-device, so a phone can
-  show fewer than the wall display); a widget that's undersized for its
+  at all — and give any of them their own background color, overriding the
+  normal day/night theme for just that one — in Settings → Dashboard
+  Widgets (also per-device, so a phone can show fewer than the wall
+  display, or its own color scheme); a widget that's undersized for its
   own content grows itself to fit automatically.
 - **Built-in calendar** with an **agenda view**: three tappable columns for
   the household members (Mom / Dad / Child by default — rename in Settings).

@@ -286,7 +286,10 @@ button {
 
 /* The grid item itself gets an explicit pixel size from react-grid-layout;
    make our card fill it completely instead of the old compact/fill-height
-   size caps, which were designed for the previous flexbox layout. */
+   size caps, which were designed for the previous flexbox layout. --widget-bg
+   is set inline per grid item (Dashboard.jsx) when that widget has a custom
+   color from Settings -> Dashboard Widgets; falls back to the normal themed
+   card color (and so still follows day/night switching) when it doesn't. */
 .dashboard-rgl .react-grid-item .widget-card {
   height: 100%;
   max-height: none;
@@ -294,6 +297,7 @@ button {
   display: flex;
   flex-direction: column;
   margin: 0;
+  background: var(--widget-bg, var(--color-surface));
 }
 
 .dashboard-rgl .react-grid-item .widget-header {
@@ -494,6 +498,7 @@ button {
 
 .checkbox-row { display: flex; align-items: center; gap: 10px; }
 .checkbox-row input[type=checkbox] { width: 22px; height: 22px; }
+.widget-color-swatch { width: 32px; height: 32px; padding: 0; border: 1px solid var(--color-border); border-radius: 8px; cursor: pointer; flex-shrink: 0; }
 
 .weekday-chips { display: flex; flex-wrap: wrap; gap: 8px; }
 .weekday-chip {
