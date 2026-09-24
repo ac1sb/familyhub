@@ -111,7 +111,12 @@ shopping list from another device.
   page for a bigger canvas. Saving from the full page returns you to the
   dashboard automatically. Clearing the board archives whatever was on it
   first, so past notes are browsable (on the full page) instead of just
-  thrown away.
+  thrown away. Finger-drawn strokes are smoothed (a curve through the
+  points instead of straight segments between them) and taper by drawing
+  speed - thinner on a quick stroke, a touch thicker where it slows down or
+  pauses - so a message written with a finger reads more like natural
+  handwriting than a jagged, uniform-width line; a plain tap leaves a dot
+  (for a period or the dot over an "i") instead of nothing.
 - **Smart Home (mockup)** — a Lutron Caseta / LIFX control widget: add your
   switches and bulbs once in Settings → Smart Home Setup (name, room, and
   LIFX vs. Caseta dimmer/switch), then toggle them, drag brightness, and
