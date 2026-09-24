@@ -11,6 +11,9 @@ const DEFAULTS = {
   // instead of a blank flash before the first fetch resolves). Cleared to
   // force a refetch - e.g. Settings' "New Photo" button, or a theme change.
   photo: null,
+  // How opaque each widget's frosted background is (0 = fully see-through to
+  // the photo, 100 = fully solid, no photo showing through at all).
+  frostOpacity: 55,
 };
 
 export function getDashboardBackgroundSettings() {

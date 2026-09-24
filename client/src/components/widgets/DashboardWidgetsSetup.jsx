@@ -145,6 +145,26 @@ export default function DashboardWidgetsSetup() {
             )}
           </div>
         )}
+
+        {background.mode !== 'off' && (
+          <div style={{ marginTop: 12 }}>
+            <label style={{ display: 'block', marginBottom: 4, fontSize: '0.85rem' }}>
+              Widget frost level: {background.frostOpacity}%
+            </label>
+            <input
+              type="range"
+              min={10}
+              max={95}
+              step={5}
+              value={background.frostOpacity}
+              onChange={(e) => updateBackground({ frostOpacity: Number(e.target.value) })}
+              style={{ width: '100%', maxWidth: 320 }}
+            />
+            <p style={{ color: 'var(--color-text-muted)', fontSize: '0.75rem', margin: '4px 0 0' }}>
+              Lower = more see-through to the photo, higher = more solid/readable widgets.
+            </p>
+          </div>
+        )}
         <p style={{ color: 'var(--color-text-muted)', fontSize: '0.8rem', marginTop: 8, marginBottom: 0 }}>
           A photo behind the widgets, from the same free nature-photo library as the screensaver.
           Static picks one and keeps it (until you tap "New photo" or change the theme); Rotating

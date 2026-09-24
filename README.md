@@ -64,7 +64,10 @@ shopping list from another device.
   makes every widget frosted/translucent (blurred) instead of a flat fill -
   its own custom color if it has one, otherwise the normal themed color -
   so the photo shows through the whole dashboard, not just the gaps between
-  widgets; with the background off, widgets stay fully opaque as normal.
+  widgets; with the background off, widgets stay fully opaque as normal. A
+  **frost level slider** (10-95%) controls how see-through that frosting is,
+  per-device like the rest of these settings - lower lets more of the photo
+  through, higher keeps widgets more solid/readable.
 - **Built-in calendar** with an **agenda view**: three tappable columns for
   the household members (Mom / Dad / Child by default — rename in Settings).
   Tapping a member's name opens **Add Event**, preselected for that person.

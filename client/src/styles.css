@@ -336,7 +336,7 @@ button {
    no background photo active, widgets stay fully opaque (there's nothing
    behind them to show anyway). */
 .dashboard-wrap.has-background-photo .dashboard-rgl .react-grid-item .widget-card {
-  background: color-mix(in srgb, var(--widget-bg, var(--color-surface)) 55%, transparent);
+  background: color-mix(in srgb, var(--widget-bg, var(--color-surface)) var(--frost-opacity, 55%), transparent);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
 }

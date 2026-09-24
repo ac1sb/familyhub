@@ -148,7 +148,11 @@ export default function Dashboard({ members, zip, onNavigate }) {
     <div
       className={`dashboard-wrap${backgroundPhoto ? ' has-background-photo' : ''}`}
       ref={wrapRef}
-      style={backgroundPhoto ? { backgroundImage: `url(${backgroundPhoto.url})` } : undefined}
+      style={
+        backgroundPhoto
+          ? { backgroundImage: `url(${backgroundPhoto.url})`, '--frost-opacity': `${background.frostOpacity}%` }
+          : undefined
+      }
     >
       <ReminderBanner members={members} />
 
