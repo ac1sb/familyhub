@@ -65,12 +65,13 @@ shopping list from another device.
   its own custom color if it has one, otherwise the normal themed color -
   so the photo shows through the whole dashboard, not just the gaps between
   widgets; with the background off, widgets stay fully opaque as normal. A
-  **frost level slider** (10-95%) controls how see-through that frosting is,
+  **frost level slider** (0-100%) controls how see-through that frosting is,
   per-device like the rest of these settings - lower lets more of the photo
-  through, higher keeps widgets more solid/readable. Also here: a **days
-  shown slider** (2-10) for the compact Calendar widget on Home - the full
-  Calendar page isn't affected, since it already auto-grows on its own to
-  fill the screen.
+  through (0% is fully see-through, no color tint at all, just the blurred
+  photo behind the widget's text), higher keeps widgets more solid/readable.
+  Also here: a **days shown slider** (2-10) for the compact Calendar widget
+  on Home - the full Calendar page isn't affected, since it already
+  auto-grows on its own to fill the screen.
 - **Built-in calendar** with an **agenda view**: three tappable columns for
   the household members (Mom / Dad / Child by default — rename in Settings).
   Tapping a member's name opens **Add Event**, preselected for that person.

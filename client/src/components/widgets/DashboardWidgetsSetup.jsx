@@ -179,15 +179,16 @@ export default function DashboardWidgetsSetup() {
             </label>
             <input
               type="range"
-              min={10}
-              max={95}
+              min={0}
+              max={100}
               step={5}
               value={background.frostOpacity}
               onChange={(e) => updateBackground({ frostOpacity: Number(e.target.value) })}
               style={{ width: '100%', maxWidth: 320 }}
             />
             <p style={{ color: 'var(--color-text-muted)', fontSize: '0.75rem', margin: '4px 0 0' }}>
-              Lower = more see-through to the photo, higher = more solid/readable widgets.
+              Lower = more see-through to the photo, higher = more solid/readable widgets. At 0% a
+              widget has no tint at all - just the blurred photo behind its text.
             </p>
           </div>
         )}
