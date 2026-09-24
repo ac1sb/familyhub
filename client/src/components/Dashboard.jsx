@@ -169,7 +169,6 @@ export default function Dashboard({ members, zip, onNavigate }) {
           <div
             key={w.id}
             data-grid-id={w.id}
-            className={widgetColors[w.id] ? 'has-custom-color' : undefined}
             style={widgetColors[w.id] ? { '--widget-bg': widgetColors[w.id] } : undefined}
           >
             {widgetContent[w.id]}

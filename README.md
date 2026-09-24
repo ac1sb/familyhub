@@ -55,16 +55,16 @@ shopping list from another device.
   widget that's undersized for its own content grows itself to fit
   automatically (Carousel-mode widgets are exempt from this, since a
   carousel tile is designed to fill whatever height it's given rather than
-  ever needing more room). A custom widget color renders frosted/
-  translucent (blurred) rather than a flat fill, so it's worth pairing with
-  a **dashboard background photo** - also in Settings → Dashboard Widgets,
-  from the same free nature-photo library (landscapes/mountains/
-  waterfalls/lakes/forests) the screensaver uses. Off by default; **Static**
-  picks one photo and keeps it (a "New photo" button gets another, and
-  changing the theme fetches a fresh one automatically); **Rotating**
-  swaps it out on a timer (5/10/15/30/60 min). Shows through the gaps
-  between widgets, and through any widget given its own custom color as
-  above - default-themed widgets stay fully opaque on top of it either way.
+  ever needing more room). Also in Settings → Dashboard Widgets: a
+  **dashboard background photo**, from the same free nature-photo library
+  (landscapes/mountains/waterfalls/lakes/forests) the screensaver uses. Off
+  by default; **Static** picks one photo and keeps it (a "New photo" button
+  gets another, and changing the theme fetches a fresh one automatically);
+  **Rotating** swaps it out on a timer (5/10/15/30/60 min). Turning this on
+  makes every widget frosted/translucent (blurred) instead of a flat fill -
+  its own custom color if it has one, otherwise the normal themed color -
+  so the photo shows through the whole dashboard, not just the gaps between
+  widgets; with the background off, widgets stay fully opaque as normal.
 - **Built-in calendar** with an **agenda view**: three tappable columns for
   the household members (Mom / Dad / Child by default — rename in Settings).
   Tapping a member's name opens **Add Event**, preselected for that person.

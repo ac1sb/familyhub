@@ -299,10 +299,10 @@ button {
   min-height: 0;
   overflow-y: auto;
 }
-/* Settings -> Dashboard Widgets: Static/Rotating background. Shows through
-   the gaps between widgets, and through any widget given its own frosted
-   custom color (.has-custom-color, above) - opaque default-themed widgets
-   just sit on top of it like normal. */
+/* Settings -> Dashboard Widgets: Static/Rotating background. Every widget
+   goes frosted/translucent while this is active (see the has-background-photo
+   rule below) so the photo actually reads through the whole dashboard, not
+   just the thin gaps between widgets. */
 .dashboard-wrap.has-background-photo {
   background-size: cover;
   background-position: center;
@@ -329,12 +329,14 @@ button {
   background: var(--widget-bg, var(--color-surface));
 }
 
-/* A widget with a custom color (Settings -> Dashboard Widgets) gets a
-   frosted/translucent look instead of a flat fill - keeps it readable while
-   leaving room for a future background-image feature to show through.
-   Default-themed widgets (no --widget-bg set) are untouched by this rule. */
-.dashboard-rgl .react-grid-item.has-custom-color .widget-card {
-  background: color-mix(in srgb, var(--widget-bg) 55%, transparent);
+/* Whenever a dashboard background photo is on (Settings -> Dashboard
+   Widgets), every widget goes frosted/translucent instead of a flat fill -
+   its own color if it has a custom one, otherwise the normal themed
+   surface color, either way blended down so the photo shows through. With
+   no background photo active, widgets stay fully opaque (there's nothing
+   behind them to show anyway). */
+.dashboard-wrap.has-background-photo .dashboard-rgl .react-grid-item .widget-card {
+  background: color-mix(in srgb, var(--widget-bg, var(--color-surface)) 55%, transparent);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
 }

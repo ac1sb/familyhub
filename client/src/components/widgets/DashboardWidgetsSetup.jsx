@@ -89,8 +89,10 @@ export default function DashboardWidgetsSetup() {
         Choose which widgets show on this device's Home dashboard - this is per-device, so a phone
         can show fewer widgets than the wall display. Turning one off doesn't delete its data or its
         saved position, and every widget stays reachable from the sidebar either way. Pick a background
-        color for a widget to pin it to a frosted, translucent version of that color regardless of
-        day/night theme; leave it alone and it keeps following the normal theme.
+        color for a widget to pin it to that color regardless of day/night theme; leave it alone and
+        it keeps following the normal theme. Whenever a dashboard background photo is on (below), every
+        widget - custom color or not - goes frosted/translucent instead of a flat fill, so the photo
+        shows through the whole dashboard instead of just the gaps between widgets.
       </p>
 
       <div className="field" style={{ marginBottom: 18 }}>
@@ -146,8 +148,9 @@ export default function DashboardWidgetsSetup() {
         <p style={{ color: 'var(--color-text-muted)', fontSize: '0.8rem', marginTop: 8, marginBottom: 0 }}>
           A photo behind the widgets, from the same free nature-photo library as the screensaver.
           Static picks one and keeps it (until you tap "New photo" or change the theme); Rotating
-          changes it on the interval above. Give a widget its own background color below to make it
-          frosted/translucent so this shows through it too, not just the gaps between widgets.
+          changes it on the interval above. Turning this on also makes every widget frosted/
+          translucent instead of a flat fill, so the photo shows through the whole dashboard - not
+          just the gaps between widgets.
         </p>
       </div>
 
