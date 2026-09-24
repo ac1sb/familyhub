@@ -18,6 +18,7 @@ import {
   getEnabledWidgets,
   getWidgetColors,
 } from '../lib/dashboardLayout.js';
+import { getWidgetDisplayMode } from '../lib/widgetDisplayMode.js';
 
 const AutoWidthGridLayout = WidthProvider(GridLayout);
 
@@ -27,6 +28,14 @@ const ROW_MARGIN = 8;
 // unbounded number of upcoming events/days, so it should never dictate the
 // dashboard's height the way a short list widget should.
 const NO_AUTO_GROW = new Set(['calendar']);
+// A Carousel-mode tile (see TileCarousel.jsx / styles.css) is built to
+// stretch and fill however much height its widget is given, down to a
+// ~110px floor - unlike a stacked list, it never genuinely "needs" more
+// room. Auto-growing it anyway chases a few px of harmless rounding
+// overflow forever, since the tile just re-stretches to fill the taller
+// box on the next render: the widget grows without bound. Skip auto-grow
+// for whichever of these widgets is currently in carousel mode.
+const CAROUSEL_CAPABLE_WIDGETS = new Set(['chores', 'daily']);
 
 export default function Dashboard({ members, zip, onNavigate }) {
   const [layout, setLayout] = useState(getDashboardLayout());
@@ -62,6 +71,7 @@ export default function Dashboard({ members, zip, onNavigate }) {
         let changed = false;
         const next = prevLayout.map((item) => {
           if (NO_AUTO_GROW.has(item.i)) return item;
+          if (CAROUSEL_CAPABLE_WIDGETS.has(item.i) && getWidgetDisplayMode(item.i) === 'carousel') return item;
           const card = container.querySelector(`[data-grid-id="${item.i}"] .widget-card`);
           if (!card) return item;
           const deficit = card.scrollHeight - card.clientHeight;
