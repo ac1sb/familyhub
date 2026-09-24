@@ -27,10 +27,12 @@ shopping list from another device.
   the ✕ removes one for good. Chores and Daily Checklist can each
   independently pick one of three widget styles in Settings → Dashboard
   Widgets (e.g. Chores as Squares, Daily Checklist as a Carousel) - **List**
-  (the classic stacked full-width bars), **Squares** (a small-tile grid,
-  styled like the Weekly Dinner Menu widget's day boxes - a long title
-  clamps to 3 lines with an ellipsis instead of blowing up the square, full
-  text via hover or "See all"), or **Carousel** (one big tile at a time -
+  (the classic stacked full-width bars), **Squares** (always exactly 2
+  tiles side by side, however the widget is resized - the tiles stretch to
+  fill whatever width/height that gives them rather than shrinking to fit
+  more per row; a long title clamps to 3 lines with an ellipsis instead of
+  overflowing the tile, full text via hover or "See all"), or **Carousel**
+  (one big tile at a time -
   swipe it left/right, use the arrow buttons, or tap a dot to jump to a
   specific item). Tapping a tile/bar itself always marks it done, in any
   style - these are just different skins on the same list, not separate
@@ -76,9 +78,11 @@ shopping list from another device.
   small checkbox to hit. A chore that repeats on several days (e.g.
   Mon/Wed/Thu) shows as a single row with one badge per expected day - tap a
   day's badge to mark it done, and it gets its own checkmark too.
-- **Weekly dinner menu** — a horizontal row of day boxes (day on top, meal
-  name below); drag a box to reorder which meal lands on which day, and the
-  boxes resize themselves to fill however wide you make the widget.
+- **Weekly dinner menu** — a row of day boxes (day on top, meal name below),
+  with today's day tab highlighted so it stands out from the rest of the
+  week; drag a box to reorder which meal lands on which day, and the boxes
+  reflow into a grid and resize themselves to fill however you resize the
+  widget.
 - **Lunch calendar** for one child — a full monthly view (tap a day to toggle
   School/Pack-from-home, mark no-school days, jot the menu item), plus a
   dashboard card that shows *today's* status until 3pm and then flips to

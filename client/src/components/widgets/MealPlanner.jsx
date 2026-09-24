@@ -6,7 +6,7 @@ import { usePolling } from '../../hooks/usePolling.js';
 import { api } from '../../api.js';
 import { currentWeekStart, WEEKDAY_SHORT } from '../../lib/week.js';
 
-function SortableMealBox({ id, dayIndex, name, onChange, onCommit }) {
+function SortableMealBox({ id, dayIndex, name, isToday, onChange, onCommit }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id });
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -15,7 +15,7 @@ function SortableMealBox({ id, dayIndex, name, onChange, onCommit }) {
 
   return (
     <div ref={setNodeRef} style={style} className={`meal-box${isDragging ? ' dragging' : ''}`}>
-      <div className="meal-box-day" {...attributes} {...listeners}>
+      <div className={`meal-box-day${isToday ? ' today' : ''}`} {...attributes} {...listeners}>
         {WEEKDAY_SHORT[dayIndex]}
       </div>
       <input
@@ -98,6 +98,7 @@ export default function MealPlanner({ compact = false, onExpand }) {
                   id={id}
                   dayIndex={dayIndex}
                   name={names[dayIndex] || ''}
+                  isToday={dayIndex === todayIndex}
                   onChange={handleNameChange}
                   onCommit={commitName}
                 />
