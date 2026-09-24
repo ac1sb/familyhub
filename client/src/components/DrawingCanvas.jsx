@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { forwardRef, useEffect, useImperativeHandle, useLayoutEffect, useRef, useState } from 'react';
 
 // Shared touch/pen/mouse drawing pad, used by both the handwritten shopping
 // list items and the whiteboard. Ink is flattened to a plain PNG on save -
@@ -10,7 +10,7 @@ import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 // rather than raw pixels, so a resize - dragging a dashboard widget wider or
 // taller, or just opening the same board on a different screen - can redraw
 // everything at the new size instead of clipping or leaving dead space.
-export default function DrawingCanvas({
+const DrawingCanvas = forwardRef(function DrawingCanvas({
   width = 600,
   height = 300,
   colors = ['#1a1a1a'],
@@ -21,7 +21,7 @@ export default function DrawingCanvas({
   onSave,
   onClear,
   onCancel,
-}) {
+}, ref) {
   const stageRef = useRef(null);
   const canvasRef = useRef(null);
   const baseImageRef = useRef(null);
@@ -180,6 +180,11 @@ export default function DrawingCanvas({
     redrawAll();
   }
 
+  // Lets a parent (e.g. a "+ New" button in a widget header, away from this
+  // component's own toolbar) trigger the exact same archive-then-clear flow
+  // as the trash icon below, instead of duplicating that logic.
+  useImperativeHandle(ref, () => ({ clear: handleClear }));
+
   function handleSave() {
     onSave?.(canvasRef.current.toDataURL('image/png'));
   }
@@ -265,4 +270,6 @@ export default function DrawingCanvas({
       </div>
     </div>
   );
-}
+});
+
+export default DrawingCanvas;

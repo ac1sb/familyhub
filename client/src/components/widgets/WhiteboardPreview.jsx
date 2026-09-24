@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { usePolling } from '../../hooks/usePolling.js';
 import { api } from '../../api.js';
 import DrawingCanvas from '../DrawingCanvas.jsx';
@@ -9,6 +9,7 @@ export default function WhiteboardPreview({ onExpand }) {
   const { data, refresh } = usePolling(() => api.whiteboard(), [], 15000);
   const [saving, setSaving] = useState(false);
   const palette = useMemberColorPalette();
+  const canvasRef = useRef(null);
 
   async function handleSave(dataUrl) {
     setSaving(true);
@@ -29,9 +30,15 @@ export default function WhiteboardPreview({ onExpand }) {
     <section className="widget-card compact">
       <div className="widget-header">
         <h2>Whiteboard</h2>
-        {onExpand && <button className="see-all" onClick={onExpand}>Full size &rarr;</button>}
+        <div className="widget-header-actions">
+          <button className="see-all" onClick={() => canvasRef.current?.clear()} title="Archive this note and start a blank board">
+            + New
+          </button>
+          {onExpand && <button className="see-all" onClick={onExpand}>Full size &rarr;</button>}
+        </div>
       </div>
       <DrawingCanvas
+        ref={canvasRef}
         key={data?.image_path || 'blank'}
         width={640}
         height={340}
