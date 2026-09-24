@@ -56,7 +56,7 @@ export default function ChoreList({ members, compact = false, onExpand }) {
   const [newTitle, setNewTitle] = useState('');
   const [assignedTo, setAssignedTo] = useState('family');
   const [showDone, setShowDone] = useState(false);
-  const [displayMode] = useState(() => getWidgetDisplayMode());
+  const [displayMode] = useState(() => getWidgetDisplayMode('chores'));
 
   async function toggleDone(chore) {
     setData((prev) => ({

@@ -21,11 +21,12 @@ shopping list from another device.
   disappears, it just accumulates checkmarks. Shopping List works the same
   way (checkbox + strikethrough instead of a tile), plus a total item tally
   and a quick-add box (typing a name and hitting Add/Enter drops it straight
-  onto the list) — tap "See all" for the full list either way. Chores/Daily
-  Checklist can also switch to a **Carousel** mode in Settings → Dashboard
-  Widgets: one big tile at a time instead of a stacked list - swipe it left
-  or right (touch or mouse drag), use the arrow buttons, or tap a dot to
-  jump to a specific item; tapping the tile itself still toggles it done.
+  onto the list) — tap "See all" for the full list either way. Chores and
+  Daily Checklist can each independently switch to a **Carousel** mode in
+  Settings → Dashboard Widgets (e.g. Chores as a list, Daily Checklist as a
+  carousel): one big tile at a time instead of a stacked list - swipe it
+  left or right (touch or mouse drag), use the arrow buttons, or tap a dot
+  to jump to a specific item; tapping the tile itself still toggles it done.
   Every widget can be
   dragged and resized to your own layout, which is saved per-device (in
   the browser) and survives `git pull`/rebuilds. Pick which widgets appear

@@ -1,19 +1,27 @@
-const KEY = 'familyhub.widgetDisplayMode.v1';
+const KEY = 'familyhub.widgetDisplayMode.v2';
 
-// Per-device (like the rest of the dashboard layout choices) - controls how
-// Chores/Daily Checklist show their items on the dashboard: a stacked list
-// of tiles, or one big tile at a time you swipe through.
-export function getWidgetDisplayMode() {
+// Per-device, per-widget (like the widget colors) - controls how a widget
+// shows its items on the dashboard: a stacked list of tiles, or one big
+// tile at a time you swipe through. Chores and Daily Checklist can each be
+// set independently - e.g. Chores as a list, Daily Checklist as a carousel.
+function getModes() {
   try {
-    return localStorage.getItem(KEY) === 'carousel' ? 'carousel' : 'list';
+    const raw = localStorage.getItem(KEY);
+    const parsed = raw ? JSON.parse(raw) : null;
+    return parsed && typeof parsed === 'object' ? parsed : {};
   } catch {
-    return 'list';
+    return {};
   }
 }
 
-export function setWidgetDisplayMode(mode) {
+export function getWidgetDisplayMode(widgetId) {
+  return getModes()[widgetId] === 'carousel' ? 'carousel' : 'list';
+}
+
+export function setWidgetDisplayMode(widgetId, mode) {
   try {
-    localStorage.setItem(KEY, mode === 'carousel' ? 'carousel' : 'list');
+    const next = { ...getModes(), [widgetId]: mode === 'carousel' ? 'carousel' : 'list' };
+    localStorage.setItem(KEY, JSON.stringify(next));
   } catch {
     // private browsing / storage blocked - choice just won't persist on this device
   }

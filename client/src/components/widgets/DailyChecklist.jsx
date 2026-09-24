@@ -15,7 +15,7 @@ export default function DailyChecklist({ members, compact = false, onExpand }) {
   const { data, setData, refresh } = usePolling(() => api.dailyTasks(today), [today], 15000);
   const [newTitle, setNewTitle] = useState('');
   const [assignedTo, setAssignedTo] = useState('family');
-  const [displayMode] = useState(() => getWidgetDisplayMode());
+  const [displayMode] = useState(() => getWidgetDisplayMode('daily'));
 
   async function toggleDone(task) {
     setData((prev) => ({

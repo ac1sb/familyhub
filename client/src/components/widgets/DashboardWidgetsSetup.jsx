@@ -14,14 +14,23 @@ import { getWidgetDisplayMode, setWidgetDisplayMode } from '../../lib/widgetDisp
 // sets it; leaving it alone keeps following the normal light/dark theme.
 const PICKER_DEFAULT = '#ffffff';
 
+// The only two widgets with a List/Carousel choice - set independently, so
+// e.g. Chores can stay a list while Daily Checklist is a carousel.
+const DISPLAY_MODE_WIDGETS = [
+  { id: 'chores', label: 'Chores' },
+  { id: 'daily', label: 'Daily Checklist' },
+];
+
 export default function DashboardWidgetsSetup() {
   const [enabled, setEnabled] = useState(() => getEnabledWidgets());
   const [colors, setColors] = useState(() => getWidgetColors());
-  const [displayMode, setDisplayMode] = useState(() => getWidgetDisplayMode());
+  const [displayModes, setDisplayModes] = useState(() =>
+    Object.fromEntries(DISPLAY_MODE_WIDGETS.map((w) => [w.id, getWidgetDisplayMode(w.id)]))
+  );
 
-  function chooseDisplayMode(mode) {
-    setDisplayMode(mode);
-    setWidgetDisplayMode(mode);
+  function chooseDisplayMode(widgetId, mode) {
+    setDisplayModes((prev) => ({ ...prev, [widgetId]: mode }));
+    setWidgetDisplayMode(widgetId, mode);
   }
 
   function toggle(id) {
@@ -66,30 +75,32 @@ export default function DashboardWidgetsSetup() {
         keeps following the normal theme.
       </p>
 
-      <div className="field">
-        <label>Chores / Daily Checklist widget style</label>
-        <div className="member-choice-row">
-          <button
-            type="button"
-            className={`member-choice family${displayMode === 'list' ? ' selected' : ''}`}
-            onClick={() => chooseDisplayMode('list')}
-          >
-            List
-          </button>
-          <button
-            type="button"
-            className={`member-choice family${displayMode === 'carousel' ? ' selected' : ''}`}
-            onClick={() => chooseDisplayMode('carousel')}
-          >
-            Carousel
-          </button>
+      {DISPLAY_MODE_WIDGETS.map((widget) => (
+        <div className="field" key={widget.id}>
+          <label>{widget.label} widget style</label>
+          <div className="member-choice-row">
+            <button
+              type="button"
+              className={`member-choice family${displayModes[widget.id] === 'list' ? ' selected' : ''}`}
+              onClick={() => chooseDisplayMode(widget.id, 'list')}
+            >
+              List
+            </button>
+            <button
+              type="button"
+              className={`member-choice family${displayModes[widget.id] === 'carousel' ? ' selected' : ''}`}
+              onClick={() => chooseDisplayMode(widget.id, 'carousel')}
+            >
+              Carousel
+            </button>
+          </div>
         </div>
-        <p style={{ color: 'var(--color-text-muted)', fontSize: '0.8rem', marginTop: 4 }}>
-          List shows several items stacked at once. Carousel shows one big tile at a time - swipe it
-          left/right (or use the arrow buttons) to move through the items, and tap the tile itself to
-          mark it done. Per-device, like everything else on this page.
-        </p>
-      </div>
+      ))}
+      <p style={{ color: 'var(--color-text-muted)', fontSize: '0.8rem', marginTop: 0 }}>
+        List shows several items stacked at once. Carousel shows one big tile at a time - swipe it
+        left/right (or use the arrow buttons) to move through the items, and tap the tile itself to
+        mark it done. Set independently for each, per-device, like everything else on this page.
+      </p>
 
       {WIDGET_CATALOG.map((widget) => (
         <div className="field" key={widget.id}>
