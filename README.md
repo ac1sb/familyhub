@@ -72,7 +72,11 @@ shopping list from another device.
   per-device like the rest of these settings - lower lets more of the photo
   through (0% is fully see-through, no color tint at all, just the blurred
   photo behind the widget's text), higher keeps widgets more solid/readable.
-  Also here: a **days shown slider** (2-10) for the compact Calendar widget
+  Widget header titles switch to the theme's stronger text color plus a
+  glow (a light halo behind dark text, or a dark halo behind light text in
+  night mode) whenever a background photo is on, since their normal muted
+  gray washes out over a busy/bright photo. Also here: a **days shown
+  slider** (2-10) for the compact Calendar widget
   on Home - the full Calendar page isn't affected, since it already
   auto-grows on its own to fill the screen.
 - **Built-in calendar** with an **agenda view**: three tappable columns for

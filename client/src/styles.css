@@ -11,6 +11,10 @@
   --color-member-2: #4a7fb5;
   --color-member-3: #d9a441;
   --color-danger: #b5473f;
+  /* Halo behind widget header text when a dashboard background photo is
+     frosting the widgets (see .has-background-photo below) - a light theme
+     needs a light glow behind its dark text, a dark theme the opposite. */
+  --color-header-glow: rgba(255, 255, 255, 0.85);
   --radius: 14px;
   --sidebar-width: 108px;
   font-size: 16px;
@@ -31,6 +35,7 @@
   --color-member-2: #6fa0d9;
   --color-member-3: #e8bc63;
   --color-danger: #d9645a;
+  --color-header-glow: rgba(0, 0, 0, 0.75);
 }
 
 * { box-sizing: border-box; }
@@ -339,6 +344,18 @@ button {
   background: color-mix(in srgb, var(--widget-bg, var(--color-surface)) var(--frost-opacity, 55%), transparent);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
+}
+
+/* The header title/status normally use the theme's muted (lower-contrast)
+   text color, which was fine on a flat surface but washes out once the
+   photo shows through a frosted widget - switch to the theme's stronger
+   text color plus a halo (light theme: white glow behind dark text; dark
+   theme: black glow behind light text) so it stays readable over whatever
+   part of the photo happens to be behind it. */
+.dashboard-wrap.has-background-photo .widget-header h2,
+.dashboard-wrap.has-background-photo .widget-status {
+  color: var(--color-text);
+  text-shadow: 0 0 4px var(--color-header-glow), 0 0 4px var(--color-header-glow);
 }
 
 .dashboard-rgl .react-grid-item .widget-header {
