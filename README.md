@@ -194,6 +194,15 @@ prompt `esbuild` triggered during setup), `npm run update` will pause with
 that warning instead of finishing. Run `npm install-scripts approve
 <package-name>` as it tells you to, then run `npm run update` again.
 
+If `npm run update` (or `npm run build`) fails on Windows with `Cannot find
+module @rollup/rollup-win32-x64-msvc` (or a similar `@rollup/rollup-<platform>`
+error on another OS), that's a known npm bug
+([npm/cli#4828](https://github.com/npm/cli/issues/4828)), not anything wrong
+with FamilyHub - it happens when `package-lock.json` was last regenerated on
+a different OS than the one installing now (this repo gets worked on across
+Linux/Mac/Windows machines). Fix: delete `client/node_modules` and
+`client/package-lock.json`, then run `npm run update` again to reinstall clean.
+
 #### Updating from inside the app
 
 Settings → General → Software Update has a **Check for updates** /
