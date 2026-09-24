@@ -10,8 +10,7 @@ import UpdatePanel from './UpdatePanel.jsx';
 function GeneralSettings({ config, onConfigUpdated }) {
   const [names, setNames] = useState({ member_1: '', member_2: '', member_3: '' });
   const [zip, setZip] = useState('');
-  const [icalUrl, setIcalUrl] = useState('');
-  const [icalEventsMember, setIcalEventsMember] = useState('family');
+  const [icalFeeds, setIcalFeeds] = useState([{ url: '', member: 'family' }]);
   const [googleCalendarId, setGoogleCalendarId] = useState('');
   const [googleEventsMember, setGoogleEventsMember] = useState('family');
   const [saving, setSaving] = useState(false);
@@ -25,8 +24,7 @@ function GeneralSettings({ config, onConfigUpdated }) {
     if (config) {
       setNames(config.members);
       setZip(config.weather_zip);
-      setIcalUrl(config.ical_feed_url || '');
-      setIcalEventsMember(config.ical_events_member || 'family');
+      setIcalFeeds(config.ical_feeds?.length ? config.ical_feeds : [{ url: '', member: 'family' }]);
       setGoogleCalendarId(config.google_calendar_id || 'primary');
       setGoogleEventsMember(config.google_events_member || 'family');
     }
@@ -50,6 +48,22 @@ function GeneralSettings({ config, onConfigUpdated }) {
     setGoogleStatus(await api.googleStatus());
   }
 
+  function updateFeed(index, patch) {
+    setIcalFeeds((prev) => prev.map((f, i) => (i === index ? { ...f, ...patch } : f)));
+  }
+
+  function addFeedRow() {
+    setIcalFeeds((prev) => [...prev, { url: '', member: 'family' }]);
+  }
+
+  function removeFeedRow(index) {
+    setIcalFeeds((prev) => {
+      const next = prev.filter((_, i) => i !== index);
+      // Keep at least one (blank) row so there's always something to type into.
+      return next.length ? next : [{ url: '', member: 'family' }];
+    });
+  }
+
   async function handleSave() {
     setSaving(true);
     setError(null);
@@ -60,8 +74,7 @@ function GeneralSettings({ config, onConfigUpdated }) {
         member_2: names.member_2,
         member_3: names.member_3,
         weather_zip: zip,
-        ical_feed_url: icalUrl,
-        ical_events_member: icalEventsMember,
+        ical_feeds: icalFeeds,
         google_calendar_id: googleCalendarId,
         google_events_member: googleEventsMember,
       });
@@ -109,36 +122,43 @@ function GeneralSettings({ config, onConfigUpdated }) {
         <input id="weather-zip" type="text" inputMode="numeric" maxLength={5} value={zip} onChange={(e) => setZip(e.target.value)} />
       </div>
       <div className="field">
-        <label htmlFor="ical-feed-url">Shared calendar feed URL (optional)</label>
-        <input
-          id="ical-feed-url"
-          type="text"
-          placeholder="https://calendar.google.com/calendar/ical/.../basic.ics"
-          value={icalUrl}
-          onChange={(e) => setIcalUrl(e.target.value)}
-        />
-        <p style={{ color: 'var(--color-text-muted)', fontSize: '0.8rem', marginTop: 4 }}>
+        <label>Shared calendar feeds (optional)</label>
+        <p style={{ color: 'var(--color-text-muted)', fontSize: '0.8rem', marginTop: 0 }}>
           Paste a calendar's "Secret address in iCal format" (Google Calendar &rarr; that calendar's
           Settings &rarr; Integrate calendar) to show its events on the agenda - read-only, and no
-          Google sign-in needed. This is separate from the Google Calendar connection below, which is
-          for two-way sync with your own account's calendar.
+          Google sign-in needed. Add one per person to keep each on their own column. This is separate
+          from the Google Calendar connection below, which is for two-way sync with your own account's
+          calendar.
         </p>
+        {icalFeeds.map((feed, i) => (
+          <div className="ical-feed-row" key={i}>
+            <input
+              type="text"
+              placeholder="https://calendar.google.com/calendar/ical/.../basic.ics"
+              value={feed.url}
+              onChange={(e) => updateFeed(i, { url: e.target.value })}
+            />
+            <select value={feed.member} onChange={(e) => updateFeed(i, { member: e.target.value })}>
+              <option value="family">Family (all columns)</option>
+              <option value="member_1">{names.member_1 || 'Member 1'}</option>
+              <option value="member_2">{names.member_2 || 'Member 2'}</option>
+              <option value="member_3">{names.member_3 || 'Member 3'}</option>
+            </select>
+            <button
+              type="button"
+              className="btn-icon"
+              title="Remove this feed"
+              onClick={() => removeFeedRow(i)}
+              disabled={icalFeeds.length === 1 && !feed.url}
+            >
+              ✕
+            </button>
+          </div>
+        ))}
+        <button type="button" className="btn-link" onClick={addFeedRow} style={{ marginTop: 4 }}>
+          + Add another feed
+        </button>
       </div>
-      {icalUrl && (
-        <div className="field">
-          <label htmlFor="ical-events-member">Show its events under</label>
-          <select
-            id="ical-events-member"
-            value={icalEventsMember}
-            onChange={(e) => setIcalEventsMember(e.target.value)}
-          >
-            <option value="family">Family (all columns)</option>
-            <option value="member_1">{names.member_1 || 'Member 1'}</option>
-            <option value="member_2">{names.member_2 || 'Member 2'}</option>
-            <option value="member_3">{names.member_3 || 'Member 3'}</option>
-          </select>
-        </div>
-      )}
 
       <div className="field" style={{ marginTop: 24 }}>
         <label>Google Calendar</label>

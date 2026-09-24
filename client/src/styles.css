@@ -478,6 +478,10 @@ button {
 }
 .field textarea { min-height: 70px; resize: vertical; }
 
+.ical-feed-row { display: flex; gap: 8px; align-items: center; margin-bottom: 8px; }
+.ical-feed-row input { flex: 1; min-width: 0; }
+.ical-feed-row select { flex-shrink: 0; width: auto; }
+
 .settings-tabs {
   display: flex;
   flex-wrap: wrap;

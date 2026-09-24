@@ -4,7 +4,7 @@ import { expandOccurrences } from '../lib/recurrence.js';
 import { addDays, startOfWeek } from '../lib/week.js';
 import { fetchGoogleEvents, isGoogleWriteEnabled, pushEventToGoogle, updateGoogleEvent, deleteGoogleEvent } from './google.js';
 import { fetchIcalEvents } from '../lib/icalFeed.js';
-import { getIcalFeedUrl, getIcalEventsMember } from '../lib/appConfig.js';
+import { getIcalFeeds } from '../lib/appConfig.js';
 
 const router = Router();
 
@@ -51,11 +51,17 @@ router.get('/', async (req, res) => {
     // Google not connected or failed - agenda still works with local events only
   }
 
-  try {
-    const icalUrl = getIcalFeedUrl();
-    if (icalUrl) occurrences = occurrences.concat(await fetchIcalEvents(icalUrl, rangeStart, rangeEnd, getIcalEventsMember()));
-  } catch (err) {
-    // Feed unreachable/misconfigured - agenda still works with the other sources
+  // Each feed is independent - one unreachable/misconfigured feed shouldn't
+  // sink the others or the rest of the agenda. Results are namespaced with
+  // the feed's index so two different feeds can never collide on id even if
+  // they happen to share a UID (a copy-pasted .ics template, say).
+  for (const [i, feed] of getIcalFeeds().entries()) {
+    try {
+      const feedEvents = await fetchIcalEvents(feed.url, rangeStart, rangeEnd, feed.member);
+      occurrences = occurrences.concat(feedEvents.map((ev) => ({ ...ev, id: `${i}-${ev.id}` })));
+    } catch (err) {
+      // Feed unreachable/misconfigured - agenda still works with everything else
+    }
   }
 
   occurrences.sort((a, b) => new Date(a.occurrence_start) - new Date(b.occurrence_start));

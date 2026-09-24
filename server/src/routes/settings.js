@@ -6,14 +6,12 @@ import {
   setWeatherZip,
   getThemeSettings,
   setThemeSettings,
-  getIcalFeedUrl,
-  setIcalFeedUrl,
+  getIcalFeeds,
+  setIcalFeeds,
   getGoogleCalendarId,
   setGoogleCalendarId,
   getGoogleEventsMember,
   setGoogleEventsMember,
-  getIcalEventsMember,
-  setIcalEventsMember,
 } from '../lib/appConfig.js';
 
 const router = Router();
@@ -24,10 +22,9 @@ function fullSettings() {
     members: getMemberNames(),
     weather_zip: getWeatherZip(),
     theme: getThemeSettings(),
-    ical_feed_url: getIcalFeedUrl(),
+    ical_feeds: getIcalFeeds(),
     google_calendar_id: getGoogleCalendarId(),
     google_events_member: getGoogleEventsMember(),
-    ical_events_member: getIcalEventsMember(),
   };
 }
 
@@ -38,7 +35,7 @@ router.get('/', (req, res) => {
 router.put('/', (req, res) => {
   const {
     member_1, member_2, member_3, weather_zip, theme_mode, dark_start, dark_end,
-    ical_feed_url, google_calendar_id, google_events_member, ical_events_member,
+    ical_feeds, google_calendar_id, google_events_member,
   } = req.body;
 
   const trimmedOrUndefined = (v) => (typeof v === 'string' && v.trim() ? v.trim() : undefined);
@@ -69,7 +66,6 @@ router.put('/', (req, res) => {
   }
   setThemeSettings({ theme_mode, dark_start, dark_end });
 
-  if (ical_feed_url !== undefined) setIcalFeedUrl(ical_feed_url.trim());
   if (google_calendar_id !== undefined) setGoogleCalendarId(google_calendar_id.trim() || 'primary');
 
   if (google_events_member !== undefined) {
@@ -78,11 +74,17 @@ router.put('/', (req, res) => {
     }
     setGoogleEventsMember(google_events_member);
   }
-  if (ical_events_member !== undefined) {
-    if (!VALID_MEMBERS.includes(ical_events_member)) {
-      return res.status(400).json({ error: 'ical_events_member must be family, member_1, member_2, or member_3' });
+
+  if (ical_feeds !== undefined) {
+    if (!Array.isArray(ical_feeds)) {
+      return res.status(400).json({ error: 'ical_feeds must be an array' });
     }
-    setIcalEventsMember(ical_events_member);
+    for (const feed of ical_feeds) {
+      if (feed.member !== undefined && !VALID_MEMBERS.includes(feed.member)) {
+        return res.status(400).json({ error: 'each ical_feeds member must be family, member_1, member_2, or member_3' });
+      }
+    }
+    setIcalFeeds(ical_feeds);
   }
 
   res.json(fullSettings());

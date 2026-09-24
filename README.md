@@ -33,11 +33,11 @@ shopping list from another device.
   Tapping a member's name opens **Add Event**, preselected for that person.
   Tapping an existing event opens its full details (including its saved
   flyer photo, if it has one), with Edit and Delete right there.
-- **Calendar sync** — two ways to bring in outside events: paste any
-  calendar's secret iCal feed URL for a simple read-only merge (no sign-in
-  needed), or connect a Google account via OAuth for two-way sync (its
-  events show up here, and one-off events created in FamilyHub are pushed
-  back to it).
+- **Calendar sync** — two ways to bring in outside events: paste one or more
+  calendars' secret iCal feed URLs (one per family member, say) for a simple
+  read-only merge with no sign-in needed, or connect a Google account via
+  OAuth for two-way sync (its events show up here, and one-off events
+  created in FamilyHub are pushed back to it).
 - **Recurring events** — a "Repeats weekly" checkbox plus day-of-week chips,
   for anything that happens multiple times a week or the same day every week.
 - **Big reminder banners** — flag any event as an "important reminder" and
@@ -221,18 +221,19 @@ setup, or delete it to remove it for good.
 
 ## Connecting a shared calendar (easiest option)
 
-If you just want a shared family calendar's events to show up on the agenda
-and don't need FamilyHub to write anything back to it, skip Google OAuth
-entirely: open that calendar's Settings in Google Calendar -> "Integrate
-calendar" -> copy its **Secret address in iCal format**, then paste that URL
-into Settings -> General -> "Shared calendar feed URL" in FamilyHub. No
-Google Cloud project, no sign-in, no client ID/secret - the secret URL is the
-only credential involved, and it's read-only (FamilyHub never writes to it).
+If you just want a calendar's events to show up on the agenda and don't need
+FamilyHub to write anything back to it, skip Google OAuth entirely: open
+that calendar's Settings in Google Calendar -> "Integrate calendar" -> copy
+its **Secret address in iCal format**, then paste that URL into Settings ->
+General -> "Shared calendar feeds." No Google Cloud project, no sign-in, no
+client ID/secret - the secret URL is the only credential involved, and it's
+read-only (FamilyHub never writes to it).
 
-Synced events default to showing under "Family" (every member's column) -
-if the calendar is really one person's schedule rather than a shared
-household one, use the "Show its events under" dropdown that appears once a
-feed URL is set to pin it to that person's column instead.
+You can add more than one - "+ Add another feed" adds another URL/column
+pair, so each family member's own calendar can sync to their own column
+instead of everyone sharing one feed. Each feed defaults to showing under
+"Family" (every column); pick a specific person from its dropdown instead if
+that calendar is really just theirs.
 
 ## Connecting Google Calendar (two-way sync)
 
@@ -336,7 +337,7 @@ other file on the Pi.
   integration, with FamilyHub calling *that* instead of the bridge directly.
 - Google Calendar sync is two-way for one-off events, but recurring
   ("Repeats weekly") events are never pushed to Google - they stay
-  FamilyHub-only. The iCal feed URL option is always read-only, by design.
+  FamilyHub-only. The shared iCal feeds are always read-only, by design.
 - No integration with Google Drive/Docs or Life360. Drive/Docs would be
   buildable (Drive: reuse the flyer OCR pipeline against a shared folder;
   Docs: one-way append of shopping items) but aren't built yet. Life360 has

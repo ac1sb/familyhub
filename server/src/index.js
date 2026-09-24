@@ -21,8 +21,8 @@ import settingsRouter from './routes/settings.js';
 import smartDevicesRouter from './routes/smartDevices.js';
 import updateRouter from './routes/update.js';
 import {
-  getMemberNames, getWeatherZip, getThemeSettings, getIcalFeedUrl, getGoogleCalendarId,
-  getGoogleEventsMember, getIcalEventsMember,
+  getMemberNames, getWeatherZip, getThemeSettings, getIcalFeeds, getGoogleCalendarId,
+  getGoogleEventsMember,
 } from './lib/appConfig.js';
 import { uploadsDir } from './lib/paths.js';
 
@@ -49,10 +49,9 @@ app.get('/api/config', (req, res) => {
     members: getMemberNames(),
     weather_zip: getWeatherZip(),
     theme: getThemeSettings(),
-    ical_feed_url: getIcalFeedUrl(),
+    ical_feeds: getIcalFeeds(),
     google_calendar_id: getGoogleCalendarId(),
     google_events_member: getGoogleEventsMember(),
-    ical_events_member: getIcalEventsMember(),
   });
 });
 

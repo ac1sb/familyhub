@@ -1,4 +1,4 @@
-import { getSetting, setSetting } from './settings.js';
+import { getSetting, setSetting, getJSON, setJSON } from './settings.js';
 
 // Household member names and the weather zip code are editable from the
 // Settings page at runtime; the DB-stored value (if any) always wins over
@@ -55,17 +55,33 @@ export function setMenuImportUrl(url) {
   setSetting('menu_import_url', url);
 }
 
-// A calendar's "Secret address in iCal format" (Google Calendar -> that
-// calendar's Settings -> "Integrate calendar") - a plain read-only .ics feed
-// URL. Unlike the OAuth-based sync above, this needs no Google Cloud project
-// or sign-in at all: knowing the secret URL IS the auth, so it's the easiest
-// way to pull in a shared family calendar nobody wants to run OAuth for.
-export function getIcalFeedUrl() {
-  return getSetting('ical_feed_url') || process.env.ICAL_FEED_URL || '';
+// Shared calendar feeds - each is a calendar's "Secret address in iCal
+// format" (Google Calendar -> that calendar's Settings -> "Integrate
+// calendar") paired with which agenda column its events land in. Unlike the
+// OAuth-based sync below, this needs no Google Cloud project or sign-in at
+// all: knowing the secret URL IS the auth, so it's the easiest way to pull
+// in a family member's calendar nobody wants to run OAuth for - and since
+// it's a list, one per person just means adding another entry.
+export function getIcalFeeds() {
+  const stored = getJSON('ical_feeds', null);
+  if (Array.isArray(stored)) return stored;
+
+  // One-time fallback for whoever set up the single feed URL/member this
+  // list replaced (via Settings, or the old ICAL_FEED_URL env var) - not
+  // written back, so a still-unconfigured install stays free to pick up a
+  // later env var change instead of getting stuck on today's value.
+  const legacyUrl = getSetting('ical_feed_url') || process.env.ICAL_FEED_URL || '';
+  if (!legacyUrl) return [];
+  return [{ url: legacyUrl, member: getSetting('ical_events_member') || 'family' }];
 }
 
-export function setIcalFeedUrl(url) {
-  setSetting('ical_feed_url', url);
+export function setIcalFeeds(feeds) {
+  // Drop half-filled "add another feed" rows (no URL typed yet) instead of
+  // saving them as phantom entries.
+  const cleaned = feeds
+    .map((f) => ({ url: (f.url || '').trim(), member: f.member || 'family' }))
+    .filter((f) => f.url);
+  setJSON('ical_feeds', cleaned);
 }
 
 // Which Google calendar locally-created events get pushed to (see
@@ -81,23 +97,15 @@ export function setGoogleCalendarId(id) {
   setSetting('google_calendar_id', id);
 }
 
-// Which agenda column incoming synced events land in. Both default to
-// 'family', which the agenda shows in every member's column - fine for a
-// household-wide calendar, but a single person's personal Google Calendar
-// (or a shared feed that's really just one person's schedule) usually reads
-// better pinned to that one column instead of appearing three times over.
+// Which agenda column events from the OAuth-connected Google Calendar land
+// in (each iCal feed above carries its own member instead). Defaults to
+// 'family', which the agenda shows in every column - fine for a household-
+// wide calendar, but a single person's own Google Calendar usually reads
+// better pinned to just their column instead of appearing three times over.
 export function getGoogleEventsMember() {
   return getSetting('google_events_member') || 'family';
 }
 
 export function setGoogleEventsMember(member) {
   setSetting('google_events_member', member);
-}
-
-export function getIcalEventsMember() {
-  return getSetting('ical_events_member') || 'family';
-}
-
-export function setIcalEventsMember(member) {
-  setSetting('ical_events_member', member);
 }
