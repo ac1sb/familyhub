@@ -27,27 +27,29 @@ shopping list from another device.
   you've dragged the widget (its resize handle, bottom-right corner), same
   idea as the Calendar widget. The full list ("See all") still shows purchased items -
   struck through, dated ("Got it Sep 24"), and sorted to the bottom - until
-  the ✕ removes one for good. Chores and Daily Checklist can each
+  the ✕ removes one for good. Chores, Daily Checklist, and Lunch can each
   independently pick one of three widget styles in Settings → Dashboard
-  Widgets (e.g. Chores as Squares, Daily Checklist as a Carousel) - **List**
-  (the classic stacked full-width bars), **Squares** (always exactly 2
-  tiles side by side, however the widget is resized - the tiles stretch to
-  fill whatever width/height that gives them rather than shrinking to fit
-  more per row; each tile leads with a large icon taking up most of the
-  tile instead of being text-only - guessed from the task's title against a
+  Widgets (e.g. Chores as Squares, Daily Checklist as a Carousel) -
+  **List** (the classic stacked full-width bars); **Squares** (a 2x2 tile
+  grid that only takes up as much height as it needs - 1-2 items sit at
+  their normal size in the top row rather than stretching to fill the whole
+  box, and past 4 items it pages through the rest 4 at a time, swipe or the
+  arrow buttons, dots marking pages rather than individual items; each tile
+  leads with a large icon - guessed from the task's title against a
   ~130-icon library (`client/src/lib/taskIcons.js`) organized into 14
-  categories (Personal Care, School, Pets, Kitchen, Cleaning, and so on;
-  anything unrecognized falls back to a plain notepad icon), or picked by
-  hand per recurring chore/daily item in Settings → Chore Setup / Daily
-  Checklist Setup - tap the icon next to its name to browse the same
-  categorized library and override the guess (or pick "Auto-guess from
-  name" to go back to it). A long title clamps to 2 lines with an ellipsis
-  instead of overflowing the tile, full text via hover or "See all"), or
-  **Carousel**
-  (one big tile at a time -
-  swipe it left/right, use the arrow buttons, or tap a dot to jump to a
-  specific item). Tapping a tile/bar itself always marks it done, in any
-  style - these are just different skins on the same list, not separate
+  categories for Chores/Daily Checklist (Personal Care, School, Pets,
+  Kitchen, Cleaning, and so on; anything unrecognized falls back to a plain
+  notepad icon), or picked by hand per recurring chore/daily item in
+  Settings → Chore Setup / Daily Checklist Setup - tap the icon next to its
+  name to browse the same categorized library and override the guess (or
+  pick "Auto-guess from name" to go back to it); Lunch's tiles use a fixed
+  status icon instead (🏫 school lunch day, 🥪 packed from home, 🚫 no
+  school). A long title clamps to 2 lines with an ellipsis instead of
+  overflowing the tile, full text via hover or "See all"); or **Carousel**
+  (one big tile at a time - swipe it left/right, use the arrow buttons, or
+  tap a dot to jump to a specific item). Tapping a tile/bar itself always
+  toggles it (done for Chores/Daily Checklist, School/Home for Lunch), in
+  any style - these are just different skins on the same list, not separate
   features, so switching back and forth never loses anything. Every widget
   can be dragged and resized to your own layout, which is saved per-device
   (in the browser) and survives `git pull`/rebuilds. Widgets free-float

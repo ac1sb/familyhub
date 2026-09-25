@@ -16,11 +16,12 @@ import { THEMES } from '../../lib/photoLibrary.js';
 // sets it; leaving it alone keeps following the normal light/dark theme.
 const PICKER_DEFAULT = '#ffffff';
 
-// The only two widgets with a List/Carousel choice - set independently, so
+// The widgets with a List/Squares/Carousel choice - set independently, so
 // e.g. Chores can stay a list while Daily Checklist is a carousel.
 const DISPLAY_MODE_WIDGETS = [
   { id: 'chores', label: 'Chores' },
   { id: 'daily', label: 'Daily Checklist' },
+  { id: 'lunch', label: 'Lunch' },
 ];
 
 export default function DashboardWidgetsSetup() {
@@ -204,10 +205,13 @@ export default function DashboardWidgetsSetup() {
         </div>
       ))}
       <p style={{ color: 'var(--color-text-muted)', fontSize: '0.8rem', marginTop: 0 }}>
-        List shows several items stacked as full-width bars. Squares shows them as a small-tile grid,
-        like the Weekly Dinner Menu widget. Carousel shows one big tile at a time - swipe it left/right
-        (or use the arrow buttons) to move through the items. Tapping a tile/bar itself always marks it
-        done, in any style. Set independently for each, per-device, like everything else on this page.
+        List shows several items stacked as full-width bars. Squares shows them as a small-tile 2x2
+        grid, sized to only take up as much height as it actually needs (2 tiles fill just the top
+        row, not the whole box) - past 4 items it pages through the rest 4 at a time (swipe or the
+        arrow buttons). Carousel shows one big tile at a time - swipe it left/right (or use the arrow
+        buttons) to move through the items. Tapping a tile/bar itself always toggles it (done for
+        Chores/Daily Checklist, School/Home for Lunch), in any style. Set independently for each,
+        per-device, like everything else on this page.
       </p>
 
       {WIDGET_CATALOG.map((widget) => (

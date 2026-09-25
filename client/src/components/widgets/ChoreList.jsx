@@ -6,6 +6,7 @@ import { currentWeekStartSunday, WEEKDAY_SHORT } from '../../lib/week.js';
 import { getWidgetDisplayMode } from '../../lib/widgetDisplayMode.js';
 import { getTaskIcon } from '../../lib/taskIcons.js';
 import TileCarousel from '../TileCarousel.jsx';
+import TileGridPager from '../TileGridPager.jsx';
 
 const SUNDAY_FIRST_RANK = (dayOfWeek) => (dayOfWeek == null ? 7 : (dayOfWeek + 1) % 7);
 // The dashboard tile is a glance, not the whole list - past this many
@@ -122,8 +123,9 @@ export default function ChoreList({ compact = false, onExpand }) {
         )}
 
         {displayMode === 'squares' && (
-          <div className="tile-grid">
-            {visible.map((chore) => (
+          <TileGridPager
+            items={todayChores}
+            renderTile={(chore) => (
               <button
                 type="button"
                 className={`tile-square${chore.done ? ' done' : ''}`}
@@ -136,8 +138,8 @@ export default function ChoreList({ compact = false, onExpand }) {
                 <span className="tile-title">{chore.title}</span>
                 {chore.done && <span className="tile-check">✓</span>}
               </button>
-            ))}
-          </div>
+            )}
+          />
         )}
 
         {displayMode === 'list' && visible.map((chore) => (

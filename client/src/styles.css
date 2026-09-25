@@ -750,10 +750,17 @@ button {
    clamps to 2 lines with an ellipsis rather than overflowing the tile; the
    full text is always a tap away on "See all", and the native title
    attribute shows it on hover too. */
+/* Always exactly 2 rows (a 2x2 grid), whether or not both rows are full -
+   grid-template-rows (fixed track count) reserves that space regardless of
+   how many tiles actually exist, unlike grid-auto-rows (which only creates
+   rows for real content and used to stretch a single row of 2 tiles to
+   fill the whole card). So 4 tiles fill the full 2x2 as before, but 1-2
+   tiles now sit at their normal size in the top row, leaving the bottom
+   row's height empty instead of stretching to fill it. */
 .tile-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  grid-auto-rows: 1fr;
+  grid-template-rows: repeat(2, 1fr);
   gap: 8px;
   flex: 1;
   min-height: 0;
@@ -809,6 +816,14 @@ button {
   left: 6px;
   font-size: 0.75rem;
 }
+
+/* ---------- Tile grid pager (Squares mode, more than 4 items) ----------
+   Same swipe-or-arrows page-turning as the tile carousel below, but each
+   "page" is a full .tile-grid (up to 4 tiles) instead of one big tile -
+   dots mark pages, not individual items. */
+.tile-pager { display: flex; flex-direction: column; gap: 8px; flex: 1; min-height: 0; }
+.tile-pager-track { display: flex; align-items: stretch; gap: 6px; width: 100%; flex: 1; min-height: 0; }
+.tile-pager-track .tile-grid { flex: 1; min-height: 0; }
 
 /* ---------- Tile carousel (Settings -> Dashboard Widgets: Carousel mode) ----------
    One big tile at a time instead of a stacked list - swipe it (touch drag,
