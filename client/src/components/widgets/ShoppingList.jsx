@@ -12,21 +12,20 @@ export default function ShoppingList({ compact = false, onExpand }) {
   const { data, setData, refresh } = usePolling(() => api.shopping(), [], 10000);
   const [newItem, setNewItem] = useState('');
   const [showPad, setShowPad] = useState(false);
-  const [sheetId, setSheetId] = useState('');
+  const [sheetConfigured, setSheetConfigured] = useState(false);
   const [syncing, setSyncing] = useState(false);
   const [syncResult, setSyncResult] = useState(null);
 
   useEffect(() => {
     if (compact) return;
-    api.shoppingSheetSettings().then((r) => setSheetId(r.sheetId || '')).catch(() => {});
+    api.shoppingSheetSettings().then((r) => setSheetConfigured(!!r.sheetId)).catch(() => {});
   }, [compact]);
 
   async function handleSyncSheet() {
-    if (!sheetId.trim()) return;
     setSyncing(true);
     setSyncResult(null);
     try {
-      const result = await api.syncShoppingSheet(sheetId.trim());
+      const result = await api.syncShoppingSheet();
       setSyncResult(result);
     } catch (err) {
       setSyncResult({ success: false, error: err.message });
@@ -129,17 +128,18 @@ export default function ShoppingList({ compact = false, onExpand }) {
         <h2>Shopping List</h2>
       </div>
 
-      <div className="lunch-import-row">
-        <input
-          type="text"
-          placeholder="Google Sheet URL or ID"
-          value={sheetId}
-          onChange={(e) => setSheetId(e.target.value)}
-        />
-        <button className="btn btn-secondary" onClick={handleSyncSheet} disabled={syncing || !sheetId.trim()}>
-          {syncing ? 'Syncing…' : 'Sync with Sheet'}
-        </button>
-      </div>
+      {sheetConfigured ? (
+        <div className="lunch-import-row">
+          <button className="btn btn-secondary" onClick={handleSyncSheet} disabled={syncing}>
+            {syncing ? 'Syncing…' : 'Sync with Sheet'}
+          </button>
+        </div>
+      ) : (
+        <p style={{ color: 'var(--color-text-muted)', fontSize: '0.8rem', marginTop: 0 }}>
+          No Google Sheet set up yet - add one in Settings &rarr; General to sync this list with your
+          phone.
+        </p>
+      )}
       {syncResult && (
         <div className={`lunch-import-result${syncResult.success ? ' success' : ' error'}`}>
           {syncResult.success ? (
@@ -153,14 +153,6 @@ export default function ShoppingList({ compact = false, onExpand }) {
           )}
         </div>
       )}
-      <p style={{ color: 'var(--color-text-muted)', fontSize: '0.8rem', marginTop: 4 }}>
-        Two-way with a dedicated "FamilyHub" tab in that spreadsheet (created automatically) - type a
-        new item in the sheet from your phone and it lands here on the next sync; an item added here
-        gets a row there. Never deletes or clears anything on either side, so removing a row from the
-        sheet doesn't remove it here (it'll just reappear there next sync, as long as it's still on
-        the list) - use the ✕ below to actually remove an item. Requires a connected Google account
-        (Settings → General → Google Calendar).
-      </p>
 
       {items.map((item) => (
         <div className="shopping-row" key={item.id} onClick={() => toggleChecked(item)}>

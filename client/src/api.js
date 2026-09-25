@@ -68,6 +68,7 @@ export const api = {
   updateShoppingItem: (id, data) => request(`/shopping/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
   deleteShoppingItem: (id) => request(`/shopping/${id}`, { method: 'DELETE' }),
   shoppingSheetSettings: () => request('/shopping/sheet-settings'),
+  saveShoppingSheetId: (sheetId) => request('/shopping/sheet-settings', { method: 'POST', body: JSON.stringify({ sheetId }) }),
   syncShoppingSheet: (sheetId) => request('/shopping/sync-sheet', { method: 'POST', body: JSON.stringify({ sheetId }) }),
 
   whiteboard: () => request('/whiteboard'),

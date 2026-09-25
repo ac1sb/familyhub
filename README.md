@@ -25,18 +25,18 @@ shopping list from another device.
   the list). Every still-needed item renders in its own scrolling area (no
   fixed cap) - how many show without scrolling just depends on how tall
   you've dragged the widget (its resize handle, bottom-right corner), same
-  idea as the Calendar widget. The full list ("See all") still shows purchased items -
-  struck through, dated ("Got it Sep 24"), and sorted to the bottom - until
-  the ✕ removes one for good. Its own full page can also **sync two-way with
-  a Google Sheet** - paste that sheet's URL (or bare ID) and tap "Sync with
-  Sheet": a new item typed into that sheet's dedicated "FamilyHub" tab
-  (created automatically, from a phone or anywhere else) lands here on the
-  next sync, and a still-needed item added here gets a row there - handy
-  both for adding on the go and for merging into a bigger list kept
-  elsewhere before printing. Never deletes or clears anything on either
-  side - it only ever adds a row or an item, so removing a row from the
-  sheet doesn't remove it here (the ✕ button does that); syncing a sheet
-  that already has some of the same items typed in links them up by name
+  idea as the Calendar widget. Its own full page can also **sync two-way with
+  a Google Sheet** - paste that sheet's URL (or bare ID) into Settings →
+  General → "Shopping List Google Sheet" once, then tap "Sync with Sheet" on
+  the Shopping List page any time: a new item typed into that sheet's
+  dedicated "FamilyHub" tab (created automatically, from a phone or anywhere
+  else) lands here on the next sync, and a still-needed item added here gets
+  a row there - handy both for adding on the go and for merging into a
+  bigger list kept elsewhere before printing. Never deletes or clears
+  anything on either side - it only ever adds a row or an item, so removing
+  a row from the sheet doesn't remove it here (the ✕ button does that);
+  syncing a sheet that already has some of the same items typed in links
+  them up by name
   instead of creating duplicates. Requires the same connected Google
   account as Calendar sync (Settings → General → Google Calendar) -
   connecting or reconnecting after this feature was added re-prompts for

@@ -111,10 +111,19 @@ router.delete('/:id', (req, res) => {
   res.status(204).end();
 });
 
-// GET /api/shopping/sheet-settings -> the saved spreadsheet ID, so the "Sync
-// to Sheet" UI can prefill it (same pattern as the lunch menu import URL).
+// GET /api/shopping/sheet-settings -> the saved spreadsheet ID, so Settings
+// can prefill it (same pattern as the LIFX token / lunch menu import URL).
 router.get('/sheet-settings', (req, res) => {
   res.json({ sheetId: getShoppingSheetId() });
+});
+
+// POST /api/shopping/sheet-settings { sheetId } -> just saves it (accepts a
+// full Sheets URL or a bare ID either way), without syncing. Lets Settings
+// configure the sheet up front, separately from actually running a sync.
+router.post('/sheet-settings', (req, res) => {
+  const sheetId = extractSheetId(req.body.sheetId);
+  setShoppingSheetId(sheetId);
+  res.json({ sheetId });
 });
 
 // POST /api/shopping/sync-sheet  { sheetId? } -> two-way merge with that
