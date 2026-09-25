@@ -131,11 +131,13 @@ CREATE TABLE IF NOT EXISTS settings (
   value TEXT
 );
 
--- Mock smart-home devices (Lutron Caseta / LIFX) - rows here are toggled
--- straight from the dashboard with no real bulb or bridge behind them yet.
--- This is the prototype for the control UI and data model; wiring up the
--- real LIFX Cloud API and a Lutron Caseta integration later only needs to
--- change server/src/routes/smartDevices.js, not the client.
+-- Smart-home devices (Lutron Caseta / LIFX). A 'lifx' device with an
+-- external_id set is wired to a real bulb (see routes/smartDevices.js) -
+-- toggling/dimming/coloring it calls the LIFX Cloud API, and the local row
+-- is only updated once that call succeeds. Everything else (no external_id,
+-- or platform 'caseta' - there's no real Lutron integration yet) stays the
+-- original mock behavior: rows toggled straight from the dashboard with
+-- nothing behind them.
 CREATE TABLE IF NOT EXISTS smart_devices (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   name TEXT NOT NULL,
@@ -147,6 +149,7 @@ CREATE TABLE IF NOT EXISTS smart_devices (
   is_on INTEGER NOT NULL DEFAULT 0,
   brightness INTEGER NOT NULL DEFAULT 100, -- 0-100, meaningful only when dimmable
   color TEXT NOT NULL DEFAULT '#ffffff', -- meaningful only when color_capable
+  external_id TEXT, -- the real LIFX light's selector (e.g. "id:d073d5..."), null for mock/Caseta devices
   sort_order INTEGER NOT NULL DEFAULT 0,
   created_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
@@ -194,6 +197,15 @@ for (const table of ['chore_templates', 'chores', 'daily_task_templates', 'daily
   } catch {
     // column already exists
   }
+}
+try {
+  // Which real LIFX bulb a 'lifx' device is wired to (its selector, e.g.
+  // "id:d073d5..."), set when it's added via Discover rather than typed in
+  // by hand - null for a manually-added or Caseta device, which stay
+  // local-only. See routes/smartDevices.js.
+  db.exec('ALTER TABLE smart_devices ADD COLUMN external_id TEXT');
+} catch {
+  // column already exists
 }
 
 // Seed a handful of example smart-home devices once, so the header quick-

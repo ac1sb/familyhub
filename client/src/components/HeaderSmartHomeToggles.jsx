@@ -81,24 +81,35 @@ function HeaderToggle({ device, onToggle, onSetBrightness }) {
 // A quick-access strip of smart-home toggles, always visible right below
 // the date/time (not just on the Home dashboard) - a single tap flips a
 // device on/off, and pressing and holding one that supports dimming opens
-// a small brightness slider instead. Still the same mock backend as the
-// Smart Home widget/page: nothing here talks to a real bulb or bridge yet.
+// a small brightness slider instead. A LIFX device added via Discover
+// (Settings -> Smart Home Setup) is real here too, same PUT endpoint as
+// the Smart Home widget - everything else stays the local-only mock.
 export default function HeaderSmartHomeToggles() {
-  const { data, setData } = usePolling(() => api.smartDevices(), [], 15000);
+  const { data, setData, refresh } = usePolling(() => api.smartDevices(), [], 15000);
   const devices = data?.devices || [];
 
   function patchLocal(id, patch) {
     setData((prev) => ({ devices: prev.devices.map((d) => (d.id === id ? { ...d, ...patch } : d)) }));
   }
 
-  async function toggle(device) {
-    patchLocal(device.id, { is_on: !device.is_on });
-    await api.updateSmartDevice(device.id, { is_on: !device.is_on });
+  // A real LIFX call can fail (bulb offline, bad token, ...) where the old
+  // local-only mock never could - on failure, undo the optimistic patch by
+  // re-fetching the server's actual (unchanged) state.
+  async function applyChange(device, patch) {
+    patchLocal(device.id, patch);
+    try {
+      await api.updateSmartDevice(device.id, patch);
+    } catch {
+      refresh();
+    }
   }
 
-  async function setBrightness(device, brightness) {
-    patchLocal(device.id, { brightness });
-    await api.updateSmartDevice(device.id, { brightness });
+  function toggle(device) {
+    return applyChange(device, { is_on: !device.is_on });
+  }
+
+  function setBrightness(device, brightness) {
+    return applyChange(device, { brightness });
   }
 
   if (devices.length === 0) return null;

@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { usePolling } from '../../hooks/usePolling.js';
 import { api } from '../../api.js';
 
@@ -65,6 +66,7 @@ function DeviceRow({ device, onToggle, onBrightness, onColor, showRoom }) {
 
 export default function SmartHomeWidget({ compact = false, onExpand }) {
   const { data, setData, refresh } = usePolling(() => api.smartDevices(), [], 15000);
+  const [deviceError, setDeviceError] = useState(null);
   const devices = data?.devices || [];
 
   function patchLocal(id, patch) {
@@ -73,20 +75,32 @@ export default function SmartHomeWidget({ compact = false, onExpand }) {
     }));
   }
 
-  async function toggleOn(device) {
-    patchLocal(device.id, { is_on: !device.is_on });
-    await api.updateSmartDevice(device.id, { is_on: !device.is_on });
-    refresh();
+  // A real LIFX call can fail (bulb offline, bad token, ...) where the old
+  // local-only mock never could - on failure, undo the optimistic patch by
+  // re-fetching the server's actual (unchanged) state instead of leaving
+  // the toggle/slider showing something that never really happened.
+  async function applyChange(device, patch) {
+    patchLocal(device.id, patch);
+    try {
+      await api.updateSmartDevice(device.id, patch);
+      setDeviceError(null);
+      refresh();
+    } catch (err) {
+      setDeviceError(`${device.name}: ${err.message}`);
+      refresh();
+    }
   }
 
-  async function setBrightness(device, brightness) {
-    patchLocal(device.id, { brightness });
-    await api.updateSmartDevice(device.id, { brightness });
+  function toggleOn(device) {
+    return applyChange(device, { is_on: !device.is_on });
   }
 
-  async function setColor(device, color) {
-    patchLocal(device.id, { color });
-    await api.updateSmartDevice(device.id, { color });
+  function setBrightness(device, brightness) {
+    return applyChange(device, { brightness });
+  }
+
+  function setColor(device, color) {
+    return applyChange(device, { color });
   }
 
   return (
@@ -101,6 +115,8 @@ export default function SmartHomeWidget({ compact = false, onExpand }) {
           No devices yet. Add your Caseta switches or LIFX bulbs in Settings &rarr; Smart Home Setup.
         </p>
       )}
+
+      {deviceError && <p style={{ color: 'var(--color-danger)', fontSize: '0.85rem' }}>⚠️ {deviceError}</p>}
 
       {compact
         ? devices.map((device) => (
@@ -130,8 +146,9 @@ export default function SmartHomeWidget({ compact = false, onExpand }) {
 
       {!compact && (
         <p style={{ color: 'var(--color-text-muted)', fontSize: '0.8rem', marginTop: 10, marginBottom: 0 }}>
-          This is a mockup - toggles and sliders here don't talk to real bulbs or switches yet. Add or
-          remove devices in Settings &rarr; Smart Home Setup.
+          A LIFX bulb added via Discover (Settings &rarr; Smart Home Setup) is real - toggles,
+          brightness, and color all call the actual bulb. Caseta switches and manually-typed devices
+          are still a local-only mockup with nothing behind them yet.
         </p>
       )}
     </section>

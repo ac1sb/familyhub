@@ -27,15 +27,20 @@ shopping list from another device.
   you've dragged the widget (its resize handle, bottom-right corner), same
   idea as the Calendar widget. The full list ("See all") still shows purchased items -
   struck through, dated ("Got it Sep 24"), and sorted to the bottom - until
-  the ✕ removes one for good. Its own full page can also **sync to a Google
-  Sheet** - paste that sheet's URL (or bare ID) and tap "Sync to Sheet" to
-  push every still-needed item into a dedicated "FamilyHub" tab (created
-  automatically the first time, fully replaced on every sync after) without
-  touching any other tab or data already in that spreadsheet - handy for
-  merging into a bigger list kept elsewhere before printing. One-way (hub →
-  sheet) by design; requires the same connected Google account as Calendar
-  sync (Settings → General → Google Calendar) - connecting or reconnecting
-  after this feature was added re-prompts for the added Sheets permission.
+  the ✕ removes one for good. Its own full page can also **sync two-way with
+  a Google Sheet** - paste that sheet's URL (or bare ID) and tap "Sync with
+  Sheet": a new item typed into that sheet's dedicated "FamilyHub" tab
+  (created automatically, from a phone or anywhere else) lands here on the
+  next sync, and a still-needed item added here gets a row there - handy
+  both for adding on the go and for merging into a bigger list kept
+  elsewhere before printing. Never deletes or clears anything on either
+  side - it only ever adds a row or an item, so removing a row from the
+  sheet doesn't remove it here (the ✕ button does that); syncing a sheet
+  that already has some of the same items typed in links them up by name
+  instead of creating duplicates. Requires the same connected Google
+  account as Calendar sync (Settings → General → Google Calendar) -
+  connecting or reconnecting after this feature was added re-prompts for
+  the added Sheets permission.
   Chores, Daily Checklist, and Lunch can each
   independently pick one of three widget styles in Settings → Dashboard
   Widgets (e.g. Chores as Squares, Daily Checklist as a Carousel) -
@@ -184,17 +189,21 @@ shopping list from another device.
   pauses - so a message written with a finger reads more like natural
   handwriting than a jagged, uniform-width line; a plain tap leaves a dot
   (for a period or the dot over an "i") instead of nothing.
-- **Smart Home (mockup)** — a Lutron Caseta / LIFX control widget: add your
-  switches and bulbs once in Settings → Smart Home Setup (name, room, and
-  LIFX vs. Caseta dimmer/switch), then toggle them, drag brightness, and
-  pick a LIFX bulb's color from the dashboard or the full page (grouped by
-  room). A quick-access strip of the same devices sits in the header on
-  every page — tap one to flip it on/off, or press and hold a
-  dimmable one to pull up a brightness slider. Four example devices (Dining
-  Room, Living Room, Lamp, Kitchen Counter) are seeded in on first run.
-  This is currently a prototype of the control UI and data model - nothing
-  is sent to a real bulb or bridge yet; see "Known limitations" below for
-  what a real integration would need.
+- **Smart Home** — a Lutron Caseta / LIFX control widget: toggle devices,
+  drag brightness, and pick a LIFX bulb's color from the dashboard or the
+  full page (grouped by room). A quick-access strip of the same devices
+  sits in the header on every page — tap one to flip it on/off, or press
+  and hold a dimmable one to pull up a brightness slider. **LIFX is real**:
+  paste a Personal Access Token (from cloud.lifx.com/settings) in Settings
+  → Smart Home Setup, tap **Discover LIFX Lights** to pull in every bulb on
+  the account not already added, and every toggle/brightness/color change
+  after that calls the actual bulb via the LIFX Cloud API - a failed call
+  (bulb offline, bad token) shows an error and reverts instead of pretending
+  it worked. **Lutron Caseta has no real integration yet** - it (and any
+  LIFX device added by typing a name instead of using Discover) stays a
+  local-only mock, same as the four example devices (Dining Room, Living
+  Room, Lamp, Kitchen Counter) seeded in on first run; see "Known
+  limitations" below for what real Caseta support would need.
 - **Weather** — a row of quick-glance chips in the header on every page,
   opposite the smart-home toggles with a prominent date/time between them
   (current temp, high/low, precipitation chance, a
@@ -450,14 +459,20 @@ other file on the Pi.
 
 ## Known limitations (v1)
 
-- The Smart Home widget is a mockup: toggling a device, dragging brightness,
-  or picking a color only updates FamilyHub's own database, not a real bulb
-  or switch. A real integration would add: for LIFX, calls to the
-  [LIFX Cloud API](https://api.developer.lifx.com/) (needs a personal access
-  token) or its LAN protocol; for Lutron Caseta, the Smart Bridge has no
-  public local API, so the usual path is a
-  [Home Assistant](https://www.home-assistant.io/) instance with the Caseta
-  integration, with FamilyHub calling *that* instead of the bridge directly.
+- LIFX control is real (see above); Lutron Caseta is still a mockup -
+  toggling a Caseta device only updates FamilyHub's own database, not a
+  real switch. The base Smart Bridge (non-Pro) has no public local API for
+  third-party apps like FamilyHub to call directly, even though it natively
+  supports Apple HomeKit - the Bridge PRO is what exposes the LEAP/Telnet
+  integration protocol a direct FamilyHub integration would need. Without a
+  Bridge PRO, the practical path is running a
+  [Home Assistant](https://www.home-assistant.io/) instance with its
+  **HomeKit Controller** integration paired to the base Bridge (working
+  around the Pro requirement via HomeKit itself), and FamilyHub calling
+  Home Assistant's own REST API instead of Lutron directly - one simple,
+  well-documented integration point that also covers LIFX (and anything
+  else added to Home Assistant later) instead of one bespoke integration
+  per brand.
 - Google Calendar sync is two-way for one-off events, but recurring
   ("Repeats weekly") events are never pushed to Google - they stay
   FamilyHub-only. The shared iCal feeds are always read-only, by design.

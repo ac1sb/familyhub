@@ -153,36 +153,89 @@ export async function deleteGoogleEvent(googleEventId) {
   }
 }
 
-// Pushes the shopping list's still-needed items into a dedicated "FamilyHub"
-// tab inside the given spreadsheet - creating that tab first if it doesn't
-// exist yet - rather than writing into whatever tab the person might
-// already be using in that same spreadsheet for something else. Each sync
-// fully replaces that tab's content (clear, then write header + items), so
-// re-syncing after checking things off doesn't leave stale rows behind.
-export async function pushShoppingListToSheet(sheetId, itemNames) {
+const SHOPPING_TAB_NAME = 'FamilyHub';
+
+function getSheetsClient() {
   const client = getOAuthClient();
   if (!client || !getJSON('google_tokens', null)) {
     throw new Error('Google account not connected - connect it in Settings first');
   }
-  const sheets = google.sheets({ version: 'v4', auth: client });
-  const TAB_NAME = 'FamilyHub';
+  return google.sheets({ version: 'v4', auth: client });
+}
 
+// Column A is the item name (freely editable by anyone); column B is the
+// FamilyHub item id that ties a row back to a row in the local database -
+// present so a synced-and-unchanged item is never mistaken for a fresh one
+// (and re-imported as a duplicate) or pushed out again as a new row. A
+// person typing a new row by hand just leaves column B blank, same as an
+// older tab written by a previous version of this sync that never had an
+// id column at all - both read the same way: "not linked yet".
+async function ensureShoppingTab(sheets, sheetId) {
   const meta = await sheets.spreadsheets.get({ spreadsheetId: sheetId });
-  const hasTab = (meta.data.sheets || []).some((s) => s.properties?.title === TAB_NAME);
+  const hasTab = (meta.data.sheets || []).some((s) => s.properties?.title === SHOPPING_TAB_NAME);
   if (!hasTab) {
     await sheets.spreadsheets.batchUpdate({
       spreadsheetId: sheetId,
-      requestBody: { requests: [{ addSheet: { properties: { title: TAB_NAME } } }] },
+      requestBody: { requests: [{ addSheet: { properties: { title: SHOPPING_TAB_NAME } } }] },
     });
   }
-
-  await sheets.spreadsheets.values.clear({ spreadsheetId: sheetId, range: `${TAB_NAME}!A:A` });
+  // Idempotent either way - also fixes up an older tab's single-column
+  // header (from before this sync became two-way) to the current shape.
   await sheets.spreadsheets.values.update({
     spreadsheetId: sheetId,
-    range: `${TAB_NAME}!A1`,
+    range: `${SHOPPING_TAB_NAME}!A1:B1`,
     valueInputOption: 'RAW',
-    requestBody: { values: [['FamilyHub Shopping List'], ...itemNames.map((name) => [name])] },
+    requestBody: { values: [['Item', 'ID (auto - do not edit)']] },
   });
+}
+
+// Reads every data row (skipping the header) as { rowNumber, name, id } -
+// rowNumber is the real 1-indexed sheet row, so callers can write back to
+// exactly that row later. id is null when column B is blank or unparsable.
+export async function readShoppingSheetRows(sheetId) {
+  const sheets = getSheetsClient();
+  await ensureShoppingTab(sheets, sheetId);
+  const result = await sheets.spreadsheets.values.get({
+    spreadsheetId: sheetId,
+    range: `${SHOPPING_TAB_NAME}!A2:B`,
+  });
+  const values = result.data.values || [];
+  return values
+    .map((row, i) => ({
+      rowNumber: i + 2,
+      name: (row[0] || '').trim(),
+      id: row[1] ? Number(row[1]) : null,
+    }))
+    .filter((r) => r.name);
+}
+
+// Writes back the two things a sync can produce, neither of which removes
+// or overwrites an existing row: idUpdates fills in column B for rows that
+// turned out to match an existing (or newly-created) local item, and
+// newRows appends local items that didn't already have a row in the sheet.
+export async function writeShoppingSheetUpdates(sheetId, { idUpdates = [], newRows = [] } = {}) {
+  const sheets = getSheetsClient();
+  if (idUpdates.length > 0) {
+    await sheets.spreadsheets.values.batchUpdate({
+      spreadsheetId: sheetId,
+      requestBody: {
+        valueInputOption: 'RAW',
+        data: idUpdates.map((u) => ({
+          range: `${SHOPPING_TAB_NAME}!B${u.rowNumber}`,
+          values: [[u.id]],
+        })),
+      },
+    });
+  }
+  if (newRows.length > 0) {
+    await sheets.spreadsheets.values.append({
+      spreadsheetId: sheetId,
+      range: `${SHOPPING_TAB_NAME}!A:B`,
+      valueInputOption: 'RAW',
+      insertDataOption: 'INSERT_ROWS',
+      requestBody: { values: newRows.map((r) => [r.name, r.id]) },
+    });
+  }
 }
 
 export default router;

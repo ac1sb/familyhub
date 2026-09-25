@@ -97,19 +97,32 @@ export function setGoogleCalendarId(id) {
   setSetting('google_calendar_id', id);
 }
 
-// The Google Sheet the shopping list pushes to (Settings -> Shopping List,
-// or the "Sync to Sheet" button on the full page) - just the spreadsheet
-// ID/URL, same DB-wins-over-.env pattern as the lunch menu import URL. The
-// sync itself always writes to a dedicated "FamilyHub" tab inside that
-// spreadsheet (created if it doesn't exist yet) rather than whatever tab
-// the person might already be using for something else, so it never
-// clobbers unrelated content sitting in the same sheet.
+// The Google Sheet the shopping list syncs with (the "Sync with Sheet"
+// button on the full page) - just the spreadsheet ID/URL, same
+// DB-wins-over-.env pattern as the lunch menu import URL. The sync itself
+// always reads/writes a dedicated "FamilyHub" tab inside that spreadsheet
+// (created if it doesn't exist yet) rather than whatever tab the person
+// might already be using for something else, and only ever adds rows/items
+// on either side - never clobbers unrelated content sitting in the same
+// sheet, and never deletes anything already synced.
 export function getShoppingSheetId() {
   return getSetting('shopping_sheet_id') || process.env.SHOPPING_SHEET_ID || '';
 }
 
 export function setShoppingSheetId(id) {
   setSetting('shopping_sheet_id', id);
+}
+
+// LIFX Cloud API personal access token (from cloud.lifx.com/settings) -
+// lets the Smart Home widget/setup page discover and control real bulbs
+// instead of the local-only mock. Same DB-wins-over-.env pattern as
+// everything else here.
+export function getLifxToken() {
+  return getSetting('lifx_token') || process.env.LIFX_API_TOKEN || '';
+}
+
+export function setLifxToken(token) {
+  setSetting('lifx_token', token);
 }
 
 // Which agenda column events from the OAuth-connected Google Calendar land

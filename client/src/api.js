@@ -88,6 +88,9 @@ export const api = {
   createSmartDevice: (data) => request('/smart-devices', { method: 'POST', body: JSON.stringify(data) }),
   updateSmartDevice: (id, data) => request(`/smart-devices/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
   deleteSmartDevice: (id) => request(`/smart-devices/${id}`, { method: 'DELETE' }),
+  lifxSettings: () => request('/smart-devices/lifx/settings'),
+  saveLifxToken: (token) => request('/smart-devices/lifx/settings', { method: 'POST', body: JSON.stringify({ token }) }),
+  discoverLifxLights: () => request('/smart-devices/lifx/discover'),
 
   weather: (zip) => request(`/weather${zip ? `?zip=${zip}` : ''}`),
 

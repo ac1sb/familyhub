@@ -137,22 +137,29 @@ export default function ShoppingList({ compact = false, onExpand }) {
           onChange={(e) => setSheetId(e.target.value)}
         />
         <button className="btn btn-secondary" onClick={handleSyncSheet} disabled={syncing || !sheetId.trim()}>
-          {syncing ? 'Syncing…' : 'Sync to Sheet'}
+          {syncing ? 'Syncing…' : 'Sync with Sheet'}
         </button>
       </div>
       {syncResult && (
         <div className={`lunch-import-result${syncResult.success ? ' success' : ' error'}`}>
           {syncResult.success ? (
-            <span>✅ Sent {syncResult.synced} item{syncResult.synced === 1 ? '' : 's'} to the sheet's "FamilyHub" tab.</span>
+            <span>
+              ✅ {syncResult.imported > 0 && `Added ${syncResult.imported} item${syncResult.imported === 1 ? '' : 's'} from the sheet. `}
+              {syncResult.pushed > 0 && `Sent ${syncResult.pushed} item${syncResult.pushed === 1 ? '' : 's'} to the sheet. `}
+              {syncResult.imported === 0 && syncResult.pushed === 0 && 'Already in sync - nothing new either way.'}
+            </span>
           ) : (
             <span>⚠️ {syncResult.error}</span>
           )}
         </div>
       )}
       <p style={{ color: 'var(--color-text-muted)', fontSize: '0.8rem', marginTop: 4 }}>
-        Pushes the still-needed items into a dedicated "FamilyHub" tab in that spreadsheet (created
-        automatically, and replaced fresh each sync) - it won't touch any other tab or data already in
-        that sheet. Requires a connected Google account (Settings → General → Google Calendar).
+        Two-way with a dedicated "FamilyHub" tab in that spreadsheet (created automatically) - type a
+        new item in the sheet from your phone and it lands here on the next sync; an item added here
+        gets a row there. Never deletes or clears anything on either side, so removing a row from the
+        sheet doesn't remove it here (it'll just reappear there next sync, as long as it's still on
+        the list) - use the ✕ below to actually remove an item. Requires a connected Google account
+        (Settings → General → Google Calendar).
       </p>
 
       {items.map((item) => (
