@@ -7,10 +7,15 @@ const router = Router();
 
 // calendar.events covers both reading and writing events (insert/update/
 // delete) - it does NOT grant access to calendar settings/sharing, just the
-// events on calendars the account can already see. A connection made before
-// this scope changed only has read access; disconnecting and reconnecting
-// re-prompts Google's consent screen for the wider scope.
-const SCOPES = ['https://www.googleapis.com/auth/calendar.events'];
+// events on calendars the account can already see. spreadsheets covers
+// reading and writing Sheets the account can already see (used to push the
+// shopping list). A connection made before either scope was added only has
+// the narrower access - disconnecting and reconnecting re-prompts Google's
+// consent screen for the current full set.
+const SCOPES = [
+  'https://www.googleapis.com/auth/calendar.events',
+  'https://www.googleapis.com/auth/spreadsheets',
+];
 
 function getOAuthClient() {
   const clientId = process.env.GOOGLE_CLIENT_ID;
@@ -146,6 +151,38 @@ export async function deleteGoogleEvent(googleEventId) {
     // Already gone on Google's side (someone deleted it there too) - fine.
     if (err.code !== 410 && err.code !== 404) throw err;
   }
+}
+
+// Pushes the shopping list's still-needed items into a dedicated "FamilyHub"
+// tab inside the given spreadsheet - creating that tab first if it doesn't
+// exist yet - rather than writing into whatever tab the person might
+// already be using in that same spreadsheet for something else. Each sync
+// fully replaces that tab's content (clear, then write header + items), so
+// re-syncing after checking things off doesn't leave stale rows behind.
+export async function pushShoppingListToSheet(sheetId, itemNames) {
+  const client = getOAuthClient();
+  if (!client || !getJSON('google_tokens', null)) {
+    throw new Error('Google account not connected - connect it in Settings first');
+  }
+  const sheets = google.sheets({ version: 'v4', auth: client });
+  const TAB_NAME = 'FamilyHub';
+
+  const meta = await sheets.spreadsheets.get({ spreadsheetId: sheetId });
+  const hasTab = (meta.data.sheets || []).some((s) => s.properties?.title === TAB_NAME);
+  if (!hasTab) {
+    await sheets.spreadsheets.batchUpdate({
+      spreadsheetId: sheetId,
+      requestBody: { requests: [{ addSheet: { properties: { title: TAB_NAME } } }] },
+    });
+  }
+
+  await sheets.spreadsheets.values.clear({ spreadsheetId: sheetId, range: `${TAB_NAME}!A:A` });
+  await sheets.spreadsheets.values.update({
+    spreadsheetId: sheetId,
+    range: `${TAB_NAME}!A1`,
+    valueInputOption: 'RAW',
+    requestBody: { values: [['FamilyHub Shopping List'], ...itemNames.map((name) => [name])] },
+  });
 }
 
 export default router;

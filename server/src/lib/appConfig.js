@@ -97,6 +97,21 @@ export function setGoogleCalendarId(id) {
   setSetting('google_calendar_id', id);
 }
 
+// The Google Sheet the shopping list pushes to (Settings -> Shopping List,
+// or the "Sync to Sheet" button on the full page) - just the spreadsheet
+// ID/URL, same DB-wins-over-.env pattern as the lunch menu import URL. The
+// sync itself always writes to a dedicated "FamilyHub" tab inside that
+// spreadsheet (created if it doesn't exist yet) rather than whatever tab
+// the person might already be using for something else, so it never
+// clobbers unrelated content sitting in the same sheet.
+export function getShoppingSheetId() {
+  return getSetting('shopping_sheet_id') || process.env.SHOPPING_SHEET_ID || '';
+}
+
+export function setShoppingSheetId(id) {
+  setSetting('shopping_sheet_id', id);
+}
+
 // Which agenda column events from the OAuth-connected Google Calendar land
 // in (each iCal feed above carries its own member instead). Defaults to
 // 'family', which the agenda shows in every column - fine for a household-

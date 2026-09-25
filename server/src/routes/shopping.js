@@ -3,6 +3,17 @@ import multer from 'multer';
 import fs from 'node:fs';
 import db from '../db.js';
 import { uploadsDir } from '../lib/paths.js';
+import { getShoppingSheetId, setShoppingSheetId } from '../lib/appConfig.js';
+import { pushShoppingListToSheet } from './google.js';
+
+// Accepts either a bare spreadsheet ID or a full Sheets URL
+// (docs.google.com/spreadsheets/d/<ID>/edit#gid=0) and returns just the ID -
+// pasting the URL straight out of the browser's address bar should just work.
+function extractSheetId(input) {
+  const trimmed = (input || '').trim();
+  const match = trimmed.match(/\/spreadsheets\/d\/([a-zA-Z0-9-_]+)/);
+  return match ? match[1] : trimmed;
+}
 
 if (!fs.existsSync(uploadsDir)) fs.mkdirSync(uploadsDir, { recursive: true });
 
@@ -64,6 +75,35 @@ router.put('/:id', (req, res) => {
 router.delete('/:id', (req, res) => {
   db.prepare('DELETE FROM shopping_items WHERE id = ?').run(req.params.id);
   res.status(204).end();
+});
+
+// GET /api/shopping/sheet-settings -> the saved spreadsheet ID, so the "Sync
+// to Sheet" UI can prefill it (same pattern as the lunch menu import URL).
+router.get('/sheet-settings', (req, res) => {
+  res.json({ sheetId: getShoppingSheetId() });
+});
+
+// POST /api/shopping/sync-sheet  { sheetId? } -> pushes every still-needed
+// item into that spreadsheet's "FamilyHub" tab. sheetId is optional if one's
+// already saved; when given, it's saved for next time too (accepts a full
+// Sheets URL or a bare ID either way).
+router.post('/sync-sheet', async (req, res) => {
+  const sheetId = extractSheetId(req.body.sheetId) || getShoppingSheetId();
+  if (!sheetId) return res.status(400).json({ error: 'A Google Sheet ID or URL is required' });
+  if (req.body.sheetId) setShoppingSheetId(sheetId);
+
+  const items = db
+    .prepare('SELECT name FROM shopping_items WHERE checked = 0 ORDER BY sort_order ASC, id ASC')
+    .all()
+    .map((r) => r.name)
+    .filter(Boolean);
+
+  try {
+    await pushShoppingListToSheet(sheetId, items);
+    res.json({ success: true, synced: items.length });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
 });
 
 export default router;

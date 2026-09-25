@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { usePolling } from '../../hooks/usePolling.js';
 import { api } from '../../api.js';
 import DrawingCanvas from '../DrawingCanvas.jsx';
@@ -12,6 +12,28 @@ export default function ShoppingList({ compact = false, onExpand }) {
   const { data, setData, refresh } = usePolling(() => api.shopping(), [], 10000);
   const [newItem, setNewItem] = useState('');
   const [showPad, setShowPad] = useState(false);
+  const [sheetId, setSheetId] = useState('');
+  const [syncing, setSyncing] = useState(false);
+  const [syncResult, setSyncResult] = useState(null);
+
+  useEffect(() => {
+    if (compact) return;
+    api.shoppingSheetSettings().then((r) => setSheetId(r.sheetId || '')).catch(() => {});
+  }, [compact]);
+
+  async function handleSyncSheet() {
+    if (!sheetId.trim()) return;
+    setSyncing(true);
+    setSyncResult(null);
+    try {
+      const result = await api.syncShoppingSheet(sheetId.trim());
+      setSyncResult(result);
+    } catch (err) {
+      setSyncResult({ success: false, error: err.message });
+    } finally {
+      setSyncing(false);
+    }
+  }
 
   async function toggleChecked(item) {
     setData((prev) => ({
@@ -106,6 +128,33 @@ export default function ShoppingList({ compact = false, onExpand }) {
       <div className="widget-header">
         <h2>Shopping List</h2>
       </div>
+
+      <div className="lunch-import-row">
+        <input
+          type="text"
+          placeholder="Google Sheet URL or ID"
+          value={sheetId}
+          onChange={(e) => setSheetId(e.target.value)}
+        />
+        <button className="btn btn-secondary" onClick={handleSyncSheet} disabled={syncing || !sheetId.trim()}>
+          {syncing ? 'Syncing…' : 'Sync to Sheet'}
+        </button>
+      </div>
+      {syncResult && (
+        <div className={`lunch-import-result${syncResult.success ? ' success' : ' error'}`}>
+          {syncResult.success ? (
+            <span>✅ Sent {syncResult.synced} item{syncResult.synced === 1 ? '' : 's'} to the sheet's "FamilyHub" tab.</span>
+          ) : (
+            <span>⚠️ {syncResult.error}</span>
+          )}
+        </div>
+      )}
+      <p style={{ color: 'var(--color-text-muted)', fontSize: '0.8rem', marginTop: 4 }}>
+        Pushes the still-needed items into a dedicated "FamilyHub" tab in that spreadsheet (created
+        automatically, and replaced fresh each sync) - it won't touch any other tab or data already in
+        that sheet. Requires a connected Google account (Settings → General → Google Calendar).
+      </p>
+
       {items.map((item) => (
         <div className="shopping-row" key={item.id} onClick={() => toggleChecked(item)}>
           {item.image_path ? (

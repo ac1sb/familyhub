@@ -27,7 +27,16 @@ shopping list from another device.
   you've dragged the widget (its resize handle, bottom-right corner), same
   idea as the Calendar widget. The full list ("See all") still shows purchased items -
   struck through, dated ("Got it Sep 24"), and sorted to the bottom - until
-  the ✕ removes one for good. Chores, Daily Checklist, and Lunch can each
+  the ✕ removes one for good. Its own full page can also **sync to a Google
+  Sheet** - paste that sheet's URL (or bare ID) and tap "Sync to Sheet" to
+  push every still-needed item into a dedicated "FamilyHub" tab (created
+  automatically the first time, fully replaced on every sync after) without
+  touching any other tab or data already in that spreadsheet - handy for
+  merging into a bigger list kept elsewhere before printing. One-way (hub →
+  sheet) by design; requires the same connected Google account as Calendar
+  sync (Settings → General → Google Calendar) - connecting or reconnecting
+  after this feature was added re-prompts for the added Sheets permission.
+  Chores, Daily Checklist, and Lunch can each
   independently pick one of three widget styles in Settings → Dashboard
   Widgets (e.g. Chores as Squares, Daily Checklist as a Carousel) -
   **List** (the classic stacked full-width bars); **Squares** (a 2x2 tile
