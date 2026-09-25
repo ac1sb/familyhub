@@ -153,7 +153,16 @@ export async function deleteGoogleEvent(googleEventId) {
   }
 }
 
-const SHOPPING_TAB_NAME = 'FamilyHub';
+// Item name goes in column F, on the spreadsheet's first/default tab -
+// alongside whatever other columns (A-E, ...) the person already keeps
+// there. Column G is the FamilyHub item id that ties a row back to a row
+// in the local database - present so a synced-and-unchanged item is never
+// mistaken for a fresh one (and re-imported as a duplicate) or pushed out
+// again as a new row. A person typing a new row by hand just leaves column
+// G blank, same as a sheet written before this had an id column at all -
+// both read the same way: "not linked yet".
+const SHOPPING_ITEM_COL = 'F';
+const SHOPPING_ID_COL = 'G';
 
 function getSheetsClient() {
   const client = getOAuthClient();
@@ -163,41 +172,41 @@ function getSheetsClient() {
   return google.sheets({ version: 'v4', auth: client });
 }
 
-// Column A is the item name (freely editable by anyone); column B is the
-// FamilyHub item id that ties a row back to a row in the local database -
-// present so a synced-and-unchanged item is never mistaken for a fresh one
-// (and re-imported as a duplicate) or pushed out again as a new row. A
-// person typing a new row by hand just leaves column B blank, same as an
-// older tab written by a previous version of this sync that never had an
-// id column at all - both read the same way: "not linked yet".
-async function ensureShoppingTab(sheets, sheetId) {
+// Always targets the spreadsheet's first tab (whatever it's named) rather
+// than a tab FamilyHub owns, since this sync shares that tab with other
+// columns the person already keeps there.
+async function getPrimarySheetTitle(sheets, sheetId) {
   const meta = await sheets.spreadsheets.get({ spreadsheetId: sheetId });
-  const hasTab = (meta.data.sheets || []).some((s) => s.properties?.title === SHOPPING_TAB_NAME);
-  if (!hasTab) {
-    await sheets.spreadsheets.batchUpdate({
-      spreadsheetId: sheetId,
-      requestBody: { requests: [{ addSheet: { properties: { title: SHOPPING_TAB_NAME } } }] },
-    });
-  }
-  // Idempotent either way - also fixes up an older tab's single-column
-  // header (from before this sync became two-way) to the current shape.
+  const first = meta.data.sheets?.[0];
+  if (!first) throw new Error('That spreadsheet has no sheets');
+  return first.properties.title;
+}
+
+// Only fills in the F1/G1 header when both are currently blank, so this
+// never overwrites a header the person already has there.
+async function ensureShoppingColumnHeaders(sheets, sheetId, tabTitle) {
+  const range = `${tabTitle}!${SHOPPING_ITEM_COL}1:${SHOPPING_ID_COL}1`;
+  const existing = await sheets.spreadsheets.values.get({ spreadsheetId: sheetId, range });
+  const [f1, g1] = existing.data.values?.[0] || [];
+  if (f1 || g1) return;
   await sheets.spreadsheets.values.update({
     spreadsheetId: sheetId,
-    range: `${SHOPPING_TAB_NAME}!A1:B1`,
+    range,
     valueInputOption: 'RAW',
-    requestBody: { values: [['Item', 'ID (auto - do not edit)']] },
+    requestBody: { values: [['Shopping List', 'ID (auto - do not edit)']] },
   });
 }
 
 // Reads every data row (skipping the header) as { rowNumber, name, id } -
 // rowNumber is the real 1-indexed sheet row, so callers can write back to
-// exactly that row later. id is null when column B is blank or unparsable.
+// exactly that row later. id is null when column G is blank or unparsable.
 export async function readShoppingSheetRows(sheetId) {
   const sheets = getSheetsClient();
-  await ensureShoppingTab(sheets, sheetId);
+  const tabTitle = await getPrimarySheetTitle(sheets, sheetId);
+  await ensureShoppingColumnHeaders(sheets, sheetId, tabTitle);
   const result = await sheets.spreadsheets.values.get({
     spreadsheetId: sheetId,
-    range: `${SHOPPING_TAB_NAME}!A2:B`,
+    range: `${tabTitle}!${SHOPPING_ITEM_COL}2:${SHOPPING_ID_COL}`,
   });
   const values = result.data.values || [];
   return values
@@ -210,32 +219,28 @@ export async function readShoppingSheetRows(sheetId) {
 }
 
 // Writes back the two things a sync can produce, neither of which removes
-// or overwrites an existing row: idUpdates fills in column B for rows that
+// or overwrites an existing row: idUpdates fills in column G for rows that
 // turned out to match an existing (or newly-created) local item, and
-// newRows appends local items that didn't already have a row in the sheet.
+// newRows fills in F/G for local items that didn't already have a row in
+// the sheet, at the exact (already-blank) row numbers the caller computed.
+// Deliberately writes to exact cells rather than using the Sheets API's
+// "append" (which can insert whole new grid rows and shift the person's
+// other columns down) - this only ever touches columns F and G.
 export async function writeShoppingSheetUpdates(sheetId, { idUpdates = [], newRows = [] } = {}) {
   const sheets = getSheetsClient();
-  if (idUpdates.length > 0) {
-    await sheets.spreadsheets.values.batchUpdate({
-      spreadsheetId: sheetId,
-      requestBody: {
-        valueInputOption: 'RAW',
-        data: idUpdates.map((u) => ({
-          range: `${SHOPPING_TAB_NAME}!B${u.rowNumber}`,
-          values: [[u.id]],
-        })),
-      },
-    });
-  }
-  if (newRows.length > 0) {
-    await sheets.spreadsheets.values.append({
-      spreadsheetId: sheetId,
-      range: `${SHOPPING_TAB_NAME}!A:B`,
-      valueInputOption: 'RAW',
-      insertDataOption: 'INSERT_ROWS',
-      requestBody: { values: newRows.map((r) => [r.name, r.id]) },
-    });
-  }
+  const tabTitle = await getPrimarySheetTitle(sheets, sheetId);
+  const data = [
+    ...idUpdates.map((u) => ({ range: `${tabTitle}!${SHOPPING_ID_COL}${u.rowNumber}`, values: [[u.id]] })),
+    ...newRows.map((r) => ({
+      range: `${tabTitle}!${SHOPPING_ITEM_COL}${r.rowNumber}:${SHOPPING_ID_COL}${r.rowNumber}`,
+      values: [[r.name, r.id]],
+    })),
+  ];
+  if (data.length === 0) return;
+  await sheets.spreadsheets.values.batchUpdate({
+    spreadsheetId: sheetId,
+    requestBody: { valueInputOption: 'RAW', data },
+  });
 }
 
 export default router;

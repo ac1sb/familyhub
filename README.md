@@ -28,15 +28,17 @@ shopping list from another device.
   idea as the Calendar widget. Its own full page can also **sync two-way with
   a Google Sheet** - paste that sheet's URL (or bare ID) into Settings →
   General → "Shopping List Google Sheet" once, then tap "Sync with Sheet" on
-  the Shopping List page any time: a new item typed into that sheet's
-  dedicated "FamilyHub" tab (created automatically, from a phone or anywhere
-  else) lands here on the next sync, and a still-needed item added here gets
-  a row there - handy both for adding on the go and for merging into a
-  bigger list kept elsewhere before printing. Never deletes or clears
-  anything on either side - it only ever adds a row or an item, so removing
-  a row from the sheet doesn't remove it here (the ✕ button does that);
-  syncing a sheet that already has some of the same items typed in links
-  them up by name
+  the Shopping List page any time: it uses column F (row 2 down) on that
+  spreadsheet's first tab, alongside whatever other columns are already
+  there (column G quietly tracks which row is which item). A new item typed
+  into column F (from a phone or anywhere else) lands here on the next
+  sync, and a still-needed item added here gets a row there - handy both
+  for adding on the go and for merging into a bigger list kept elsewhere
+  before printing. Never deletes, clears, or shifts anything on either
+  side - it only ever fills in blank F/G cells, so removing a row from the
+  sheet doesn't remove it here (the ✕ button does that);
+  syncing a sheet that already has some of the same items typed into column
+  F links them up by name
   instead of creating duplicates. Requires the same connected Google
   account as Calendar sync (Settings → General → Google Calendar) -
   connecting or reconnecting after this feature was added re-prompts for

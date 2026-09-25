@@ -127,16 +127,17 @@ router.post('/sheet-settings', (req, res) => {
 });
 
 // POST /api/shopping/sync-sheet  { sheetId? } -> two-way merge with that
-// spreadsheet's "FamilyHub" tab: a row typed there with no recognized id
+// spreadsheet's column F (its first/default tab, alongside whatever other
+// columns are already there): a row typed there with no recognized id
 // becomes a new local item (matched to an existing still-needed item by
 // name first, so syncing a sheet that already has the same items typed in
 // doesn't create duplicates); a still-needed local item with no row yet
-// gets appended as one. Never deletes or clears anything on either side -
-// existing rows and existing items are only ever added to, and a row
-// already linked to an item that's since been checked off or deleted is
-// just left alone, not removed. sheetId is optional if one's already
-// saved; when given, it's saved for next time too (accepts a full Sheets
-// URL or a bare ID either way).
+// gets a new row in F/G. Never deletes, clears, or shifts anything on
+// either side - existing rows and existing items are only ever added to,
+// and a row already linked to an item that's since been checked off or
+// deleted is just left alone, not removed. sheetId is optional if one's
+// already saved; when given, it's saved for next time too (accepts a full
+// Sheets URL or a bare ID either way).
 router.post('/sync-sheet', async (req, res) => {
   const sheetId = extractSheetId(req.body.sheetId) || getShoppingSheetId();
   if (!sheetId) return res.status(400).json({ error: 'A Google Sheet ID or URL is required' });
@@ -155,10 +156,14 @@ router.post('/sync-sheet', async (req, res) => {
       idUpdates.push({ rowNumber: row.rowNumber, id: info.lastInsertRowid });
     }
 
+    // New sheet rows go right after the last row this column already uses -
+    // writeShoppingSheetUpdates writes to these exact cells, so this is the
+    // only place that decides where a genuinely new row lands.
+    let nextRow = (sheetRows.length ? Math.max(...sheetRows.map((r) => r.rowNumber)) : 1) + 1;
     const stillNeeded = allItems.filter((i) => !i.checked);
     const newRows = stillNeeded
       .filter((i) => !linkedIds.has(i.id) && i.name && i.name.trim())
-      .map((i) => ({ name: i.name, id: i.id }));
+      .map((i) => ({ name: i.name, id: i.id, rowNumber: nextRow++ }));
 
     await writeShoppingSheetUpdates(sheetId, { idUpdates, newRows });
     res.json({ success: true, imported: toInsert.length, pushed: newRows.length });

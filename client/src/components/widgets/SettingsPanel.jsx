@@ -282,12 +282,13 @@ function ShoppingSheetSettings() {
         </button>
       </div>
       <p style={{ color: 'var(--color-text-muted)', fontSize: '0.8rem', marginTop: 4 }}>
-        Two-way with a dedicated "FamilyHub" tab in that spreadsheet (created automatically) - type a
-        new item in the sheet from your phone and it lands here on the next sync (the "Sync with Sheet"
-        button on the Shopping List page itself); an item added here gets a row there. Never deletes or
-        clears anything on either side - removing a row from the sheet doesn't remove it here (it'll
-        just reappear there next sync, as long as it's still on the list). Requires the Google account
-        above to be connected.
+        Two-way with column F (row 2 down) on that spreadsheet's first tab, alongside whatever other
+        columns are already there - column G quietly tracks which row is which item and can be ignored.
+        Type a new item into column F from your phone and it lands here on the next sync (the "Sync
+        with Sheet" button on the Shopping List page itself); an item added here gets a row there.
+        Never deletes, clears, or shifts anything on either side - removing a row from the sheet
+        doesn't remove it here (it'll just reappear there next sync, as long as it's still on the
+        list). Requires the Google account above to be connected.
       </p>
     </div>
   );
