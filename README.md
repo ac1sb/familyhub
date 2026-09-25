@@ -132,7 +132,14 @@ shopping list from another device.
   past its edge - meal names ellipsize (…) if a box gets too narrow to show
   the whole thing.
 - **Lunch calendar** for one child — a full monthly view (tap a day to toggle
-  School/Pack-from-home, mark no-school days, jot the menu item), plus a
+  School/Pack-from-home, mark no-school days, jot the menu item), always
+  filling the whole screen instead of stopping at a fixed cell size and
+  leaving blank space below. Two layouts, a **Square/List** toggle at the
+  top of the page (per-device, remembered next visit): **Square** is the
+  original month grid, its day cells stretched to fill the page (so they
+  end up roughly square instead of short and wide) for a real wall-calendar
+  feel; **List** is a full-width row per school day instead - better for a
+  long entree name that a small grid cell would cramp. Plus a
   dashboard card that shows *today's* status until 3pm and then flips to
   *tomorrow's*, so packing a lunch is never a last-minute scramble. Can
   auto-sync the entrée for each day from a school lunch menu site (including

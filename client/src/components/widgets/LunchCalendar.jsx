@@ -3,13 +3,14 @@ import { usePolling } from '../../hooks/usePolling.js';
 import { api } from '../../api.js';
 import { formatMonthLabel, weekdayGridDays, toISODate, WEEKDAY_SHORT } from '../../lib/week.js';
 import { stripDailyChoices } from '../../lib/lunchText.js';
+import { getLunchPageView, setLunchPageView } from '../../lib/lunchPageSettings.js';
 
 const WEEKDAYS_ONLY = WEEKDAY_SHORT.slice(0, 5);
 
 // A plain <input> can never wrap text - long entree names just scroll out of
 // view. This grows to fit whatever's typed instead of truncating it, and the
 // calendar cell (and its whole grid row) grows right along with it.
-function AutoGrowMenuInput({ value, onChange, onClick }) {
+function AutoGrowMenuInput({ value, onChange, onClick, className = 'lunch-cal-menu' }) {
   const ref = useRef(null);
   useEffect(() => {
     const el = ref.current;
@@ -20,7 +21,7 @@ function AutoGrowMenuInput({ value, onChange, onClick }) {
   return (
     <textarea
       ref={ref}
-      className="lunch-cal-menu"
+      className={className}
       placeholder="Menu…"
       rows={1}
       value={value}
@@ -39,7 +40,13 @@ export default function LunchCalendar({ childName }) {
   const [syncResult, setSyncResult] = useState(null);
   const [showDetails, setShowDetails] = useState(false);
   const [copyMessage, setCopyMessage] = useState(null);
+  const [viewMode, setViewMode] = useState(() => getLunchPageView());
   const previewRef = useRef(null);
+
+  function chooseView(mode) {
+    setViewMode(mode);
+    setLunchPageView(mode);
+  }
 
   useEffect(() => {
     api.lunchImportSettings().then((r) => setMenuUrl(r.url || '')).catch(() => {});
@@ -60,6 +67,8 @@ export default function LunchCalendar({ childName }) {
   }, [data]);
 
   const cells = useMemo(() => weekdayGridDays(year, monthIndex), [year, monthIndex]);
+  const weekRows = Math.ceil(cells.length / WEEKDAYS_ONLY.length);
+  const schoolDays = useMemo(() => cells.filter(Boolean), [cells]);
   const todayKey = toISODate(now);
 
   function goMonth(offset) {
@@ -125,7 +134,23 @@ export default function LunchCalendar({ childName }) {
     <section className="widget-card">
       <div className="widget-header">
         <h2>Lunch Calendar &mdash; {childName}</h2>
-        <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+        <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
+          <div className="mode-toggle-row">
+            <button
+              type="button"
+              className={`mode-toggle-btn${viewMode === 'square' ? ' active' : ''}`}
+              onClick={() => chooseView('square')}
+            >
+              Square
+            </button>
+            <button
+              type="button"
+              className={`mode-toggle-btn${viewMode === 'list' ? ' active' : ''}`}
+              onClick={() => chooseView('list')}
+            >
+              List
+            </button>
+          </div>
           <button className="btn-icon" onClick={() => goMonth(-1)}>&larr;</button>
           <span style={{ fontWeight: 700, minWidth: 140, textAlign: 'center' }}>{formatMonthLabel(year, monthIndex)}</span>
           <button className="btn-icon" onClick={() => goMonth(1)}>&rarr;</button>
@@ -184,54 +209,107 @@ export default function LunchCalendar({ childName }) {
         </div>
       )}
 
-      <div className="lunch-cal-weekdays">
-        {WEEKDAYS_ONLY.map((w) => (
-          <div key={w} className="lunch-cal-weekday">{w}</div>
-        ))}
-      </div>
+      {viewMode === 'square' && (
+        <>
+          <div className="lunch-cal-weekdays">
+            {WEEKDAYS_ONLY.map((w) => (
+              <div key={w} className="lunch-cal-weekday">{w}</div>
+            ))}
+          </div>
 
-      <div className="lunch-cal-grid">
-        {cells.map((date, idx) => {
-          if (!date) return <div className="lunch-cal-day empty" key={`empty-${idx}`} />;
-          const day = byDate[date] || { status: 'home', no_school: false, menu_item: '' };
-          const dayNum = Number(date.slice(-2));
-          const isToday = date === todayKey;
+          <div className="lunch-cal-grid" style={{ gridTemplateRows: `repeat(${weekRows}, 1fr)` }}>
+            {cells.map((date, idx) => {
+              if (!date) return <div className="lunch-cal-day empty" key={`empty-${idx}`} />;
+              const day = byDate[date] || { status: 'home', no_school: false, menu_item: '' };
+              const dayNum = Number(date.slice(-2));
+              const isToday = date === todayKey;
 
-          const statusClass = day.no_school ? 'no-school' : `status-${day.status}`;
+              const statusClass = day.no_school ? 'no-school' : `status-${day.status}`;
 
-          return (
-            <div
-              className={`lunch-cal-day ${statusClass}${isToday ? ' today' : ''}`}
-              key={date}
-              onClick={() => !day.no_school && toggleStatus(date, day.status)}
-              title={day.no_school ? undefined : day.status === 'school' ? 'Tap to switch to Pack from home' : 'Tap to switch to School lunch'}
-            >
-              <div className="lunch-cal-day-top">
-                <span className="lunch-cal-daynum">{dayNum}</span>
-                <button
-                  className="lunch-cal-noschool-btn"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    updateDay(date, { no_school: !day.no_school });
-                  }}
-                  title={day.no_school ? 'Mark as a school day' : 'Mark as no school'}
+              return (
+                <div
+                  className={`lunch-cal-day ${statusClass}${isToday ? ' today' : ''}`}
+                  key={date}
+                  onClick={() => !day.no_school && toggleStatus(date, day.status)}
+                  title={day.no_school ? undefined : day.status === 'school' ? 'Tap to switch to Pack from home' : 'Tap to switch to School lunch'}
                 >
-                  {day.no_school ? '↩' : '🚫'}
-                </button>
+                  <div className="lunch-cal-day-top">
+                    <span className="lunch-cal-daynum">{dayNum}</span>
+                    <button
+                      className="lunch-cal-noschool-btn"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        updateDay(date, { no_school: !day.no_school });
+                      }}
+                      title={day.no_school ? 'Mark as a school day' : 'Mark as no school'}
+                    >
+                      {day.no_school ? '↩' : '🚫'}
+                    </button>
+                  </div>
+                  {day.no_school ? (
+                    <div className="lunch-cal-noschool-label">No School</div>
+                  ) : (
+                    <AutoGrowMenuInput
+                      value={stripDailyChoices(day.menu_item)}
+                      onClick={(e) => e.stopPropagation()}
+                      onChange={(e) => updateDay(date, { menu_item: e.target.value })}
+                    />
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </>
+      )}
+
+      {viewMode === 'list' && (
+        <div className="lunch-list">
+          {schoolDays.map((date) => {
+            const day = byDate[date] || { status: 'home', no_school: false, menu_item: '' };
+            const isToday = date === todayKey;
+            const statusClass = day.no_school ? 'no-school' : `status-${day.status}`;
+            const dateObj = new Date(`${date}T00:00:00`);
+
+            return (
+              <div className={`lunch-list-row ${statusClass}${isToday ? ' today' : ''}`} key={date}>
+                <div className="lunch-list-date">
+                  <span className="lunch-list-weekday">{dateObj.toLocaleDateString(undefined, { weekday: 'short' })}</span>
+                  <span className="lunch-list-daynum">{dateObj.getDate()}</span>
+                </div>
+
+                {day.no_school ? (
+                  <div className="lunch-cal-noschool-label">No School</div>
+                ) : (
+                  <AutoGrowMenuInput
+                    className="lunch-list-menu"
+                    value={stripDailyChoices(day.menu_item)}
+                    onChange={(e) => updateDay(date, { menu_item: e.target.value })}
+                  />
+                )}
+
+                <div className="lunch-list-actions">
+                  {!day.no_school && (
+                    <button
+                      type="button"
+                      className={`btn btn-secondary lunch-list-status-btn ${statusClass}`}
+                      onClick={() => toggleStatus(date, day.status)}
+                    >
+                      {day.status === 'school' ? '🏫 School' : '🥪 Home'}
+                    </button>
+                  )}
+                  <button
+                    className="lunch-cal-noschool-btn"
+                    onClick={() => updateDay(date, { no_school: !day.no_school })}
+                    title={day.no_school ? 'Mark as a school day' : 'Mark as no school'}
+                  >
+                    {day.no_school ? '↩' : '🚫'}
+                  </button>
+                </div>
               </div>
-              {day.no_school ? (
-                <div className="lunch-cal-noschool-label">No School</div>
-              ) : (
-                <AutoGrowMenuInput
-                  value={stripDailyChoices(day.menu_item)}
-                  onClick={(e) => e.stopPropagation()}
-                  onChange={(e) => updateDay(date, { menu_item: e.target.value })}
-                />
-              )}
-            </div>
-          );
-        })}
-      </div>
+            );
+          })}
+        </div>
+      )}
     </section>
   );
 }

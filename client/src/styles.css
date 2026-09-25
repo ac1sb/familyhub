@@ -261,6 +261,22 @@ button {
   flex-direction: column;
   min-height: 0;
 }
+
+/* The Lunch page's month grid used to only take its natural content height
+   (each day cell's own min-height), leaving the rest of a tall screen blank
+   below it - same fix as calendar-mode: the page's own flex column fills
+   the screen, and the card/grid inside stretch to fill that. */
+.main-content.lunch-mode {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.main-content.lunch-mode .widget-card {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
 /* Also used by the compact dashboard widget (its own .widget-card is
    already a flex column filling the grid box - see the dashboard-rgl rule
    below), so the same fit-to-available-height measurement works whether
@@ -1187,10 +1203,18 @@ button {
   font-weight: 700;
   color: var(--color-text-muted);
 }
+/* grid-template-rows is set inline (LunchCalendar.jsx) to the actual
+   number of weeks in the month, so the whole grid stretches to exactly
+   fill the page instead of stopping at each row's own min-height and
+   leaving blank space below on a tall screen - each row (and so each day
+   cell) grows tall enough to read comfortably instead of staying squeezed
+   into a fixed 96px, which is what made the menu text hard to read. */
 .lunch-cal-grid {
   display: grid;
   grid-template-columns: repeat(5, 1fr);
   gap: 6px;
+  flex: 1;
+  min-height: 0;
 }
 .lunch-cal-day {
   background: var(--color-bg);
@@ -1239,8 +1263,8 @@ button {
 .lunch-cal-menu {
   border: 1px solid var(--color-border);
   border-radius: 6px;
-  padding: 3px 4px;
-  font-size: 0.7rem;
+  padding: 4px 6px;
+  font-size: 0.85rem;
   min-height: 28px;
   width: 100%;
   cursor: text;
@@ -1250,6 +1274,61 @@ button {
   word-break: break-word;
   font-family: inherit;
 }
+
+/* ---------- Lunch page: List view (Square/List toggle) ----------
+   One full-width row per school day instead of a small grid cell - reads
+   much better for a long entree name, at the cost of seeing fewer days at
+   once (scrolls instead). Fills the page the same way the Square grid
+   does. */
+.lunch-list {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.lunch-list-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  background: var(--color-bg);
+}
+.lunch-list-row.today { border-color: var(--color-primary); border-width: 2px; }
+.lunch-list-row.no-school { background: var(--color-border); opacity: 0.7; }
+.lunch-list-row.status-home { background: rgba(197, 68, 60, 0.28); }
+.lunch-list-row.status-school { background: rgba(63, 145, 90, 0.28); }
+.lunch-list-date {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 56px;
+  flex-shrink: 0;
+}
+.lunch-list-weekday { font-size: 0.75rem; font-weight: 700; color: var(--color-text-muted); }
+.lunch-list-daynum { font-size: 1.3rem; font-weight: 700; }
+.lunch-list-menu {
+  flex: 1;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  padding: 8px 10px;
+  font-size: 0.95rem;
+  min-height: 40px;
+  cursor: text;
+  resize: none;
+  overflow: hidden;
+  white-space: pre-wrap;
+  word-break: break-word;
+  font-family: inherit;
+  background: var(--color-surface);
+  color: var(--color-text);
+}
+.lunch-list-actions { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+.lunch-list-status-btn.status-home { background: rgba(197, 68, 60, 0.35); }
+.lunch-list-status-btn.status-school { background: rgba(63, 145, 90, 0.35); }
 
 /* ---------- Lunch today card (dashboard) ---------- */
 .lunch-today-list {

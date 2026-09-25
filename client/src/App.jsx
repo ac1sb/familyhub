@@ -68,7 +68,11 @@ export default function App() {
           </div>
           <HeaderWeather zip={zip} />
         </div>
-        <main className={`main-content${active === 'dashboard' ? ' dashboard-mode' : ''}${active === 'calendar' ? ' calendar-mode' : ''}`}>
+        <main
+          className={`main-content${active === 'dashboard' ? ' dashboard-mode' : ''}${
+            active === 'calendar' ? ' calendar-mode' : ''
+          }${active === 'lunch' ? ' lunch-mode' : ''}`}
+        >
           {active === 'dashboard' && <Dashboard members={members} zip={zip} onNavigate={setActive} />}
           {active === 'calendar' && <CalendarAgenda members={members} />}
           {active === 'chores' && <ChoreList />}
