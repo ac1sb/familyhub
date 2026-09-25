@@ -47,6 +47,14 @@ function isRowDone(row) {
   return row.type === 'group' ? row.instances.every((i) => i.done) : row.chore.done;
 }
 
+// A chore tied to a specific weekday can only be checked off on that day -
+// no marking Friday's done on Monday, and no going back to fix Tuesday's
+// after the fact. One-off chores with no day attached (day_of_week is null)
+// aren't tied to any particular day, so they stay toggleable any time.
+function canToggleToday(dayOfWeek, todayDayIndex) {
+  return dayOfWeek == null || dayOfWeek === todayDayIndex;
+}
+
 export default function ChoreList({ compact = false, onExpand }) {
   // Computed fresh every render (not once at module load) so the widget
   // picks up the new day right after midnight instead of needing a page
@@ -175,33 +183,44 @@ export default function ChoreList({ compact = false, onExpand }) {
           <div className="chore-row chore-group-row" key={`group-${row.template_id}`}>
             <span className={`chore-title${isRowDone(row) ? ' done' : ''}`}>{row.title}</span>
             <div className="chore-day-badges">
-              {row.instances.map((inst) => (
-                <button
-                  key={inst.id}
-                  type="button"
-                  className={`chore-day-toggle${inst.done ? ' done' : ''}`}
-                  onClick={() => toggleDone(inst)}
-                  title={inst.done ? 'Mark not done' : 'Mark done'}
-                >
-                  {inst.done ? '✓ ' : ''}{WEEKDAY_SHORT[inst.day_of_week]}
-                </button>
-              ))}
+              {row.instances.map((inst) => {
+                const canToggle = canToggleToday(inst.day_of_week, TODAY_DAY_INDEX);
+                return (
+                  <button
+                    key={inst.id}
+                    type="button"
+                    className={`chore-day-toggle${inst.done ? ' done' : ''}${canToggle ? '' : ' locked'}`}
+                    onClick={() => canToggle && toggleDone(inst)}
+                    disabled={!canToggle}
+                    title={canToggle ? (inst.done ? 'Mark not done' : 'Mark done') : 'Only today\'s chore can be checked off'}
+                  >
+                    {inst.done ? '✓ ' : ''}{WEEKDAY_SHORT[inst.day_of_week]}
+                  </button>
+                );
+              })}
             </div>
           </div>
         ) : (
-          <button
-            type="button"
-            className={`tile-row${row.chore.done ? ' done' : ''}`}
-            key={row.chore.id}
-            aria-pressed={row.chore.done}
-            onClick={() => toggleDone(row.chore)}
-          >
-            {row.chore.day_of_week != null && (
-              <span className="chore-day-tag">{WEEKDAY_SHORT[row.chore.day_of_week]}</span>
-            )}
-            <span className="tile-title">{row.chore.title}</span>
-            {row.chore.done && <span className="tile-check">✓</span>}
-          </button>
+          (() => {
+            const canToggle = canToggleToday(row.chore.day_of_week, TODAY_DAY_INDEX);
+            return (
+              <button
+                type="button"
+                className={`tile-row${row.chore.done ? ' done' : ''}${canToggle ? '' : ' locked'}`}
+                key={row.chore.id}
+                aria-pressed={row.chore.done}
+                onClick={() => canToggle && toggleDone(row.chore)}
+                disabled={!canToggle}
+                title={canToggle ? undefined : 'Only today\'s chore can be checked off'}
+              >
+                {row.chore.day_of_week != null && (
+                  <span className="chore-day-tag">{WEEKDAY_SHORT[row.chore.day_of_week]}</span>
+                )}
+                <span className="tile-title">{row.chore.title}</span>
+                {row.chore.done && <span className="tile-check">✓</span>}
+              </button>
+            );
+          })()
         )
       )}
       {data && openRows.length === 0 && !showDone && (

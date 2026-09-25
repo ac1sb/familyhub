@@ -156,8 +156,11 @@ shopping list from another device.
   Checklist show as tappable tiles (like the Lunch today/tomorrow cards) -
   tap one to mark it done and a green checkmark appears on it, rather than a
   small checkbox to hit. A chore that repeats on several days (e.g.
-  Mon/Wed/Thu) shows as a single row with one badge per expected day - tap a
-  day's badge to mark it done, and it gets its own checkmark too.
+  Mon/Wed/Thu) shows as a single row with one badge per expected day - only
+  today's badge can actually be tapped (the others are shown, dimmed, so the
+  week's schedule is still visible, but checking one off early or fixing a
+  past day after the fact isn't allowed). A one-off chore with no day
+  attached stays tappable any time, same as before.
 - **Weekly dinner menu** — a row of day boxes (day tab on top, meal name
   below), with today's day tab highlighted so it stands out from the rest
   of the week. The day tabs are fixed - drag a meal box by its ⠿ handle

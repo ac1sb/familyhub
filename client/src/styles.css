@@ -996,6 +996,17 @@ button {
   color: #fff;
   border-color: var(--color-primary);
 }
+/* Any day but today - shown so the week's schedule is still visible, but not
+   tappable (checking off in advance or after the fact isn't allowed). */
+.chore-day-toggle.locked {
+  cursor: default;
+  opacity: 0.55;
+}
+.chore-day-toggle.locked.done { opacity: 0.75; }
+.tile-row.locked {
+  cursor: default;
+  opacity: 0.55;
+}
 .chore-setup-row { border-bottom: 1px solid var(--color-border); padding-bottom: 6px; margin-bottom: 6px; }
 .chore-setup-row .chore-row { border-bottom: none; padding-bottom: 4px; }
 /* Same look as the plain .chore-title text it replaces, but editable in
