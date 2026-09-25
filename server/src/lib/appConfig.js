@@ -113,6 +113,21 @@ export function setShoppingSheetId(id) {
   setSetting('shopping_sheet_id', id);
 }
 
+// Sheets-only alternative to the OAuth connection above: a Google Cloud
+// service account's credentials (its downloaded JSON key, pasted whole in
+// Settings). Skips the browser sign-in and redirect URI entirely, which
+// matters before a stable host/IP is settled - the shopping list sheet
+// sync uses this instead of the OAuth connection whenever it's set, and
+// falls back to OAuth otherwise. Only client_email and private_key are
+// kept; the rest of the downloaded JSON isn't needed.
+export function getGoogleServiceAccountKey() {
+  return getJSON('google_service_account_key', null);
+}
+
+export function setGoogleServiceAccountKey(key) {
+  setJSON('google_service_account_key', key);
+}
+
 // LIFX Cloud API personal access token (from cloud.lifx.com/settings) -
 // lets the Smart Home widget/setup page discover and control real bulbs
 // instead of the local-only mock. Same DB-wins-over-.env pattern as

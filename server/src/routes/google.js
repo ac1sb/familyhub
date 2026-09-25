@@ -1,7 +1,12 @@
 import { Router } from 'express';
 import { google } from 'googleapis';
 import { getJSON, setJSON } from '../lib/settings.js';
-import { getGoogleCalendarId, getGoogleEventsMember } from '../lib/appConfig.js';
+import {
+  getGoogleCalendarId,
+  getGoogleEventsMember,
+  getGoogleServiceAccountKey,
+  setGoogleServiceAccountKey,
+} from '../lib/appConfig.js';
 
 const router = Router();
 
@@ -58,6 +63,39 @@ router.get('/oauth2callback', async (req, res) => {
   } catch (err) {
     res.status(500).send(`Google OAuth failed: ${err.message}`);
   }
+});
+
+// GET/POST /api/google/sheets-service-account -> an alternative to the OAuth
+// connection above, just for the Shopping List sheet sync: a Google Cloud
+// service account's downloaded JSON key, pasted whole (Settings parses out
+// client_email/private_key and discards the rest). No sign-in or redirect
+// URL needed, so it works before a stable host/IP is settled - google.js's
+// getSheetsClient() below prefers this over the OAuth connection whenever
+// it's set. Never echoes the key back once saved, only the account email.
+router.get('/sheets-service-account', (req, res) => {
+  const key = getGoogleServiceAccountKey();
+  res.json({ connected: !!key, email: key?.client_email || null });
+});
+
+router.post('/sheets-service-account', (req, res) => {
+  const raw = (req.body.json || '').trim();
+  if (!raw) {
+    setGoogleServiceAccountKey(null);
+    return res.json({ connected: false, email: null });
+  }
+  let parsed;
+  try {
+    parsed = JSON.parse(raw);
+  } catch {
+    return res.status(400).json({ error: "That isn't valid JSON - paste the whole downloaded key file" });
+  }
+  if (!parsed.client_email || !parsed.private_key) {
+    return res
+      .status(400)
+      .json({ error: 'Missing client_email or private_key - make sure the full key file was pasted' });
+  }
+  setGoogleServiceAccountKey({ client_email: parsed.client_email, private_key: parsed.private_key });
+  res.json({ connected: true, email: parsed.client_email });
 });
 
 router.post('/disconnect', (req, res) => {
@@ -165,9 +203,21 @@ const SHOPPING_ITEM_COL = 'F';
 const SHOPPING_ID_COL = 'G';
 
 function getSheetsClient() {
+  const serviceAccount = getGoogleServiceAccountKey();
+  if (serviceAccount) {
+    const auth = new google.auth.JWT({
+      email: serviceAccount.client_email,
+      key: serviceAccount.private_key,
+      scopes: ['https://www.googleapis.com/auth/spreadsheets'],
+    });
+    return google.sheets({ version: 'v4', auth });
+  }
+
   const client = getOAuthClient();
   if (!client || !getJSON('google_tokens', null)) {
-    throw new Error('Google account not connected - connect it in Settings first');
+    throw new Error(
+      'Google Sheets isn\'t connected - add a service account key or connect Google in Settings first'
+    );
   }
   return google.sheets({ version: 'v4', auth: client });
 }

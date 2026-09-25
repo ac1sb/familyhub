@@ -229,6 +229,7 @@ function GeneralSettings({ config, onConfigUpdated }) {
       )}
 
       <ShoppingSheetSettings />
+      <SheetsServiceAccountSettings />
 
       {error && <p style={{ color: 'var(--color-danger)' }}>{error}</p>}
       {saveMessage && <p style={{ color: 'var(--color-primary)', fontWeight: 600 }}>{saveMessage}</p>}
@@ -290,6 +291,86 @@ function ShoppingSheetSettings() {
         doesn't remove it here (it'll just reappear there next sync, as long as it's still on the
         list). Requires the Google account above to be connected.
       </p>
+    </div>
+  );
+}
+
+function SheetsServiceAccountSettings() {
+  const [connected, setConnected] = useState(false);
+  const [email, setEmail] = useState(null);
+  const [jsonInput, setJsonInput] = useState('');
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    api.sheetsServiceAccountStatus().then((r) => {
+      setConnected(r.connected);
+      setEmail(r.email);
+    }).catch(() => {});
+  }, []);
+
+  async function handleSave() {
+    if (!jsonInput.trim()) return;
+    setSaving(true);
+    setError(null);
+    try {
+      const r = await api.saveSheetsServiceAccountKey(jsonInput.trim());
+      setConnected(r.connected);
+      setEmail(r.email);
+      setJsonInput('');
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function handleRemove() {
+    setSaving(true);
+    try {
+      await api.saveSheetsServiceAccountKey('');
+      setConnected(false);
+      setEmail(null);
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <div className="field" style={{ marginTop: 24 }}>
+      <label>Sheets Service Account (optional)</label>
+      <p style={{ color: 'var(--color-text-muted)', fontSize: '0.8rem', marginTop: 0 }}>
+        An alternative to the Google connection above, just for the Shopping List sheet sync - no
+        sign-in or redirect URL needed, so it works before a stable host/IP is settled. Create a
+        service account in Google Cloud Console, download its JSON key, share the target Google Sheet
+        with its email as an Editor, then paste the whole downloaded file below. Used instead of the
+        Google connection above whenever it's set.
+      </p>
+      {connected ? (
+        <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
+          <span className="chore-tag family">✅ {email}</span>
+          <button className="btn btn-secondary" onClick={handleRemove} disabled={saving}>Remove</button>
+        </div>
+      ) : (
+        <>
+          <textarea
+            rows={6}
+            placeholder="Paste the whole downloaded JSON key file here"
+            value={jsonInput}
+            onChange={(e) => setJsonInput(e.target.value)}
+            style={{ width: '100%', fontFamily: 'monospace', fontSize: '0.75rem' }}
+          />
+          <button
+            className="btn btn-secondary"
+            onClick={handleSave}
+            disabled={saving || !jsonInput.trim()}
+            style={{ marginTop: 6 }}
+          >
+            {saving ? 'Saving…' : 'Save Key'}
+          </button>
+        </>
+      )}
+      {error && <p style={{ color: 'var(--color-danger)' }}>{error}</p>}
     </div>
   );
 }

@@ -101,6 +101,8 @@ export const api = {
   googleStatus: () => request('/google/status'),
   googleAuthUrl: () => request('/google/auth-url'),
   googleDisconnect: () => request('/google/disconnect', { method: 'POST' }),
+  sheetsServiceAccountStatus: () => request('/google/sheets-service-account'),
+  saveSheetsServiceAccountKey: (json) => request('/google/sheets-service-account', { method: 'POST', body: JSON.stringify({ json }) }),
 
   updateCheck: () => request('/update/check'),
   updateStatus: () => request('/update/status'),

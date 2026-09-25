@@ -42,7 +42,13 @@ shopping list from another device.
   instead of creating duplicates. Requires the same connected Google
   account as Calendar sync (Settings → General → Google Calendar) -
   connecting or reconnecting after this feature was added re-prompts for
-  the added Sheets permission.
+  the added Sheets permission. If OAuth isn't set up yet (it needs a
+  stable, reachable redirect URL, which a not-yet-networked Pi might not
+  have), Settings → General → "Sheets Service Account" is a sign-in-free
+  alternative just for this sync: paste in a Google Cloud service
+  account's downloaded JSON key (after sharing the sheet with that
+  account's email as an editor) and it's used instead of the OAuth
+  connection.
   Chores, Daily Checklist, and Lunch can each
   independently pick one of three widget styles in Settings → Dashboard
   Widgets (e.g. Chores as Squares, Daily Checklist as a Carousel) -
