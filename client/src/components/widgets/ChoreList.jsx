@@ -1,10 +1,10 @@
 import { useState } from 'react';
 import { usePolling } from '../../hooks/usePolling.js';
-import { useStickyCompactSlots } from '../../hooks/useStickyCompactSlots.js';
 import { api } from '../../api.js';
 import { currentWeekStartSunday, WEEKDAY_SHORT } from '../../lib/week.js';
 import { getWidgetDisplayMode } from '../../lib/widgetDisplayMode.js';
 import { getTaskIcon } from '../../lib/taskIcons.js';
+import { sortDoneLast } from '../../lib/tileOrder.js';
 import TileCarousel from '../TileCarousel.jsx';
 import TileGridPager from '../TileGridPager.jsx';
 
@@ -78,16 +78,17 @@ export default function ChoreList({ compact = false, onExpand }) {
 
   const weekChores = data?.chores || [];
   const todayChores = weekChores.filter((c) => c.day_of_week == null || c.day_of_week === TODAY_DAY_INDEX);
-  // Called unconditionally (not inside the `if (compact)` branch below) so
-  // it stays a valid hook call on the full-page render too, even though its
-  // result only matters for the compact widget.
-  const visible = useStickyCompactSlots(todayChores, COMPACT_ITEM_LIMIT);
+  // Open chores first (in their existing order), done ones dropped to the
+  // bottom - checking one off gives up its spot to the next open chore
+  // instead of sitting frozen in place, so what's left to do stays what's
+  // most visible. List/Carousel only ever show the top COMPACT_ITEM_LIMIT of
+  // this; Squares (below) pages through the whole sorted list instead of
+  // capping it.
+  const sortedToday = sortDoneLast(todayChores);
+  const visible = sortedToday.slice(0, COMPACT_ITEM_LIMIT);
 
   // The dashboard widget is a "what's due today" glance: a completed-count
-  // line plus up to COMPACT_ITEM_LIMIT chores, checked or not. Checking one
-  // off shows its strikethrough right in place - it only rolls off (making
-  // room for the next open one) once there's an open chore waiting that
-  // isn't already shown; see useStickyCompactSlots. The full page (opened
+  // line plus up to COMPACT_ITEM_LIMIT open chores. The full page (opened
   // from "See all") still lists every chore for the week.
   if (compact) {
     const doneToday = todayChores.filter((c) => c.done).length;
@@ -124,7 +125,7 @@ export default function ChoreList({ compact = false, onExpand }) {
 
         {displayMode === 'squares' && (
           <TileGridPager
-            items={todayChores}
+            items={sortedToday}
             renderTile={(chore) => (
               <button
                 type="button"

@@ -1,10 +1,10 @@
 import { useState } from 'react';
 import { usePolling } from '../../hooks/usePolling.js';
-import { useStickyCompactSlots } from '../../hooks/useStickyCompactSlots.js';
 import { api } from '../../api.js';
 import { todayISO } from '../../lib/week.js';
 import { getWidgetDisplayMode } from '../../lib/widgetDisplayMode.js';
 import { getTaskIcon } from '../../lib/taskIcons.js';
+import { sortDoneLast } from '../../lib/tileOrder.js';
 import TileCarousel from '../TileCarousel.jsx';
 import TileGridPager from '../TileGridPager.jsx';
 
@@ -17,6 +17,7 @@ export default function DailyChecklist({ compact = false, onExpand }) {
   const { data, setData, refresh } = usePolling(() => api.dailyTasks(today), [today], 15000);
   const [newTitle, setNewTitle] = useState('');
   const [displayMode] = useState(() => getWidgetDisplayMode('daily'));
+  const [showDone, setShowDone] = useState(false);
 
   async function toggleDone(task) {
     setData((prev) => ({
@@ -37,17 +38,18 @@ export default function DailyChecklist({ compact = false, onExpand }) {
   }
 
   const tasks = data?.tasks || [];
-  // Called unconditionally (not inside the `if (compact)` branch below) so
-  // it stays a valid hook call on the full-page render too, even though its
-  // result only matters for the compact widget.
-  const visible = useStickyCompactSlots(tasks, COMPACT_ITEM_LIMIT);
+  // Open items first (in their existing order), done ones dropped to the
+  // bottom - checking one off gives up its spot to the next open item
+  // instead of sitting frozen in place, so what's left to do stays what's
+  // most visible. List/Carousel only ever show the top COMPACT_ITEM_LIMIT of
+  // this; Squares (below) pages through the whole sorted list instead of
+  // capping it.
+  const sortedTasks = sortDoneLast(tasks);
+  const visible = sortedTasks.slice(0, COMPACT_ITEM_LIMIT);
 
   // The dashboard widget is a glance: a completed-count line plus up to
-  // COMPACT_ITEM_LIMIT items, checked or not. Checking one off shows its
-  // strikethrough right in place - it only rolls off (making room for the
-  // next open one) once there's an open item waiting that isn't already
-  // shown; see useStickyCompactSlots. The full page (opened from "See all")
-  // still lists every item.
+  // COMPACT_ITEM_LIMIT open items. The full page (opened from "See all")
+  // still lists every item, same "hide completed" pattern as Chore List.
   if (compact) {
     const doneCount = tasks.filter((t) => t.done).length;
     return (
@@ -86,7 +88,7 @@ export default function DailyChecklist({ compact = false, onExpand }) {
 
         {displayMode === 'squares' && (
           <TileGridPager
-            items={tasks}
+            items={sortedTasks}
             renderTile={(task) => (
               <button
                 type="button"
@@ -126,13 +128,17 @@ export default function DailyChecklist({ compact = false, onExpand }) {
     );
   }
 
+  const openTasks = tasks.filter((t) => !t.done);
+  const doneCount = tasks.length - openTasks.length;
+  const visibleTasks = showDone ? tasks : openTasks;
+
   return (
     <section className="widget-card">
       <div className="widget-header">
         <h2>Today's Checklist</h2>
       </div>
 
-      {tasks.map((task) => (
+      {visibleTasks.map((task) => (
         <button
           type="button"
           className={`tile-row${task.done ? ' done' : ''}`}
@@ -147,7 +153,17 @@ export default function DailyChecklist({ compact = false, onExpand }) {
           {task.done && <span className="tile-check">✓</span>}
         </button>
       ))}
-      {data && tasks.length === 0 && <p style={{ color: 'var(--color-text-muted)' }}>Nothing on today's list.</p>}
+      {data && openTasks.length === 0 && !showDone && (
+        <p style={{ color: 'var(--color-text-muted)' }}>
+          {tasks.length === 0 ? "Nothing on today's list." : 'All done for today! 🎉'}
+        </p>
+      )}
+
+      {doneCount > 0 && (
+        <button className="btn-link" onClick={() => setShowDone((v) => !v)} style={{ marginTop: 4 }}>
+          {showDone ? 'Hide completed' : `Show completed (${doneCount})`}
+        </button>
+      )}
 
       <div className="add-row">
         <input

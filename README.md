@@ -13,11 +13,11 @@ shopping list from another device.
   list, and whiteboard, all in one glance. Any flagged reminder (see below)
   shows as a big banner across the top. To keep the main screen from
   turning into a wall of text, Chores and Daily Checklist show a
-  completed-count next to their name plus up to 4 items - tapping one shows
-  a green checkmark right there instead of yanking it out of view. It only
-  rolls off (making room for the next open item) once there's an open item
-  waiting that isn't already shown, so with 4 or fewer items nothing ever
-  disappears, it just accumulates checkmarks. Shopping List is different by
+  completed-count next to their name plus up to 4 items - tapping one turns
+  it green and drops it to the bottom of the list, so whatever's still open
+  bubbles up and stays what's most visible (same idea on their own full
+  pages: a "Show completed (N)" toggle keeps finished items out of the way
+  by default). Shopping List is different by
   design: there's no checkbox, tapping an item crosses it off as purchased
   and it disappears from the dashboard glance immediately (nothing left to
   buy, nothing to show), leaving a tally of what's still needed plus a
