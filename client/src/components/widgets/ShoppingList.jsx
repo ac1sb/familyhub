@@ -129,10 +129,13 @@ export default function ShoppingList({ compact = false, onExpand }) {
       </div>
 
       {sheetConfigured ? (
-        <div className="lunch-import-row">
-          <button className="btn btn-secondary" onClick={handleSyncSheet} disabled={syncing}>
+        <div className="lunch-import-row" style={{ alignItems: 'center', flexWrap: 'wrap' }}>
+          <button className="btn btn-secondary" onClick={handleSyncSheet} disabled={syncing} style={{ flex: 'none' }}>
             {syncing ? 'Syncing…' : 'Sync with Sheet'}
           </button>
+          <span style={{ color: 'var(--color-text-muted)', fontSize: '0.8rem' }}>
+            Also syncs automatically every few minutes - this is just for pulling in a change right away.
+          </span>
         </div>
       ) : (
         <p style={{ color: 'var(--color-text-muted)', fontSize: '0.8rem', marginTop: 0 }}>

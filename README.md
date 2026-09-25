@@ -27,12 +27,15 @@ shopping list from another device.
   you've dragged the widget (its resize handle, bottom-right corner), same
   idea as the Calendar widget. Its own full page can also **sync two-way with
   a Google Sheet** - paste that sheet's URL (or bare ID) into Settings →
-  General → "Shopping List Google Sheet" once, then tap "Sync with Sheet" on
-  the Shopping List page any time: it uses column F (row 2 down) on that
-  spreadsheet's first tab, alongside whatever other columns are already
-  there (column G quietly tracks which row is which item). A new item typed
-  into column F (from a phone or anywhere else) lands here on the next
-  sync, and a still-needed item added here gets a row there - handy both
+  General → "Shopping List Google Sheet" once and it syncs automatically
+  every few minutes from then on (SHOPPING_SHEET_SYNC_MINUTES in .env
+  changes how often); "Sync with Sheet" on the Shopping List page is just
+  for pulling in a change right away instead of waiting. It uses column F
+  (row 2 down) on that spreadsheet's first tab, alongside whatever other
+  columns are already there (column G quietly tracks which row is which
+  item). A new item typed into column F (from a phone or anywhere else)
+  lands here on the next sync, and a still-needed item added here gets a
+  row there - handy both
   for adding on the go and for merging into a bigger list kept elsewhere
   before printing. Never deletes, clears, or shifts anything on either
   side - it only ever fills in blank F/G cells, so removing a row from the

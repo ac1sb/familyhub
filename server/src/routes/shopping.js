@@ -126,47 +126,56 @@ router.post('/sheet-settings', (req, res) => {
   res.json({ sheetId });
 });
 
-// POST /api/shopping/sync-sheet  { sheetId? } -> two-way merge with that
-// spreadsheet's column F (its first/default tab, alongside whatever other
-// columns are already there): a row typed there with no recognized id
-// becomes a new local item (matched to an existing still-needed item by
-// name first, so syncing a sheet that already has the same items typed in
-// doesn't create duplicates); a still-needed local item with no row yet
-// gets a new row in F/G. Never deletes, clears, or shifts anything on
-// either side - existing rows and existing items are only ever added to,
-// and a row already linked to an item that's since been checked off or
-// deleted is just left alone, not removed. sheetId is optional if one's
-// already saved; when given, it's saved for next time too (accepts a full
-// Sheets URL or a bare ID either way).
+// The actual two-way merge, factored out of the route handler so the
+// background scheduler (see lib/shoppingSheetScheduler.js) can run the same
+// logic on a timer without going through HTTP: a sheet row with no
+// recognized id becomes a new local item (matched to an existing
+// still-needed item by name first, so syncing a sheet that already has the
+// same items typed in doesn't create duplicates); a still-needed local item
+// with no row yet gets a new row in F/G. Never deletes, clears, or shifts
+// anything on either side - existing rows and existing items are only ever
+// added to, and a row already linked to an item that's since been checked
+// off or deleted is just left alone, not removed.
+export async function runShoppingSheetSync(sheetId) {
+  const sheetRows = await readShoppingSheetRows(sheetId);
+  const allItems = db.prepare('SELECT * FROM shopping_items ORDER BY sort_order ASC, id ASC').all();
+  const { toInsert, idUpdatesForExisting, linkedIds } = planShoppingSheetLinks(sheetRows, allItems);
+
+  const idUpdates = [...idUpdatesForExisting];
+  for (const row of toInsert) {
+    const maxOrder = db.prepare('SELECT COALESCE(MAX(sort_order), -1) as m FROM shopping_items').get().m;
+    const info = db.prepare('INSERT INTO shopping_items (name, sort_order) VALUES (?, ?)').run(row.name, maxOrder + 1);
+    linkedIds.add(info.lastInsertRowid);
+    idUpdates.push({ rowNumber: row.rowNumber, id: info.lastInsertRowid });
+  }
+
+  // New sheet rows go right after the last row this column already uses -
+  // writeShoppingSheetUpdates writes to these exact cells, so this is the
+  // only place that decides where a genuinely new row lands.
+  let nextRow = (sheetRows.length ? Math.max(...sheetRows.map((r) => r.rowNumber)) : 1) + 1;
+  const stillNeeded = allItems.filter((i) => !i.checked);
+  const newRows = stillNeeded
+    .filter((i) => !linkedIds.has(i.id) && i.name && i.name.trim())
+    .map((i) => ({ name: i.name, id: i.id, rowNumber: nextRow++ }));
+
+  await writeShoppingSheetUpdates(sheetId, { idUpdates, newRows });
+  return { success: true, imported: toInsert.length, pushed: newRows.length };
+}
+
+// POST /api/shopping/sync-sheet  { sheetId? } -> runs a sync right now (see
+// runShoppingSheetSync above), for the "Sync with Sheet" button - the same
+// sync also runs automatically on a timer (lib/shoppingSheetScheduler.js),
+// so this is only needed to pull in a just-added item without waiting.
+// sheetId is optional if one's already saved; when given, it's saved for
+// next time too (accepts a full Sheets URL or a bare ID either way).
 router.post('/sync-sheet', async (req, res) => {
   const sheetId = extractSheetId(req.body.sheetId) || getShoppingSheetId();
   if (!sheetId) return res.status(400).json({ error: 'A Google Sheet ID or URL is required' });
   if (req.body.sheetId) setShoppingSheetId(sheetId);
 
   try {
-    const sheetRows = await readShoppingSheetRows(sheetId);
-    const allItems = db.prepare('SELECT * FROM shopping_items ORDER BY sort_order ASC, id ASC').all();
-    const { toInsert, idUpdatesForExisting, linkedIds } = planShoppingSheetLinks(sheetRows, allItems);
-
-    const idUpdates = [...idUpdatesForExisting];
-    for (const row of toInsert) {
-      const maxOrder = db.prepare('SELECT COALESCE(MAX(sort_order), -1) as m FROM shopping_items').get().m;
-      const info = db.prepare('INSERT INTO shopping_items (name, sort_order) VALUES (?, ?)').run(row.name, maxOrder + 1);
-      linkedIds.add(info.lastInsertRowid);
-      idUpdates.push({ rowNumber: row.rowNumber, id: info.lastInsertRowid });
-    }
-
-    // New sheet rows go right after the last row this column already uses -
-    // writeShoppingSheetUpdates writes to these exact cells, so this is the
-    // only place that decides where a genuinely new row lands.
-    let nextRow = (sheetRows.length ? Math.max(...sheetRows.map((r) => r.rowNumber)) : 1) + 1;
-    const stillNeeded = allItems.filter((i) => !i.checked);
-    const newRows = stillNeeded
-      .filter((i) => !linkedIds.has(i.id) && i.name && i.name.trim())
-      .map((i) => ({ name: i.name, id: i.id, rowNumber: nextRow++ }));
-
-    await writeShoppingSheetUpdates(sheetId, { idUpdates, newRows });
-    res.json({ success: true, imported: toInsert.length, pushed: newRows.length });
+    const result = await runShoppingSheetSync(sheetId);
+    res.json(result);
   } catch (err) {
     res.status(500).json({ success: false, error: err.message });
   }

@@ -25,6 +25,7 @@ import {
   getGoogleEventsMember,
 } from './lib/appConfig.js';
 import { uploadsDir } from './lib/paths.js';
+import { startShoppingSheetScheduler } from './lib/shoppingSheetScheduler.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
@@ -84,3 +85,5 @@ const PORT = process.env.PORT || 4000;
 app.listen(PORT, () => {
   console.log(`FamilyHub server listening on http://localhost:${PORT}`);
 });
+
+startShoppingSheetScheduler();
