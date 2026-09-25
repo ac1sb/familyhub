@@ -9,13 +9,24 @@ function toLocalInputValue(date) {
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
 }
 
-export default function AddEventModal({ members, defaultMember, existingEvent, onClose, onSaved }) {
+export default function AddEventModal({ members, defaultMember, defaultDate, existingEvent, onClose, onSaved }) {
   const isEditing = !!existingEvent;
   const [title, setTitle] = useState(existingEvent?.title || '');
   const [location, setLocation] = useState(existingEvent?.location || '');
   const [description, setDescription] = useState(existingEvent?.description || '');
   const [member, setMember] = useState(existingEvent?.member || defaultMember || 'family');
-  const [start, setStart] = useState(toLocalInputValue(existingEvent?.start_datetime || new Date()));
+  // defaultDate (e.g. a clicked day on the Month view) keeps that day's date
+  // but still defaults to the current time of day, rather than midnight.
+  const [start, setStart] = useState(() => {
+    if (existingEvent?.start_datetime) return toLocalInputValue(existingEvent.start_datetime);
+    if (defaultDate) {
+      const now = new Date();
+      const d = new Date(defaultDate);
+      d.setHours(now.getHours(), now.getMinutes());
+      return toLocalInputValue(d);
+    }
+    return toLocalInputValue(new Date());
+  });
   const [recurring, setRecurring] = useState(existingEvent?.recurring || false);
   const [recurrenceDays, setRecurrenceDays] = useState(existingEvent?.recurrence_days || []);
   const [isReminder, setIsReminder] = useState(existingEvent?.is_reminder || false);

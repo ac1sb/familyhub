@@ -84,19 +84,30 @@ shopping list from another device.
   glow (a light halo behind dark text, or a dark halo behind light text in
   night mode) whenever a background photo is on, since their normal muted
   gray washes out over a busy/bright photo.
-- **Built-in calendar** with an **agenda view**: three tappable columns for
-  the household members (Mom / Dad / Child by default — rename in Settings).
-  Tapping a member's name opens **Add Event**, preselected for that person.
-  Tapping an existing event opens its full details (including its saved
-  flyer photo, if it has one), with Edit and Delete right there. The full
-  page shows more than the default 7 days when there's room for it - it
-  measures the window and grows to fill the available height (up to 21 days)
-  instead of leaving blank space below a fixed week on a tall screen. The
-  compact widget on Home does the same thing at a much smaller scale
-  (1-10 days): it always shows exactly as many days as fit its current box
-  with no leftover scrollbar, so dragging its resize handle (see "Every
-  widget can be dragged and resized" above) bigger or smaller changes how
-  many days it shows automatically - no separate setting for it.
+- **Built-in calendar**, four layouts on the full page (**Agenda / Week /
+  Month / Day**, a toggle under the header, remembered per-device) plus an
+  **All / Mom / Dad / Child** person filter next to it that narrows every
+  layout down to one member's events (or back to everyone). **Agenda** is
+  the original rolling view: three tappable member columns, showing more
+  than the default 7 days when there's room for it - it measures the window
+  and grows to fill the available height (up to 21 days) instead of leaving
+  blank space below a fixed week on a tall screen. **Week** is the same
+  column layout, pinned to a fixed Mon-Sun calendar week instead of rolling
+  from today. **Day** is one day at a time, same columns. **Month** is a
+  full Mon-Sun month grid (own layout, not columns) - each day cell shows
+  up to 3 events (color-coded per member, "+N more" past that) and tapping
+  a blank part of a day opens Add Event pre-filled for that date; tapping
+  an event opens its usual detail view. Whichever layout, tapping a
+  member's name (Agenda/Week/Day) opens **Add Event** preselected for that
+  person, and tapping an existing event opens its full details (including
+  its saved flyer photo, if it has one), with Edit and Delete right there.
+  The compact widget on Home always stays a rolling Agenda view showing
+  everyone (no view/person controls there - it's a small glance widget), at
+  a much smaller scale (1-10 days): it always shows exactly as many days as
+  fit its current box with no leftover scrollbar, so dragging its resize
+  handle (see "Every widget can be dragged and resized" above) bigger or
+  smaller changes how many days it shows automatically - no separate
+  setting for it.
 - **Calendar sync** — two ways to bring in outside events: paste one or more
   calendars' secret iCal feed URLs (one per family member, say) for a simple
   read-only merge with no sign-in needed, or connect a Google account via

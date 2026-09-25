@@ -288,6 +288,71 @@ button {
   min-height: 0;
 }
 
+/* ---------- Calendar page: Agenda/Week/Month/Day + person filter ----------
+   Full-page-only (the compact dashboard widget always stays Agenda/All) -
+   view mode and person filter sit as two rows under the prev/Today/next
+   header, same mode-toggle-row / member-choice-row components used
+   elsewhere (Settings' List/Squares/Carousel, Add Event's member picker). */
+.cal-view-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+/* Month view: a real Mon-Sun grid (unlike the Lunch page's Mon-Fri-only
+   grid it otherwise resembles), so it needs its own weekday-header column
+   count - 7, not 5. grid-template-rows is set inline (CalendarAgenda.jsx)
+   to the month's actual week count, same "fill the page, no fixed cell
+   height" idea as the Lunch page's Square view. */
+.lunch-cal-weekdays.cal-month-weekdays {
+  grid-template-columns: repeat(7, 1fr);
+}
+.cal-month-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 6px;
+  flex: 1;
+  min-height: 0;
+}
+.cal-month-day {
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  padding: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  cursor: pointer;
+  overflow: hidden;
+}
+.cal-month-day.empty { background: transparent; border: none; cursor: default; }
+.cal-month-day.today { border-color: var(--color-primary); border-width: 2px; }
+.cal-month-daynum { font-weight: 700; font-size: 0.85rem; flex-shrink: 0; }
+.cal-month-events {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-height: 0;
+  overflow: hidden;
+}
+.cal-month-pill {
+  padding: 3px 6px;
+  font-size: 0.72rem;
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.cal-month-pill .time, .cal-month-pill .loc { display: none; }
+.cal-month-more {
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: var(--color-text-muted);
+  padding: 0 4px;
+}
+
 /* ---------- Widget header (kept small per design request) ---------- */
 .widget-header {
   display: flex;
@@ -456,9 +521,13 @@ button {
   margin-bottom: 10px;
 }
 
+/* grid-template-columns is set inline (CalendarAgenda.jsx) to 90px plus one
+   1fr track per currently-visible member, so filtering to a single person
+   (the All/Mom/Dad/Child selector) collapses down to one wide column
+   instead of leaving two empty column tracks reserved for members that
+   aren't shown. */
 .agenda-columns-header {
   display: grid;
-  grid-template-columns: 90px repeat(3, 1fr);
   gap: 8px;
   margin-bottom: 6px;
 }
@@ -479,7 +548,6 @@ button {
 
 .agenda-day-row {
   display: grid;
-  grid-template-columns: 90px repeat(3, 1fr);
   gap: 8px;
   padding: 10px 0;
   border-bottom: 1px solid var(--color-border);
