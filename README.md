@@ -474,10 +474,9 @@ shows which one and why, right under the Sync Now button. Downloaded photos
 are kept locally even if later removed from the Drive folder (removing one
 from Settings only drops FamilyHub's own copy, not the real file).
 
-Note: HEIC photos (the default format on newer iPhones) may not preview in
-every browser. If a synced photo doesn't show up, switch the iPhone's Camera
-format to "Most Compatible" (Settings → Camera → Formats) going forward, or
-save existing ones as JPEG before adding them to the folder.
+HEIC photos (the default format on newer iPhones, which most browsers can't
+display) are automatically converted to JPEG at sync time, so they show up
+normally on the screensaver without needing any camera setting changed.
 
 ## Spotify / Music (the Pi as a real Connect speaker)
 
@@ -655,9 +654,7 @@ other file on the Pi.
   API no longer allows an app like FamilyHub ongoing read access to a shared
   album (a 2025 change; the only remaining option is an interactive
   one-at-a-time picker UI, not something a background sync can use), so
-  Drive is the closest equivalent that still supports it. HEIC photos (the
-  default on newer iPhones) may not preview in every browser - see the setup
-  section above.
+  Drive is the closest equivalent that still supports it.
 - Music requires Spotify Premium - a free account can neither be controlled
   through Spotify's playback API nor used to run librespot as a Connect
   device at all, so there's no reduced/remote-only mode for a free account.

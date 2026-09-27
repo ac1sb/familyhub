@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import fs from 'node:fs';
 import crypto from 'node:crypto';
+import heicConvert from 'heic-convert';
 import db from '../db.js';
 import { uploadsDir } from '../lib/paths.js';
 import { getFamilyPhotoFolders, setFamilyPhotoFolders } from '../lib/appConfig.js';
@@ -10,6 +11,25 @@ const router = Router();
 
 const photosDir = `${uploadsDir}/family-photos`;
 if (!fs.existsSync(photosDir)) fs.mkdirSync(photosDir, { recursive: true });
+
+const HEIC_MIME_TYPES = new Set(['image/heic', 'image/heif']);
+
+// HEIC/HEIF (the default photo format on newer iPhones) doesn't preview in
+// most non-Safari browsers, including the Chromium a Pi kiosk typically
+// runs - convert to JPEG at download time so every synced photo actually
+// displays. If a particular file fails to decode (an unusual HEIC variant),
+// it's kept in its original format rather than dropped - it just might not
+// preview everywhere, same as before this existed.
+async function normalizeForDisplay(buffer, mimeType) {
+  if (!HEIC_MIME_TYPES.has(mimeType)) return { buffer, mimeType };
+  try {
+    const jpegBuffer = await heicConvert({ buffer, format: 'JPEG', quality: 0.9 });
+    return { buffer: Buffer.from(jpegBuffer), mimeType: 'image/jpeg' };
+  } catch (err) {
+    console.error(`HEIC-to-JPEG conversion failed, keeping original format: ${err.message}`);
+    return { buffer, mimeType };
+  }
+}
 
 // Accepts either a bare Drive folder ID or a full Drive folder URL
 // (drive.google.com/drive/folders/<ID>, with or without a /u/0/ account
@@ -65,9 +85,10 @@ export async function runFamilyPhotoSync() {
       for (const photo of photos) {
         if (existingGuids.has(photo.id)) continue;
 
-        const buffer = await downloadDriveFile(photo.id).catch(() => null);
-        if (!buffer) continue; // one bad file shouldn't fail the whole sync
-        const filename = `${crypto.randomUUID()}.${extensionForMimeType(photo.mimeType)}`;
+        const rawBuffer = await downloadDriveFile(photo.id).catch(() => null);
+        if (!rawBuffer) continue; // one bad file shouldn't fail the whole sync
+        const { buffer, mimeType } = await normalizeForDisplay(rawBuffer, photo.mimeType);
+        const filename = `${crypto.randomUUID()}.${extensionForMimeType(mimeType)}`;
         fs.writeFileSync(`${photosDir}/${filename}`, buffer);
 
         db.prepare(

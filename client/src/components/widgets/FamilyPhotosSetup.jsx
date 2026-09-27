@@ -153,10 +153,8 @@ export default function FamilyPhotosSetup() {
         Turn on "Show family photos" in Settings &rarr; Screensaver to cycle through these as a
         corner overlay (same idea as the whiteboard sticky note), not as the background. Removing a
         photo here only affects FamilyHub's own copy - it stays in the actual Drive folder for
-        everyone else. Note: HEIC photos (the default format on newer iPhones) may not preview in
-        every browser - if a synced photo doesn't show up, try switching your iPhone's Camera format
-        to "Most Compatible" (Settings → Camera → Formats) for new photos, or save as JPEG before
-        adding older ones.
+        everyone else. HEIC photos (the default format on newer iPhones) are automatically converted
+        to JPEG on sync, so they display normally everywhere.
       </p>
 
       {photos.length > 0 && (
