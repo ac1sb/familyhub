@@ -241,6 +241,12 @@ shopping list from another device.
   5am (so it reads as "here's your day" rather than showing up overnight).
   Both overlays periodically relocate to a different corner of the screen
   to avoid burn-in on a display that's on all day.
+- **Music** (Settings → Music) — connects Spotify and controls whatever
+  device is currently active on the account: play/pause, skip, volume, and
+  switching devices, from a dashboard tile or its own page. With
+  [librespot](https://github.com/librespot-org/librespot) set up on the Pi
+  (see below), the Pi itself becomes a real, selectable Spotify Connect
+  speaker rather than just a remote. Requires Spotify Premium.
 - **Editable Settings** — rename household members, change the weather zip,
   and set the day/night schedule, all from the app (no `.env` editing or
   restart required after first setup).
@@ -465,6 +471,119 @@ undocumented API behind that public link, since Apple doesn't offer an
 official one — it's the same approach several open-source tools use and has
 been stable for years, but could in principle break if Apple changes it.
 
+## Spotify / Music (the Pi as a real Connect speaker)
+
+**Settings → Music** connects Spotify and lets the Music page (and its
+dashboard tile) control whatever device is currently playing. On its own
+that's just a remote control - the interesting part is making the **Pi
+itself** one of those devices, with a real speaker wired to it, using
+[librespot](https://github.com/librespot-org/librespot) (an open-source
+Spotify Connect client). Once it's running, "FamilyHub" (or whatever name
+you give it) shows up as a device to switch to from the Music page, from
+Spotify on anyone's phone, or from any other device on the account.
+
+**Requires Spotify Premium** (a Family plan account works fine) - librespot
+can't log in and act as a Connect device on a free account, and neither
+Spotify's playback-control API nor the OAuth connection below function
+without one.
+
+### 1. Create a Spotify app and connect it
+
+1. Go to the [Spotify Developer Dashboard](https://developer.spotify.com/dashboard)
+   → **Create app**.
+2. Add a **Redirect URI**: `http://<your-host>:4000/api/spotify/oauth2callback`
+   (use whatever host/IP you access FamilyHub at - same idea as Google's
+   redirect URI. If your networking isn't settled yet, you can do this
+   one-time authorization step from a browser on the Pi itself using
+   `http://localhost:4000/...`, then use FamilyHub normally from other
+   devices afterward - the OAuth step is the only part that cares about
+   the exact address).
+3. Copy its **Client ID** and **Client Secret** into `server/.env`:
+   ```
+   SPOTIFY_CLIENT_ID=...
+   SPOTIFY_CLIENT_SECRET=...
+   SPOTIFY_REDIRECT_URI=http://<your-host>:4000/api/spotify/oauth2callback
+   ```
+4. Restart the server, then Settings → Music → **Connect Spotify**.
+
+### 2. Install librespot on the Pi
+
+Raspberry Pi OS Bookworm (Debian 12) ships a `librespot` package:
+```
+sudo apt update && sudo apt install -y librespot
+```
+If that's not available on your image, build it from source instead (needs
+the Rust toolchain, which this pulls in for you):
+```
+sudo apt install -y curl build-essential pkg-config libasound2-dev
+curl https://sh.rustup.rs -sSf | sh -s -- -y
+source "$HOME/.cargo/env"
+cargo install librespot
+```
+(the binary lands at `~/.cargo/bin/librespot` with this route - use that
+full path in the systemd unit below instead of `/usr/bin/librespot`.)
+
+### 3. Point it at your speaker
+
+**Wired (aux/USB)** - usually just works. `aplay -l` lists the audio
+devices Linux sees; if the Pi has more than one (e.g. onboard 3.5mm jack
+*and* HDMI) and picked the wrong one, force it with
+`sudo raspi-config` → System Options → Audio.
+
+**Bluetooth** - pair and trust the speaker once first:
+```
+bluetoothctl
+power on
+agent on
+scan on
+# note the speaker's MAC address once it shows up in the scan, then:
+pair AA:BB:CC:DD:EE:FF
+trust AA:BB:CC:DD:EE:FF
+connect AA:BB:CC:DD:EE:FF
+exit
+```
+Then make sure it's the system's *default* audio output (exactly how
+depends on whether your Pi OS image uses PipeWire, PulseAudio, or plain
+ALSA/bluealsa - this is the one step most likely to need adjusting for your
+specific setup; `pactl set-default-sink <sink-name>` is the PipeWire/
+PulseAudio version, `pactl list sinks short` shows the exact name to use).
+
+### 4. Run librespot as a systemd service (so it survives reboots)
+
+Create `/etc/systemd/system/librespot.service`:
+```ini
+[Unit]
+Description=Librespot Spotify Connect
+After=sound.target network-online.target
+Wants=network-online.target
+
+[Service]
+ExecStart=/usr/bin/librespot --name "FamilyHub" --bitrate 320 --initial-volume 70
+Restart=always
+RestartSec=5
+User=pi
+
+[Install]
+WantedBy=multi-user.target
+```
+Then:
+```
+sudo systemctl daemon-reload
+sudo systemctl enable --now librespot
+```
+(`--backend alsa` is librespot's default and covers both the wired and
+Bluetooth cases above once the speaker is the default audio output; only
+add `--backend pulseaudio` explicitly if your image uses PulseAudio/
+PipeWire and ALSA alone doesn't reach it.)
+
+### 5. Use it
+
+Music page → **Change device** → pick **"FamilyHub"** (or whatever
+`--name` you used) → **Play here**. From then on, starting playback
+anywhere on the account and switching to that device sends the audio
+through the Pi's speaker, and the Music page's play/pause/skip/volume
+controls operate it directly.
+
 ## Running on a Raspberry Pi as a kiosk
 
 1. Install Node.js 22.5+ on the Pi (via [nvm](https://github.com/nvm-sh/nvm)
@@ -528,6 +647,13 @@ other file on the Pi.
   Album "Public Website" link, since there's no official one - it's the same
   approach several open-source tools use and has been stable for years, but
   could in principle stop working if Apple changes that page/API.
+- Music requires Spotify Premium - a free account can neither be controlled
+  through Spotify's playback API nor used to run librespot as a Connect
+  device at all, so there's no reduced/remote-only mode for a free account.
+  Making the Pi itself a speaker (rather than just controlling one that's
+  already playing elsewhere) also needs librespot installed and configured
+  directly on the Pi - something outside FamilyHub's own Settings page,
+  covered in the setup section above instead.
 - No integration with Google Drive/Docs or Life360. Drive/Docs would be
   buildable (Drive: reuse the flyer OCR pipeline against a shared folder;
   Docs: one-way append of shopping items) but aren't built yet. Life360 has

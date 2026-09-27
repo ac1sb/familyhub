@@ -1796,6 +1796,17 @@ button {
   text-overflow: ellipsis;
 }
 
+.music-now-playing { display: flex; gap: 12px; align-items: center; margin-bottom: 10px; }
+.music-album-art { width: 64px; height: 64px; border-radius: 8px; object-fit: cover; flex-shrink: 0; }
+.compact .music-album-art { width: 48px; height: 48px; }
+.music-track-info { min-width: 0; flex: 1; }
+.music-track-title { font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.music-track-artist { color: var(--color-text-muted); font-size: 0.85rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.music-track-progress { color: var(--color-text-muted); font-size: 0.75rem; margin-top: 2px; }
+.music-device-name { color: var(--color-text-muted); font-size: 0.75rem; margin-top: 2px; }
+.music-controls { display: flex; gap: 10px; align-items: center; }
+.music-controls .btn-icon { font-size: 1.3rem; width: 44px; height: 44px; min-width: 44px; min-height: 44px; }
+
 @keyframes reminder-pulse {
   0%, 100% { box-shadow: 0 0 0 0 rgba(0,0,0,0.12); }
   50% { box-shadow: 0 0 0 6px rgba(0,0,0,0); }

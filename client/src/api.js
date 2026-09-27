@@ -110,6 +110,18 @@ export const api = {
   sheetsServiceAccountStatus: () => request('/google/sheets-service-account'),
   saveSheetsServiceAccountKey: (json) => request('/google/sheets-service-account', { method: 'POST', body: JSON.stringify({ json }) }),
 
+  spotifyStatus: () => request('/spotify/status'),
+  spotifyAuthUrl: () => request('/spotify/auth-url'),
+  spotifyDisconnect: () => request('/spotify/disconnect', { method: 'POST' }),
+  spotifyNowPlaying: () => request('/spotify/now-playing'),
+  spotifyDevices: () => request('/spotify/devices'),
+  spotifyTransfer: (deviceId) => request('/spotify/transfer', { method: 'POST', body: JSON.stringify({ deviceId }) }),
+  spotifyPlay: () => request('/spotify/play', { method: 'POST' }),
+  spotifyPause: () => request('/spotify/pause', { method: 'POST' }),
+  spotifyNext: () => request('/spotify/next', { method: 'POST' }),
+  spotifyPrevious: () => request('/spotify/previous', { method: 'POST' }),
+  spotifySetVolume: (volumePercent) => request('/spotify/volume', { method: 'PUT', body: JSON.stringify({ volumePercent }) }),
+
   updateCheck: () => request('/update/check'),
   updateStatus: () => request('/update/status'),
   updateRun: () => request('/update/run', { method: 'POST' }),

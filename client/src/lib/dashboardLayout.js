@@ -15,6 +15,7 @@ export const WIDGET_CATALOG = [
   { id: 'shopping', label: 'Shopping List' },
   { id: 'whiteboard', label: 'Whiteboard' },
   { id: 'smarthome', label: 'Smart Home' },
+  { id: 'music', label: 'Music' },
 ];
 
 // x/y/w/h are in grid units (12 columns wide). Sized for the "daily
@@ -33,6 +34,7 @@ export const DEFAULT_LAYOUT = [
   { i: 'shopping', x: 8, y: 31, w: 4, h: 6, minW: 2, minH: 2 },
   { i: 'whiteboard', x: 8, y: 37, w: 4, h: 8, minW: 2, minH: 4 },
   { i: 'smarthome', x: 8, y: 42, w: 4, h: 7, minW: 2, minH: 3 },
+  { i: 'music', x: 8, y: 49, w: 4, h: 6, minW: 2, minH: 3 },
 ];
 
 export function getDashboardLayout() {

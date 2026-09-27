@@ -9,6 +9,7 @@ const WIDGETS = [
   { id: 'shopping', icon: '🛒', label: 'Shopping' },
   { id: 'whiteboard', icon: '📝', label: 'Whiteboard' },
   { id: 'smarthome', icon: '💡', label: 'Smart Home' },
+  { id: 'music', icon: '🎵', label: 'Music' },
   { id: 'settings', icon: '⚙️', label: 'Settings' },
 ];
 

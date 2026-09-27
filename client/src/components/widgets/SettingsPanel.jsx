@@ -5,6 +5,7 @@ import DailyTaskSetup from './DailyTaskSetup.jsx';
 import ScreensaverSettings from './ScreensaverSettings.jsx';
 import SmartHomeSetup from './SmartHomeSetup.jsx';
 import FamilyPhotosSetup from './FamilyPhotosSetup.jsx';
+import MusicSetup from './MusicSetup.jsx';
 import DashboardWidgetsSetup from './DashboardWidgetsSetup.jsx';
 import UpdatePanel from './UpdatePanel.jsx';
 
@@ -462,6 +463,7 @@ const TABS = [
   { id: 'daily', label: 'Daily Checklist Setup' },
   { id: 'smarthome', label: 'Smart Home Setup' },
   { id: 'familyphotos', label: 'Family Photos' },
+  { id: 'music', label: 'Music' },
   { id: 'screensaver', label: 'Screensaver' },
 ];
 
@@ -493,6 +495,7 @@ export default function SettingsPanel({ config, onConfigUpdated, screensaverSett
       {tab === 'daily' && <DailyTaskSetup />}
       {tab === 'smarthome' && <SmartHomeSetup />}
       {tab === 'familyphotos' && <FamilyPhotosSetup />}
+      {tab === 'music' && <MusicSetup />}
       {tab === 'screensaver' && (
         <ScreensaverSettings zip={config?.weather_zip} settings={screensaverSettings} onChange={onScreensaverSettingsChange} />
       )}

@@ -10,6 +10,7 @@ import WeatherWidget from './components/widgets/WeatherWidget.jsx';
 import ShoppingList from './components/widgets/ShoppingList.jsx';
 import WhiteboardPage from './components/WhiteboardPage.jsx';
 import SmartHomeWidget from './components/widgets/SmartHomeWidget.jsx';
+import MusicWidget from './components/widgets/MusicWidget.jsx';
 import HeaderSmartHomeToggles from './components/HeaderSmartHomeToggles.jsx';
 import HeaderWeather from './components/HeaderWeather.jsx';
 import SettingsPanel from './components/widgets/SettingsPanel.jsx';
@@ -83,6 +84,7 @@ export default function App() {
           {active === 'shopping' && <ShoppingList />}
           {active === 'whiteboard' && <WhiteboardPage onNavigate={setActive} />}
           {active === 'smarthome' && <SmartHomeWidget />}
+          {active === 'music' && <MusicWidget />}
           {active === 'settings' && (
             <SettingsPanel
               config={config}

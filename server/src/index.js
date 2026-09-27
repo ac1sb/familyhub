@@ -20,6 +20,7 @@ import whiteboardRouter from './routes/whiteboard.js';
 import settingsRouter from './routes/settings.js';
 import smartDevicesRouter from './routes/smartDevices.js';
 import familyPhotosRouter from './routes/familyPhotos.js';
+import spotifyRouter from './routes/spotify.js';
 import updateRouter from './routes/update.js';
 import {
   getMemberNames, getWeatherZip, getThemeSettings, getIcalFeeds, getGoogleCalendarId,
@@ -73,6 +74,7 @@ app.use('/api/whiteboard', whiteboardRouter);
 app.use('/api/settings', settingsRouter);
 app.use('/api/smart-devices', smartDevicesRouter);
 app.use('/api/family-photos', familyPhotosRouter);
+app.use('/api/spotify', spotifyRouter);
 app.use('/api/update', updateRouter);
 
 // Serve the built client in production (npm run build in /client outputs to /client/dist).
