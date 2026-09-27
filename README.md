@@ -227,7 +227,8 @@ shopping list from another device.
 - **Day/night theme** — switches automatically on a schedule you set in
   Settings → Appearance (or pin it to always-light/always-dark).
 - **Screensaver** — per-device (Settings → Screensaver): idle timeout, photo
-  interval, and theme (landscapes/mountains/waterfalls/lakes/forests), with
+  interval, and theme (landscapes/mountains/waterfalls/lakes/forests, or
+  **Family Photos** — synced in from a shared iCloud album, see below), with
   a clock/date/weather overlay and a Preview button. Off by default on every
   device; turn it on for the wall display only. Optionally overlays the
   shared whiteboard in a corner - the same live drawing as everywhere else,
@@ -431,6 +432,33 @@ its path is saved on the event.
 Note: the first OCR run downloads the English trained-data file, so the Pi
 needs internet access at least once.
 
+## Family Photos (screensaver from an iCloud Shared Album)
+
+**Settings → Family Photos** syncs in photos from a public iCloud Shared
+Album, so anyone in the family can add a photo the normal way (Photos app →
+a shared album → the usual share sheet) without uploading anything to
+FamilyHub directly, and it works from as many iPhones as are added to that
+album. Set it up once from an iPhone:
+
+1. Photos app → **Albums** → **+** → **New Shared Album**, add whoever should
+   be able to add photos to it.
+2. Open that album → **⋯** → **Shared Album Settings** → turn on **Public
+   Website** → copy the link it gives you.
+3. Paste that link into Settings → Family Photos → "Shared Album link" →
+   **Save**, then **Sync Now** for the first pull (after that it re-syncs on
+   its own every hour — `FAMILY_PHOTO_SYNC_MINUTES` in `.env` changes that).
+4. Pick **"Family Photos"** as the theme in Screensaver settings (or the
+   dashboard background) to cycle through them like any other photo theme.
+
+This uses the same public link Apple's "Shared Album website" feature is
+built for — no Apple ID, password, or app on anyone's phone beyond the
+Photos app they already have. Downloaded photos are kept locally even if
+later removed from the shared album (removing one from Settings only drops
+FamilyHub's own copy, not the real album). Note this relies on an
+undocumented API behind that public link, since Apple doesn't offer an
+official one — it's the same approach several open-source tools use and has
+been stable for years, but could in principle break if Apple changes it.
+
 ## Running on a Raspberry Pi as a kiosk
 
 1. Install Node.js 22.5+ on the Pi (via [nvm](https://github.com/nvm-sh/nvm)
@@ -490,6 +518,10 @@ other file on the Pi.
 - Google Calendar sync is two-way for one-off events, but recurring
   ("Repeats weekly") events are never pushed to Google - they stay
   FamilyHub-only. The shared iCal feeds are always read-only, by design.
+- Family Photos relies on an undocumented Apple API behind the iCloud Shared
+  Album "Public Website" link, since there's no official one - it's the same
+  approach several open-source tools use and has been stable for years, but
+  could in principle stop working if Apple changes that page/API.
 - No integration with Google Drive/Docs or Life360. Drive/Docs would be
   buildable (Drive: reuse the flyer OCR pipeline against a shared folder;
   Docs: one-way append of shopping items) but aren't built yet. Life360 has

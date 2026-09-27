@@ -162,6 +162,22 @@ CREATE TABLE IF NOT EXISTS whiteboard_notes (
   image_path TEXT NOT NULL,
   created_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
+
+-- Photos mirrored in from an iCloud Shared Album (see
+-- lib/icloudSharedAlbum.js) for the "Family Photos" screensaver/background
+-- theme - guid is Apple's own id for the photo, used to tell an already-
+-- synced photo from a new one on the next sync without re-downloading it.
+-- Once downloaded, a photo stays here even if removed from the shared album
+-- later (nothing here ever gets deleted by a sync, only by someone
+-- explicitly removing it from Settings).
+CREATE TABLE IF NOT EXISTS family_photos (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  guid TEXT NOT NULL UNIQUE,
+  filename TEXT NOT NULL,
+  caption TEXT,
+  taken_at TEXT,
+  created_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
 `);
 
 // Migration for databases created before chore_templates existed: CREATE TABLE

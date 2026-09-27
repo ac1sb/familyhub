@@ -128,6 +128,18 @@ export function setGoogleServiceAccountKey(key) {
   setJSON('google_service_account_key', key);
 }
 
+// The iCloud Shared Album link (Photos app -> that album -> Shared Album
+// settings -> "Public Website") the "Family Photos" screensaver/background
+// theme syncs from - just the URL, same DB-wins-over-.env pattern as
+// everything else here. See lib/icloudSharedAlbum.js.
+export function getFamilyPhotoAlbumUrl() {
+  return getSetting('family_photo_album_url') || process.env.FAMILY_PHOTO_ALBUM_URL || '';
+}
+
+export function setFamilyPhotoAlbumUrl(url) {
+  setSetting('family_photo_album_url', url);
+}
+
 // LIFX Cloud API personal access token (from cloud.lifx.com/settings) -
 // lets the Smart Home widget/setup page discover and control real bulbs
 // instead of the local-only mock. Same DB-wins-over-.env pattern as

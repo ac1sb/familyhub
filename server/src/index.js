@@ -19,6 +19,7 @@ import flyerRouter from './routes/flyer.js';
 import whiteboardRouter from './routes/whiteboard.js';
 import settingsRouter from './routes/settings.js';
 import smartDevicesRouter from './routes/smartDevices.js';
+import familyPhotosRouter from './routes/familyPhotos.js';
 import updateRouter from './routes/update.js';
 import {
   getMemberNames, getWeatherZip, getThemeSettings, getIcalFeeds, getGoogleCalendarId,
@@ -26,6 +27,7 @@ import {
 } from './lib/appConfig.js';
 import { uploadsDir } from './lib/paths.js';
 import { startShoppingSheetScheduler } from './lib/shoppingSheetScheduler.js';
+import { startFamilyPhotoScheduler } from './lib/familyPhotoScheduler.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
@@ -70,6 +72,7 @@ app.use('/api/flyer', flyerRouter);
 app.use('/api/whiteboard', whiteboardRouter);
 app.use('/api/settings', settingsRouter);
 app.use('/api/smart-devices', smartDevicesRouter);
+app.use('/api/family-photos', familyPhotosRouter);
 app.use('/api/update', updateRouter);
 
 // Serve the built client in production (npm run build in /client outputs to /client/dist).
@@ -87,3 +90,4 @@ app.listen(PORT, () => {
 });
 
 startShoppingSheetScheduler();
+startFamilyPhotoScheduler();

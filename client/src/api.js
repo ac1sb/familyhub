@@ -93,6 +93,12 @@ export const api = {
   saveLifxToken: (token) => request('/smart-devices/lifx/settings', { method: 'POST', body: JSON.stringify({ token }) }),
   discoverLifxLights: () => request('/smart-devices/lifx/discover'),
 
+  familyPhotos: () => request('/family-photos'),
+  familyPhotoSettings: () => request('/family-photos/settings'),
+  saveFamilyPhotoAlbumUrl: (albumUrl) => request('/family-photos/settings', { method: 'POST', body: JSON.stringify({ albumUrl }) }),
+  syncFamilyPhotos: () => request('/family-photos/sync', { method: 'POST' }),
+  deleteFamilyPhoto: (id) => request(`/family-photos/${id}`, { method: 'DELETE' }),
+
   weather: (zip) => request(`/weather${zip ? `?zip=${zip}` : ''}`),
 
   settings: () => request('/settings'),
