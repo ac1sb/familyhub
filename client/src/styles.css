@@ -3,14 +3,32 @@
   --color-surface: #ffffff;
   --color-border: #e1dcd0;
   --color-text: #2b2924;
-  --color-text-muted: #766f60;
+  --color-text-muted: #736c5e;
   --color-primary: #3a6b5a;
   --color-primary-dark: #2a4f42;
   --color-accent: #d97b4f;
-  --color-member-1: #c9678a;
-  --color-member-2: #4a7fb5;
+  /* member-1/2 darkened slightly from their original #c9678a/#4a7fb5 - both
+     failed WCAG AA (4.5:1) for the white text every badge/tag/tile using
+     them puts on top. member-3 and accent keep their original, brighter
+     values - they instead pair with dark ink text (see --ink-on-* below),
+     since darkening them enough for white text would have muddied a bright
+     pink/gold/orange into something duller than just switching the text. */
+  --color-member-1: #c04d76;
+  --color-member-2: #4678ac;
   --color-member-3: #d9a441;
   --color-danger: #b5473f;
+  /* The right text color to put on top of each of the fills above - white
+     where the fill is dark enough (primary, danger, the two darkened member
+     colors), the theme own ink color where it is not (accent, member-3,
+     and in dark mode a few more that flip - see the dark block below).
+     Every colored tag/tile/badge with text on it uses one of these instead
+     of a hardcoded white, so it stays readable in both themes. */
+  --ink-on-primary: #fff;
+  --ink-on-danger: #fff;
+  --ink-on-accent: var(--color-text);
+  --ink-on-member-1: #fff;
+  --ink-on-member-2: #fff;
+  --ink-on-member-3: var(--color-text);
   /* Halo behind widget header text when a dashboard background photo is
      frosting the widgets (see .has-background-photo below) - a light theme
      needs a light glow behind its dark text, a dark theme the opposite. */
@@ -21,7 +39,14 @@
 }
 
 /* Night mode, applied via App.jsx setting data-theme based on the schedule
-   configured in Settings (or forced on/off), not the browser's own preference. */
+   configured in Settings (or forced on/off), not the browser own preference.
+   color-primary/accent/member-star/danger keep the same brighter values
+   they always had here, since darkening them enough for white text to pass
+   would also have wrecked their OTHER job as text/link color against the
+   dark background (color-primary is also the See all and Full week links,
+   plus the highlighted current day - all read fine at their current
+   brightness). Flipping ink-on-star to dark ink instead fixes the
+   white-on-bright-fill problem without touching that other job at all. */
 :root[data-theme="dark"] {
   --color-bg: #1f1c17;
   --color-surface: #2a261f;
@@ -35,6 +60,12 @@
   --color-member-2: #6fa0d9;
   --color-member-3: #e8bc63;
   --color-danger: #d9645a;
+  --ink-on-primary: var(--color-bg);
+  --ink-on-danger: var(--color-bg);
+  --ink-on-accent: var(--color-bg);
+  --ink-on-member-1: var(--color-bg);
+  --ink-on-member-2: var(--color-bg);
+  --ink-on-member-3: var(--color-bg);
   --color-header-glow: rgba(0, 0, 0, 0.75);
 }
 
@@ -153,7 +184,7 @@ button {
 
 .sidebar-btn.active {
   background: var(--color-primary);
-  color: #fff;
+  color: var(--ink-on-primary);
 }
 
 .sidebar-spacer { flex: 1; }
@@ -197,7 +228,7 @@ button {
   font-size: 1.3rem;
   line-height: 1;
 }
-.menu-toggle-btn.open { background: var(--color-primary); }
+.menu-toggle-btn.open { background: var(--color-primary); color: var(--ink-on-primary); }
 
 .topbar-smarthome-group,
 .topbar-weather-group {
@@ -537,10 +568,13 @@ button {
   font-weight: 600;
   min-height: 44px;
 }
-.btn-primary { background: var(--color-primary); color: #fff; }
-.btn-primary:active { background: var(--color-primary-dark); }
+.btn-primary { background: var(--color-primary); color: var(--ink-on-primary); }
+/* --color-primary-dark is always dark enough for white text in both themes
+   (in dark mode it is literally light mode own --color-primary value) -
+   unlike --color-primary above, it never needs the ink switch. */
+.btn-primary:active { background: var(--color-primary-dark); color: #fff; }
 .btn-secondary { background: var(--color-border); color: var(--color-text); }
-.btn-danger { background: var(--color-danger); color: #fff; }
+.btn-danger { background: var(--color-danger); color: var(--ink-on-danger); }
 /* A disabled .btn otherwise renders pixel-identical to an enabled one - its
    background/color come from a class the browser's own disabled styling
    doesn't touch - so nothing distinguished "can't click this yet" from
@@ -557,9 +591,15 @@ button {
 
 /* ---------- Agenda / Calendar ---------- */
 .agenda-confirmation {
-  background: #e4f2ec;
-  color: var(--color-primary-dark);
+  /* A subtle theme-tinted background (not a hardcoded light color) so this
+     does not turn into a jarring bright patch in dark mode, and plain
+     --color-text on it instead of a colored ink, so contrast never depends
+     on how strong the tint is. The green reads as this succeeded through
+     the border/left-accent instead. */
+  background: color-mix(in srgb, var(--color-primary) 12%, var(--color-bg));
+  color: var(--color-text);
   border: 1px solid var(--color-primary);
+  border-left: 4px solid var(--color-primary);
   border-radius: 10px;
   padding: 10px 14px;
   font-weight: 600;
@@ -587,9 +627,9 @@ button {
   font-size: 1rem;
   min-height: 56px;
 }
-.member-tap.member_1 { background: var(--color-member-1); }
-.member-tap.member_2 { background: var(--color-member-2); }
-.member-tap.member_3 { background: var(--color-member-3); }
+.member-tap.member_1 { background: var(--color-member-1); color: var(--ink-on-member-1); }
+.member-tap.member_2 { background: var(--color-member-2); color: var(--ink-on-member-2); }
+.member-tap.member_3 { background: var(--color-member-3); color: var(--ink-on-member-3); }
 .member-tap:active { filter: brightness(0.9); }
 
 .agenda-day-row {
@@ -627,10 +667,10 @@ button {
   cursor: pointer;
 }
 .event-pill:active { filter: brightness(0.92); }
-.event-pill.member_1 { background: var(--color-member-1); }
-.event-pill.member_2 { background: var(--color-member-2); }
-.event-pill.member_3 { background: var(--color-member-3); }
-.event-pill.family { background: var(--color-primary); }
+.event-pill.member_1 { background: var(--color-member-1); color: var(--ink-on-member-1); }
+.event-pill.member_2 { background: var(--color-member-2); color: var(--ink-on-member-2); }
+.event-pill.member_3 { background: var(--color-member-3); color: var(--ink-on-member-3); }
+.event-pill.family { background: var(--color-primary); color: var(--ink-on-primary); }
 .event-pill .time { display: block; font-weight: 700; }
 .event-pill .loc { display: block; opacity: 0.9; font-size: 0.78rem; }
 .event-pill.recurring::after { content: ' \21bb'; }
@@ -698,7 +738,7 @@ button {
 }
 .settings-tab:hover { border-color: var(--color-primary); }
 .settings-tab-icon { font-size: 1rem; line-height: 1; }
-.settings-tab.active { background: var(--color-primary); color: #fff; border-color: var(--color-primary); }
+.settings-tab.active { background: var(--color-primary); color: var(--ink-on-primary); border-color: var(--color-primary); }
 
 /* A tab's content, capped to a comfortable reading/form width rather than
    stretching edge-to-edge in a wide window - the single biggest thing that
@@ -884,7 +924,7 @@ button {
   font-size: 0.85rem;
   font-weight: 600;
 }
-.weekday-chip.selected { background: var(--color-primary); color: #fff; border-color: var(--color-primary); }
+.weekday-chip.selected { background: var(--color-primary); color: var(--ink-on-primary); border-color: var(--color-primary); }
 
 .member-choice-row { display: flex; gap: 8px; flex-wrap: wrap; }
 .member-choice {
@@ -896,10 +936,10 @@ button {
   color: #fff;
   font-weight: 700;
 }
-.member-choice.member_1 { background: var(--color-member-1); }
-.member-choice.member_2 { background: var(--color-member-2); }
-.member-choice.member_3 { background: var(--color-member-3); }
-.member-choice.family { background: var(--color-primary); }
+.member-choice.member_1 { background: var(--color-member-1); color: var(--ink-on-member-1); }
+.member-choice.member_2 { background: var(--color-member-2); color: var(--ink-on-member-2); }
+.member-choice.member_3 { background: var(--color-member-3); color: var(--ink-on-member-3); }
+.member-choice.family { background: var(--color-primary); color: var(--ink-on-primary); }
 .member-choice.selected { border-color: var(--color-text); }
 
 /* A small pill-style segmented control (Settings -> Dashboard Widgets:
@@ -928,7 +968,7 @@ button {
 }
 .mode-toggle-btn.active {
   background: var(--color-primary);
-  color: #fff;
+  color: var(--ink-on-primary);
 }
 
 .event-detail-badge {
@@ -1004,10 +1044,10 @@ button {
   border-radius: 999px;
   padding: 4px 10px;
 }
-.chore-tag.member_1 { background: var(--color-member-1); }
-.chore-tag.member_2 { background: var(--color-member-2); }
-.chore-tag.member_3 { background: var(--color-member-3); }
-.chore-tag.family { background: var(--color-primary); }
+.chore-tag.member_1 { background: var(--color-member-1); color: var(--ink-on-member-1); }
+.chore-tag.member_2 { background: var(--color-member-2); color: var(--ink-on-member-2); }
+.chore-tag.member_3 { background: var(--color-member-3); color: var(--ink-on-member-3); }
+.chore-tag.family { background: var(--color-primary); color: var(--ink-on-primary); }
 
 /* A Chores/Daily Checklist item, styled like the Lunch today/tomorrow
    tiles - a bordered, tappable block rather than a bare checkbox row, with
@@ -1042,7 +1082,7 @@ button {
   height: 24px;
   border-radius: 50%;
   background: var(--color-primary);
-  color: #fff;
+  color: var(--ink-on-primary);
   font-size: 0.8rem;
   font-weight: 700;
   flex-shrink: 0;
@@ -1217,7 +1257,7 @@ button {
 }
 .chore-day-toggle.done {
   background: var(--color-primary);
-  color: #fff;
+  color: var(--ink-on-primary);
   border-color: var(--color-primary);
 }
 /* Any day but today - shown so the week's schedule is still visible, but not
@@ -1333,7 +1373,7 @@ button {
 .chore-day-chip.active {
   background: var(--color-primary);
   border-color: var(--color-primary);
-  color: #fff;
+  color: var(--ink-on-primary);
 }
 .btn-link {
   background: none;
@@ -1445,13 +1485,13 @@ button {
   gap: 1px;
   text-align: center;
   font-weight: 700;
-  color: #fff;
+  color: var(--ink-on-primary);
   background: var(--color-primary);
   padding: 6px 4px;
 }
 .meal-box-date { font-size: 0.7rem; font-weight: 600; opacity: 0.85; }
 /* Today's day tab stands out from the rest of the week at a glance. */
-.meal-box-day.today { background: var(--color-accent); }
+.meal-box-day.today { background: var(--color-accent); color: var(--ink-on-accent); }
 /* Only this wraps the input - the day label above is a separate, static
    element, so dragging a meal to a different day only ever visibly moves
    the input box, never the day tab it sits under. */
@@ -1500,8 +1540,20 @@ button {
   margin-bottom: 10px;
   font-size: 0.85rem;
 }
-.lunch-import-result.success { background: #e4f2ec; color: var(--color-primary-dark); }
-.lunch-import-result.error { background: #fdf2e9; color: var(--color-primary-dark); }
+/* Same reasoning as .agenda-confirmation above: a theme-tinted background
+   plus plain --color-text, not a hardcoded light color with a colored ink -
+   works in dark mode, and (previously a real bug) .error now actually uses
+   --color-danger instead of the success color for its accent. */
+.lunch-import-result.success {
+  background: color-mix(in srgb, var(--color-primary) 12%, var(--color-bg));
+  color: var(--color-text);
+  border-left: 4px solid var(--color-primary);
+}
+.lunch-import-result.error {
+  background: color-mix(in srgb, var(--color-danger) 12%, var(--color-bg));
+  color: var(--color-text);
+  border-left: 4px solid var(--color-danger);
+}
 .lunch-import-details { margin-top: 8px; }
 .lunch-import-preview {
   width: 100%;
@@ -1915,10 +1967,10 @@ button {
   color: #fff;
   animation: reminder-pulse 2.4s ease-in-out infinite;
 }
-.reminder-banner.family { background: var(--color-accent); }
-.reminder-banner.member_1 { background: var(--color-member-1); }
-.reminder-banner.member_2 { background: var(--color-member-2); }
-.reminder-banner.member_3 { background: var(--color-member-3); }
+.reminder-banner.family { background: var(--color-accent); color: var(--ink-on-accent); }
+.reminder-banner.member_1 { background: var(--color-member-1); color: var(--ink-on-member-1); }
+.reminder-banner.member_2 { background: var(--color-member-2); color: var(--ink-on-member-2); }
+.reminder-banner.member_3 { background: var(--color-member-3); color: var(--ink-on-member-3); }
 .reminder-banner-icon { font-size: 1.8rem; flex-shrink: 0; }
 .reminder-banner-title { font-size: 1.15rem; font-weight: 800; }
 .reminder-banner-desc { font-size: 0.9rem; opacity: 0.95; font-weight: 600; }
@@ -1962,7 +2014,7 @@ button {
 }
 .drawing-size-btn.selected { border-color: var(--color-primary); background: color-mix(in srgb, var(--color-primary) 12%, transparent); }
 .drawing-size-dot { display: inline-block; border-radius: 50%; background: var(--color-text); }
-.btn-icon.selected { background: var(--color-primary); color: #fff; }
+.btn-icon.selected { background: var(--color-primary); color: var(--ink-on-primary); }
 .drawing-canvas-main { display: flex; flex-direction: column; gap: 10px; flex: 1; min-width: 0; min-height: 0; }
 .drawing-canvas-stage {
   position: relative;
