@@ -57,6 +57,20 @@ export default function ScreensaverSettings({ zip, settings, onChange }) {
       </div>
 
       <div className="field">
+        <div className="checkbox-row">
+          <input
+            id="ss-family-photos"
+            type="checkbox"
+            checked={settings.showFamilyPhotos}
+            onChange={(e) => update({ showFamilyPhotos: e.target.checked })}
+          />
+          <label htmlFor="ss-family-photos" style={{ margin: 0 }}>
+            Show family photos as a corner overlay (Settings &rarr; Family Photos)
+          </label>
+        </div>
+      </div>
+
+      <div className="field">
         <label htmlFor="ss-idle">Start after idle for</label>
         <select id="ss-idle" value={settings.idleMinutes} onChange={(e) => update({ idleMinutes: Number(e.target.value) })}>
           {[5, 10, 15, 30].map((m) => (

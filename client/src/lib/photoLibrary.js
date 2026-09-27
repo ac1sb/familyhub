@@ -1,17 +1,15 @@
-import { api } from '../api.js';
-
 // Shared photo-fetching used by both the Screensaver and the dashboard
 // background - a themed nature photo, pulled from Wikimedia Commons with a
-// no-API-key-needed Picsum fallback if that fails or returns nothing. The
-// "Family Photos" theme is different - it's whatever's synced in from the
-// iCloud Shared Album (Settings -> Family Photos), not a stock photo source.
+// no-API-key-needed Picsum fallback if that fails or returns nothing.
+// Family Photos (Settings -> Family Photos) is a separate, screensaver-only
+// overlay rather than a theme here - see the showFamilyPhotos setting and
+// its corner element in Screensaver.jsx.
 export const THEMES = [
   { id: 'landscapes', label: 'Landscapes' },
   { id: 'mountains', label: 'Mountains' },
   { id: 'waterfalls', label: 'Waterfalls' },
   { id: 'lakes', label: 'Lakes' },
   { id: 'forests', label: 'Forests' },
-  { id: 'family', label: 'Family Photos' },
 ];
 
 // Wikimedia Commons category to pull "Featured pictures" from for each theme,
@@ -67,29 +65,7 @@ function picsumPhoto() {
   };
 }
 
-async function familyPhoto() {
-  const { photos } = await api.familyPhotos();
-  if (!photos || photos.length === 0) throw new Error('No family photos synced yet');
-  const pick = photos[Math.floor(Math.random() * photos.length)];
-  return {
-    url: pick.url,
-    credit: pick.caption || (pick.takenAt ? new Date(pick.takenAt).toLocaleDateString() : 'Family photo'),
-    license: '',
-    source: 'family',
-  };
-}
-
 export async function fetchThemedPhoto(theme) {
-  if (theme === 'family') {
-    try {
-      return await familyPhoto();
-    } catch {
-      // Nothing synced yet (or the request failed) - fall back to a stock
-      // photo instead of showing a blank screensaver.
-      return picsumPhoto();
-    }
-  }
-
   const attempts = CATEGORY_ATTEMPTS[theme] || CATEGORY_ATTEMPTS.landscapes;
   for (const category of attempts) {
     try {

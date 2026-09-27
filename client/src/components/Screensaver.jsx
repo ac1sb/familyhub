@@ -6,10 +6,11 @@ import { formatTime, todayISO } from '../lib/week.js';
 const BRIEFING_START_HOUR = 5;
 const BRIEFING_ITEM_LIMIT = 5;
 
-// Both overlays periodically relocate to a different corner so nothing
+// Every overlay periodically relocates to a different corner so nothing
 // sits in the exact same pixels for hours on end (screen burn-in on a
-// display that's on all day). They always sit two corners apart from each
-// other, so they can never land on top of one another.
+// display that's on all day). Whiteboard/Family Photos/Daily Briefing sit
+// at offsets 0/1/2 of the same 4-corner cycle, so with all three enabled
+// none of them can ever land on top of another.
 const CORNERS = ['top-left', 'top-right', 'bottom-left', 'bottom-right'];
 const MOVE_INTERVAL_MS = 4 * 60000;
 const MOVE_FADE_MS = 600;
@@ -20,6 +21,8 @@ export default function Screensaver({ settings, zip, onDismiss }) {
   const [now, setNow] = useState(new Date());
   const [whiteboard, setWhiteboard] = useState(null);
   const [todayEvents, setTodayEvents] = useState([]);
+  const [familyPhotos, setFamilyPhotos] = useState([]);
+  const [familyPhotoIndex, setFamilyPhotoIndex] = useState(0);
   const [cornerIndex, setCornerIndex] = useState(0);
   const [moving, setMoving] = useState(false);
 
@@ -87,6 +90,33 @@ export default function Screensaver({ settings, zip, onDismiss }) {
     };
   }, [settings.theme, settings.photoIntervalSeconds]);
 
+  // A corner overlay, not the background - the synced list (Settings ->
+  // Family Photos) is re-checked every so often to pick up anything newly
+  // added, separately from how often the shown photo itself rotates.
+  useEffect(() => {
+    if (!settings.showFamilyPhotos) return;
+    let cancelled = false;
+    function load() {
+      api.familyPhotos().then((data) => {
+        if (!cancelled) setFamilyPhotos(data.photos || []);
+      }).catch(() => {});
+    }
+    load();
+    const id = setInterval(load, 10 * 60000);
+    return () => {
+      cancelled = true;
+      clearInterval(id);
+    };
+  }, [settings.showFamilyPhotos]);
+
+  useEffect(() => {
+    if (!settings.showFamilyPhotos || familyPhotos.length === 0) return;
+    const id = setInterval(() => {
+      setFamilyPhotoIndex((i) => (i + 1) % familyPhotos.length);
+    }, Math.max(5, settings.photoIntervalSeconds) * 1000);
+    return () => clearInterval(id);
+  }, [settings.showFamilyPhotos, settings.photoIntervalSeconds, familyPhotos.length]);
+
   useEffect(() => {
     api.weather(zip).then(setWeather).catch(() => setWeather(null));
   }, [zip]);
@@ -130,6 +160,18 @@ export default function Screensaver({ settings, zip, onDismiss }) {
         >
           <div className="screensaver-postit-label">📝 Whiteboard</div>
           <img src={whiteboard.image_path} alt="Whiteboard note" />
+        </div>
+      )}
+      {settings.showFamilyPhotos && familyPhotos.length > 0 && (
+        <div
+          className={`screensaver-postit screensaver-family-photo corner-${CORNERS[(cornerIndex + 1) % CORNERS.length]}`}
+          style={{ opacity: moving ? 0 : 1 }}
+        >
+          <div className="screensaver-postit-label">📷 Family Photos</div>
+          <img
+            src={familyPhotos[familyPhotoIndex % familyPhotos.length].url}
+            alt={familyPhotos[familyPhotoIndex % familyPhotos.length].caption || 'Family photo'}
+          />
         </div>
       )}
       {settings.showDailyBriefing && now.getHours() >= BRIEFING_START_HOUR && todayEvents.length > 0 && (

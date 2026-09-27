@@ -1606,6 +1606,13 @@ button {
   background: rgba(255, 255, 255, 0.92);
   box-shadow: 0 16px 40px rgba(0, 0, 0, 0.45);
 }
+/* Unlike the whiteboard drawing above (shown at its own aspect ratio, no
+   cropping), a family photo can be any shape - crop it to a fixed frame
+   instead of letting a tall/narrow one throw off the corner layout. */
+.screensaver-family-photo img {
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+}
 .screensaver-briefing {
   position: absolute;
   width: 340px;

@@ -227,20 +227,22 @@ shopping list from another device.
 - **Day/night theme** — switches automatically on a schedule you set in
   Settings → Appearance (or pin it to always-light/always-dark).
 - **Screensaver** — per-device (Settings → Screensaver): idle timeout, photo
-  interval, and theme (landscapes/mountains/waterfalls/lakes/forests, or
-  **Family Photos** — synced in from a shared iCloud album, see below), with
-  a clock/date/weather overlay and a Preview button. Off by default on every
-  device; turn it on for the wall display only. Optionally overlays the
-  shared whiteboard in a corner - the same live drawing as everywhere else,
-  sized to actually be readable from across the room (scales with the
-  screen, well up from a small thumbnail, without growing large enough to
-  reach the centered clock) rather than a small tan sticky-note prop, so a
-  message left on the board is still visible while the screensaver's up.
-  Also optionally shows a daily
-  briefing card listing today's calendar events, which starts appearing at
-  5am (so it reads as "here's your day" rather than showing up overnight).
-  Both overlays periodically relocate to a different corner of the screen
-  to avoid burn-in on a display that's on all day.
+  interval, and background theme (landscapes/mountains/waterfalls/lakes/
+  forests), with a clock/date/weather overlay and a Preview button. Off by
+  default on every device; turn it on for the wall display only. Optionally
+  overlays the shared whiteboard in a corner - the same live drawing as
+  everywhere else, sized to actually be readable from across the room
+  (scales with the screen, well up from a small thumbnail, without growing
+  large enough to reach the centered clock) rather than a small tan
+  sticky-note prop, so a message left on the board is still visible while
+  the screensaver's up. Also optionally shows a daily briefing card listing
+  today's calendar events, which starts appearing at 5am (so it reads as
+  "here's your day" rather than showing up overnight), and/or **family
+  photos** (synced in from a shared iCloud album, see below) cycling in
+  their own corner - deliberately not the background, so it doesn't compete
+  with the chosen theme. All three overlays periodically relocate to a
+  different corner of the screen to avoid burn-in on a display that's on
+  all day, and never land on top of each other even with all three on.
 - **Music** (Settings → Music) — connects Spotify and controls whatever
   device is currently active on the account: play/pause, skip, volume, and
   switching devices, from a dashboard tile or its own page. With
@@ -456,8 +458,10 @@ ever stored once. Set one up from an iPhone:
    **Save**, then **Sync Now** for the first pull (after that it re-syncs on
    its own every hour — `FAMILY_PHOTO_SYNC_MINUTES` in `.env` changes that).
    Repeat for any other albums.
-4. Pick **"Family Photos"** as the theme in Screensaver settings (or the
-   dashboard background) to cycle through them like any other photo theme.
+4. Turn on **"Show family photos as a corner overlay"** in Settings →
+   Screensaver to cycle through them - deliberately a corner element (same
+   idea as the whiteboard sticky note), not the background photo, so it
+   doesn't replace whatever theme you've picked there.
 
 One album failing to sync (an expired link, say) doesn't hold up the others
 - Settings shows which one and why, right under the Sync Now button.

@@ -143,9 +143,10 @@ export default function FamilyPhotosSetup() {
       )}
 
       <p style={{ color: 'var(--color-text-muted)', fontSize: '0.8rem' }}>
-        Pick "Family Photos" as the theme in Screensaver settings (or the dashboard background) to
-        cycle through these. Removing a photo here only affects FamilyHub's own copy - it stays in
-        the actual shared album for everyone else.
+        Turn on "Show family photos" in Settings &rarr; Screensaver to cycle through these as a
+        corner overlay (same idea as the whiteboard sticky note), not as the background. Removing a
+        photo here only affects FamilyHub's own copy - it stays in the actual shared album for
+        everyone else.
       </p>
 
       {photos.length > 0 && (

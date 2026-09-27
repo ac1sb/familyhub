@@ -10,6 +10,7 @@ const DEFAULTS = {
   theme: 'landscapes',
   showWhiteboard: true,
   showDailyBriefing: true,
+  showFamilyPhotos: false,
 };
 
 export function getScreensaverSettings() {
