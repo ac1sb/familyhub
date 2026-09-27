@@ -1,39 +1,14 @@
 import { useEffect, useRef, useState } from 'react';
 import { usePolling } from '../hooks/usePolling.js';
+import { usePressHold } from '../hooks/usePressHold.js';
 import { api } from '../api.js';
-
-const HOLD_MS = 450;
 
 function HeaderToggle({ device, onToggle, onSetBrightness }) {
   const [showDimmer, setShowDimmer] = useState(false);
-  const timerRef = useRef(null);
-  const heldRef = useRef(false);
   const wrapRef = useRef(null);
-
-  function startPress(e) {
-    e.currentTarget.setPointerCapture?.(e.pointerId);
-    heldRef.current = false;
-    if (!device.dimmable) return; // nothing to show on hold - a plain tap is all it does
-    timerRef.current = setTimeout(() => {
-      heldRef.current = true;
-      setShowDimmer(true);
-    }, HOLD_MS);
-  }
-
-  function endPress() {
-    if (timerRef.current) {
-      clearTimeout(timerRef.current);
-      timerRef.current = null;
-    }
-    if (!heldRef.current) onToggle(device);
-  }
-
-  function cancelPress() {
-    if (timerRef.current) {
-      clearTimeout(timerRef.current);
-      timerRef.current = null;
-    }
-  }
+  const pressHandlers = usePressHold(() => onToggle(device), () => setShowDimmer(true), {
+    enabled: device.dimmable,
+  });
 
   // Tapping anywhere outside the popover closes it, same as any other
   // lightweight overlay in the app.
@@ -51,10 +26,7 @@ function HeaderToggle({ device, onToggle, onSetBrightness }) {
       <button
         type="button"
         className={`header-toggle${device.is_on ? ' on' : ''}`}
-        onPointerDown={startPress}
-        onPointerUp={endPress}
-        onPointerLeave={cancelPress}
-        onPointerCancel={cancelPress}
+        {...pressHandlers}
         title={device.dimmable ? 'Tap to toggle - press and hold to dim' : 'Tap to toggle'}
       >
         <span className="header-toggle-dot" />

@@ -203,11 +203,11 @@ shopping list from another device.
   pauses - so a message written with a finger reads more like natural
   handwriting than a jagged, uniform-width line; a plain tap leaves a dot
   (for a period or the dot over an "i") instead of nothing.
-- **Smart Home** — a Lutron Caseta / LIFX control widget: toggle devices,
-  drag brightness, and pick a LIFX bulb's color from the dashboard or the
-  full page (grouped by room). A quick-access strip of the same devices
-  sits in the header on every page — tap one to flip it on/off, or press
-  and hold a dimmable one to pull up a brightness slider. **LIFX is real**:
+- **Smart Home** — a tiled-button control widget (like the LIFX app itself):
+  tap a tile to flip it on/off, press and hold a dimmable/color one to pull
+  up a brightness/color popover, from the dashboard or the full page
+  (grouped by room). A quick-access strip of the same devices sits in the
+  header on every page with the same tap/hold gesture. **LIFX is real**:
   paste a Personal Access Token (from cloud.lifx.com/settings) in Settings
   → Smart Home Setup, tap **Discover LIFX Lights** to pull in every bulb on
   the account not already added, and every toggle/brightness/color change
@@ -228,7 +228,9 @@ shopping list from another device.
   Home Setup along with the two-letter country code they're registered in,
   then tap **Discover LG Appliances** to add the washer/dryer it finds.
   Status is fetched fresh on every request, never cached, so there's nothing
-  to go stale.
+  to go stale. Its tile shows a live, ticking countdown clock while it's
+  actually running (client-side, between polls) - hidden once it's done or
+  idle, since a leftover remaining time on a finished cycle isn't meaningful.
 - **Weather** — a row of quick-glance chips in the header on every page,
   opposite the smart-home toggles with a prominent date/time between them
   (current temp, high/low, precipitation chance, a
