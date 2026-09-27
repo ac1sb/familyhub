@@ -13,22 +13,25 @@ const WIDGETS = [
   { id: 'settings', icon: '⚙️', label: 'Settings' },
 ];
 
-export default function Sidebar({ active, onSelect }) {
+export default function Sidebar({ active, onSelect, open, onClose }) {
   return (
-    <nav className="sidebar">
-      <div className="sidebar-brand">FamilyHub</div>
-      {WIDGETS.map((w) => (
-        <button
-          key={w.id}
-          className={`sidebar-btn${active === w.id ? ' active' : ''}`}
-          onClick={() => onSelect(w.id)}
-        >
-          <span className="icon">{w.icon}</span>
-          <span className="label">{w.label}</span>
-        </button>
-      ))}
-      <div className="sidebar-spacer" />
-    </nav>
+    <>
+      <div className={`sidebar-backdrop${open ? ' open' : ''}`} onClick={onClose} />
+      <nav className={`sidebar${open ? ' open' : ''}`}>
+        <div className="sidebar-brand">FamilyHub</div>
+        {WIDGETS.map((w) => (
+          <button
+            key={w.id}
+            className={`sidebar-btn${active === w.id ? ' active' : ''}`}
+            onClick={() => onSelect(w.id)}
+          >
+            <span className="icon">{w.icon}</span>
+            <span className="label">{w.label}</span>
+          </button>
+        ))}
+        <div className="sidebar-spacer" />
+      </nav>
+    </>
   );
 }
 

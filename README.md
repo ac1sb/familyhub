@@ -267,8 +267,12 @@ shopping list from another device.
 - **Editable Settings** — rename household members, change the weather zip,
   and set the day/night schedule, all from the app (no `.env` editing or
   restart required after first setup).
-- **Left sidebar navigation** — one button per widget for a large, focused
-  view of just that widget.
+- **Slide-down navigation menu** — one button per widget for a large, focused
+  view of just that widget. Tucked behind a single menu button in the
+  header's upper-left corner rather than a permanent sidebar, so the main
+  page keeps the full width of the screen; tapping it slides the menu down
+  over the page, and picking a destination (or tapping outside it) slides it
+  away again.
 - **Multi-device sync** — every screen polls the API every 10–30s, so an
   event/chore/list item added from a phone shows up on the Pi display
   shortly after, and vice versa.

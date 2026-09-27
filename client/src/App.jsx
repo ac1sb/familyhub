@@ -29,6 +29,15 @@ export default function App() {
   const [now, setNow] = useState(new Date());
   const [screensaver, setScreensaver] = useState(getScreensaverSettings());
   const [uiStyle, setUiStyleState] = useState(getUiStyle());
+  const [menuOpen, setMenuOpen] = useState(false);
+
+  // Picking a destination is also "close the menu" - it's a brief overlay
+  // meant to disappear the moment it's done its job, not stay open until
+  // separately dismissed.
+  function navigate(id) {
+    setActive(id);
+    setMenuOpen(false);
+  }
 
   function updateScreensaverSettings(next) {
     setScreensaver(next);
@@ -69,9 +78,16 @@ export default function App() {
 
   return (
     <div className="app-shell">
-      <Sidebar active={active} onSelect={setActive} />
+      <Sidebar active={active} onSelect={navigate} open={menuOpen} onClose={() => setMenuOpen(false)} />
       <div className="main-area">
         <div className="topbar-strip">
+          <button
+            className={`menu-toggle-btn${menuOpen ? ' open' : ''}`}
+            onClick={() => setMenuOpen((o) => !o)}
+            aria-label={menuOpen ? 'Close menu' : 'Open menu'}
+          >
+            {menuOpen ? '✕' : '☰'}
+          </button>
           <HeaderSmartHomeToggles />
           <div className="topbar-datetime">
             {now.toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' })} &middot;{' '}
@@ -84,7 +100,7 @@ export default function App() {
             active === 'calendar' ? ' calendar-mode' : ''
           }${active === 'lunch' ? ' lunch-mode' : ''}`}
         >
-          {active === 'dashboard' && <Dashboard members={members} zip={zip} onNavigate={setActive} />}
+          {active === 'dashboard' && <Dashboard members={members} zip={zip} onNavigate={navigate} />}
           {active === 'calendar' && <CalendarAgenda members={members} />}
           {active === 'chores' && <ChoreList />}
           {active === 'daily' && <DailyChecklist />}
@@ -92,7 +108,7 @@ export default function App() {
           {active === 'lunch' && <LunchCalendar childName={members.member_3} />}
           {active === 'weather' && <WeatherWidget zip={zip} />}
           {active === 'shopping' && <ShoppingList />}
-          {active === 'whiteboard' && <WhiteboardPage onNavigate={setActive} />}
+          {active === 'whiteboard' && <WhiteboardPage onNavigate={navigate} />}
           {active === 'smarthome' && <SmartHomeWidget />}
           {active === 'music' && <MusicWidget />}
           {active === 'settings' && (

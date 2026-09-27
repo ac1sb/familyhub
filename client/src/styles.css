@@ -80,9 +80,19 @@ button {
   overflow: hidden;
 }
 
-/* ---------- Sidebar ---------- */
+/* ---------- Sidebar ----------
+   An overlay, not a permanent column - the whole point is to give the main
+   page the full width of the screen. Hidden above the viewport (translateY)
+   until the header's menu button opens it, then slides straight down over
+   whatever's underneath; picking a destination (or tapping the backdrop)
+   slides it back up out of the way. */
 .sidebar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 60;
   width: var(--sidebar-width);
+  height: 100vh;
   flex-shrink: 0;
   background: var(--color-primary-dark);
   display: flex;
@@ -91,6 +101,26 @@ button {
   padding: 10px 6px;
   gap: 6px;
   overflow-y: auto;
+  box-shadow: 0 16px 32px rgba(0, 0, 0, 0.3);
+  transform: translateY(-100%);
+  transition: transform 0.28s ease;
+}
+.sidebar.open {
+  transform: translateY(0);
+}
+
+.sidebar-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 55;
+  background: rgba(0, 0, 0, 0.4);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.28s ease;
+}
+.sidebar-backdrop.open {
+  opacity: 1;
+  pointer-events: auto;
 }
 
 .sidebar-brand {
@@ -153,6 +183,22 @@ button {
   border-bottom: 1px solid var(--color-border);
   flex-shrink: 0;
 }
+.menu-toggle-btn {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border: none;
+  border-radius: 12px;
+  background: var(--color-primary-dark);
+  color: #fff;
+  font-size: 1.3rem;
+  line-height: 1;
+}
+.menu-toggle-btn.open { background: var(--color-primary); }
+
 .topbar-smarthome-group,
 .topbar-weather-group {
   display: flex;
@@ -699,7 +745,7 @@ button {
    just get weight; cards only ever get elevation, never a gradient or cut
    corner, since bevelling something that holds scrollable content looks
    broken. */
-.btn, .btn-icon, .member-choice, .member-tap,
+.btn, .btn-icon, .member-choice, .member-tap, .menu-toggle-btn,
 .settings-tab, .mode-toggle-btn, .weekday-chip,
 .tile-row, .tile-square, .tile-carousel-tile {
   transition: transform 0.08s ease, box-shadow 0.15s ease, background-image 0.15s ease, border-color 0.15s ease;
@@ -722,7 +768,8 @@ button {
 [data-ui-style="soft"] .btn,
 [data-ui-style="soft"] .btn-icon,
 [data-ui-style="soft"] .member-choice,
-[data-ui-style="soft"] .member-tap {
+[data-ui-style="soft"] .member-tap,
+[data-ui-style="soft"] .menu-toggle-btn {
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.4), inset 0 -1px 0 rgba(0, 0, 0, 0.15);
 }
 /* Checkable "physical button" tiles (Chores/Daily Checklist) - raised while
@@ -751,6 +798,7 @@ button {
 [data-ui-style="soft"] .btn-icon:active,
 [data-ui-style="soft"] .member-choice:active,
 [data-ui-style="soft"] .member-tap:active,
+[data-ui-style="soft"] .menu-toggle-btn:active,
 [data-ui-style="soft"] .settings-tab:active,
 [data-ui-style="soft"] .weekday-chip:active {
   transform: translateY(1px);
@@ -765,7 +813,8 @@ button {
 [data-ui-style="tactile"] .btn,
 [data-ui-style="tactile"] .btn-icon,
 [data-ui-style="tactile"] .member-choice,
-[data-ui-style="tactile"] .member-tap {
+[data-ui-style="tactile"] .member-tap,
+[data-ui-style="tactile"] .menu-toggle-btn {
   clip-path: polygon(
     8px 0, calc(100% - 8px) 0, 100% 8px,
     100% calc(100% - 8px), calc(100% - 8px) 100%, 8px 100%,
@@ -784,7 +833,8 @@ button {
 [data-ui-style="tactile"] .btn:active,
 [data-ui-style="tactile"] .btn-icon:active,
 [data-ui-style="tactile"] .member-choice:active,
-[data-ui-style="tactile"] .member-tap:active {
+[data-ui-style="tactile"] .member-tap:active,
+[data-ui-style="tactile"] .menu-toggle-btn:active {
   transform: translateY(5px);
   box-shadow: 0 0 0 rgba(0, 0, 0, 0.35), 0 2px 4px rgba(0, 0, 0, 0.35), inset 0 2px 4px rgba(0, 0, 0, 0.35);
   background-image: linear-gradient(180deg, rgba(0, 0, 0, 0.25), rgba(255, 255, 255, 0) 60%, rgba(255, 255, 255, 0.12));
