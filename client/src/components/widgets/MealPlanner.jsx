@@ -24,7 +24,10 @@ function DaySlot({ slot, onChange, onCommit }) {
   const { setNodeRef, isOver } = useDroppable({ id: slot.id });
   return (
     <div ref={setNodeRef} className={`meal-box${isOver ? ' drop-target' : ''}`}>
-      <div className={`meal-box-day${slot.isToday ? ' today' : ''}`}>{slot.label}</div>
+      <div className={`meal-box-day${slot.isToday ? ' today' : ''}`}>
+        {slot.label}
+        <span className="meal-box-date">{slot.dateLabel}</span>
+      </div>
       <DraggableMealInput slot={slot} onChange={onChange} onCommit={onCommit} />
     </div>
   );
@@ -84,21 +87,42 @@ export default function MealPlanner({ compact = false, onExpand }) {
   }, [data, nextWeekData, weekStart, nextWeekStart]);
 
   const todayDayOfWeek = (new Date().getDay() + 6) % 7; // 0=Mon..6=Sun
+  const weekStartDate = startOfWeek(new Date());
 
   // Full page: the current week, Mon through Sun, same as always. Dashboard
   // widget: today through the next 4 real calendar days, wherever that
-  // falls relative to the Mon-Sun grid.
+  // falls relative to the Mon-Sun grid. Every slot carries the actual
+  // calendar date (not just a weekday name) - "Sun" alone doesn't say which
+  // Sunday, which matters once meals are planned against a specific
+  // shipment/delivery date instead of just "whatever day this is".
   const slots = compact
     ? Array.from({ length: 5 }, (_, i) => {
         const date = addDays(new Date(), i);
         const ws = toISODate(startOfWeek(date));
         const dow = (date.getDay() + 6) % 7;
         const id = slotId(ws, dow);
-        return { id, weekStart: ws, dayOfWeek: dow, label: WEEKDAY_SHORT[dow], isToday: i === 0, name: namesByKey[id] || '' };
+        return {
+          id,
+          weekStart: ws,
+          dayOfWeek: dow,
+          label: WEEKDAY_SHORT[dow],
+          dateLabel: date.getDate(),
+          isToday: i === 0,
+          name: namesByKey[id] || '',
+        };
       })
     : Array.from({ length: 7 }, (_, dow) => {
         const id = slotId(weekStart, dow);
-        return { id, weekStart, dayOfWeek: dow, label: WEEKDAY_SHORT[dow], isToday: dow === todayDayOfWeek, name: namesByKey[id] || '' };
+        const date = addDays(weekStartDate, dow);
+        return {
+          id,
+          weekStart,
+          dayOfWeek: dow,
+          label: WEEKDAY_SHORT[dow],
+          dateLabel: date.getDate(),
+          isToday: dow === todayDayOfWeek,
+          name: namesByKey[id] || '',
+        };
       });
 
   const sensors = useSensors(

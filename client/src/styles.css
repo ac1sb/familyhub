@@ -1439,12 +1439,17 @@ button {
    clear which day you're about to swap into. */
 .meal-box.drop-target { border-color: var(--color-primary); box-shadow: 0 0 0 2px var(--color-primary) inset; }
 .meal-box-day {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
   text-align: center;
   font-weight: 700;
   color: #fff;
   background: var(--color-primary);
-  padding: 8px 4px;
+  padding: 6px 4px;
 }
+.meal-box-date { font-size: 0.7rem; font-weight: 600; opacity: 0.85; }
 /* Today's day tab stands out from the rest of the week at a glance. */
 .meal-box-day.today { background: var(--color-accent); }
 /* Only this wraps the input - the day label above is a separate, static
