@@ -163,16 +163,17 @@ CREATE TABLE IF NOT EXISTS whiteboard_notes (
   created_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
 
--- Photos mirrored in from one or more iCloud Shared Albums (see
--- lib/icloudSharedAlbum.js) for the "Family Photos" screensaver/background
--- theme - guid is Apple's own id for the photo, used to tell an already-
--- synced photo from a new one on the next sync without re-downloading it
--- (globally, across every configured album - the same photo shared into two
--- albums is still only stored once). Once downloaded, a photo stays here
--- even if removed from its shared album later (nothing here ever gets
+-- Photos mirrored in from one or more shared Google Drive folders (see the
+-- Drive functions in routes/google.js) for the "Family Photos" screensaver
+-- overlay - guid is Drive's own file id, used to tell an already-synced
+-- photo from a new one on the next sync without re-downloading it
+-- (globally, across every configured folder - the same photo shared into
+-- two folders is still only stored once). Once downloaded, a photo stays
+-- here even if removed from its Drive folder later (nothing here ever gets
 -- deleted by a sync, only by someone explicitly removing it from Settings).
--- album_label is that album's own name (Apple's streamName), captured at
--- sync time just so the gallery can show which album a photo came from.
+-- album_url/album_label hold the source folder's id/name (kept under their
+-- original names from when this synced from iCloud albums instead, to
+-- avoid a migration for a column rename).
 CREATE TABLE IF NOT EXISTS family_photos (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   guid TEXT NOT NULL UNIQUE,

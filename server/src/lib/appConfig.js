@@ -128,29 +128,22 @@ export function setGoogleServiceAccountKey(key) {
   setJSON('google_service_account_key', key);
 }
 
-// One or more iCloud Shared Album links (Photos app -> an album -> Shared
-// Album settings -> "Public Website") the "Family Photos" screensaver/
-// background theme syncs from - a list, so photos from more than one
-// family member's album mix into the same rotation. See
-// lib/icloudSharedAlbum.js.
-export function getFamilyPhotoAlbums() {
-  const stored = getJSON('family_photo_albums', null);
-  if (Array.isArray(stored)) return stored;
-
-  // One-time fallback for whoever set up the original single-album URL
-  // (via Settings, or the FAMILY_PHOTO_ALBUM_URL env var, from before this
-  // became a list) - not written back, so a still-unconfigured install
-  // stays free to pick up a later env var change instead of getting stuck
-  // on today's value.
-  const legacyUrl = getSetting('family_photo_album_url') || process.env.FAMILY_PHOTO_ALBUM_URL || '';
-  return legacyUrl ? [legacyUrl] : [];
+// One or more Google Drive folder IDs the "Family Photos" screensaver
+// overlay syncs from - a list, so photos from more than one shared folder
+// mix into the same rotation. Requires the same Google account connected
+// in Settings -> Calendar (needs the drive.readonly scope - reconnect if it
+// was connected before this was added). See routes/google.js's Drive
+// functions.
+export function getFamilyPhotoFolders() {
+  const stored = getJSON('family_photo_folders', null);
+  return Array.isArray(stored) ? stored : [];
 }
 
-export function setFamilyPhotoAlbums(albums) {
-  // Drop half-filled "add another album" rows (no URL typed yet) instead of
-  // saving them as phantom entries, same as the shared calendar feeds list.
-  const cleaned = (albums || []).map((url) => (url || '').trim()).filter(Boolean);
-  setJSON('family_photo_albums', cleaned);
+export function setFamilyPhotoFolders(folders) {
+  // Drop half-filled "add another folder" rows (nothing typed yet) instead
+  // of saving them as phantom entries, same as the shared calendar feeds list.
+  const cleaned = (folders || []).map((f) => (f || '').trim()).filter(Boolean);
+  setJSON('family_photo_folders', cleaned);
 }
 
 // LIFX Cloud API personal access token (from cloud.lifx.com/settings) -

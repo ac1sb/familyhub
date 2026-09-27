@@ -14,12 +14,15 @@ const router = Router();
 // delete) - it does NOT grant access to calendar settings/sharing, just the
 // events on calendars the account can already see. spreadsheets covers
 // reading and writing Sheets the account can already see (used to push the
-// shopping list). A connection made before either scope was added only has
-// the narrower access - disconnecting and reconnecting re-prompts Google's
-// consent screen for the current full set.
+// shopping list). drive.readonly covers listing/downloading files in a
+// Drive folder the account can see (used for the Family Photos sync) -
+// read-only, FamilyHub never writes to Drive. A connection made before a
+// given scope was added only has the narrower access - disconnecting and
+// reconnecting re-prompts Google's consent screen for the current full set.
 const SCOPES = [
   'https://www.googleapis.com/auth/calendar.events',
   'https://www.googleapis.com/auth/spreadsheets',
+  'https://www.googleapis.com/auth/drive.readonly',
 ];
 
 function getOAuthClient() {
@@ -291,6 +294,69 @@ export async function writeShoppingSheetUpdates(sheetId, { idUpdates = [], newRo
     spreadsheetId: sheetId,
     requestBody: { valueInputOption: 'RAW', data },
   });
+}
+
+function getDriveClient() {
+  const client = getOAuthClient();
+  if (!client || !getJSON('google_tokens', null)) {
+    throw new Error('Google Drive isn\'t connected - connect Google in Settings -> Calendar first');
+  }
+  return google.drive({ version: 'v3', auth: client });
+}
+
+const IMAGE_EXT_BY_MIME = {
+  'image/jpeg': 'jpg',
+  'image/png': 'png',
+  'image/heic': 'heic',
+  'image/heif': 'heif',
+  'image/webp': 'webp',
+  'image/gif': 'gif',
+};
+
+export function extensionForMimeType(mimeType) {
+  return IMAGE_EXT_BY_MIME[mimeType] || 'jpg';
+}
+
+export async function getDriveFolderName(folderId) {
+  const drive = getDriveClient();
+  const res = await drive.files.get({ fileId: folderId, fields: 'name' });
+  return res.data.name;
+}
+
+// Every image file directly inside the folder (not its subfolders, to keep
+// this predictable) as { id, name, mimeType, takenAt } - id is Drive's own
+// file id, stable for as long as the file exists there, used to tell an
+// already-synced photo from a new one without re-downloading it.
+export async function listDriveFolderPhotos(folderId) {
+  const drive = getDriveClient();
+  const files = [];
+  let pageToken;
+  do {
+    const res = await drive.files.list({
+      q: `'${folderId}' in parents and mimeType contains 'image/' and trashed = false`,
+      fields: 'nextPageToken, files(id, name, mimeType, modifiedTime, imageMediaMetadata(time))',
+      pageSize: 200,
+      pageToken,
+    });
+    files.push(...(res.data.files || []));
+    pageToken = res.data.nextPageToken;
+  } while (pageToken);
+
+  return files.map((f) => ({
+    id: f.id,
+    name: f.name,
+    mimeType: f.mimeType,
+    takenAt: f.imageMediaMetadata?.time || f.modifiedTime || null,
+  }));
+}
+
+export async function downloadDriveFile(fileId) {
+  const drive = getDriveClient();
+  const res = await drive.files.get(
+    { fileId, alt: 'media' },
+    { responseType: 'arraybuffer' }
+  );
+  return Buffer.from(res.data);
 }
 
 export default router;

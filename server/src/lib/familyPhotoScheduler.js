@@ -1,16 +1,16 @@
-import { getFamilyPhotoAlbums } from './appConfig.js';
+import { getFamilyPhotoFolders } from './appConfig.js';
 import { runFamilyPhotoSync } from '../routes/familyPhotos.js';
 
-// How often the Family Photos albums auto-sync, in minutes - a shared album
-// doesn't change often, so this defaults much slower than the shopping list
-// sync. The "Sync Now" button in Settings still works any time.
+// How often the Family Photos folders auto-sync, in minutes - a shared
+// folder doesn't change often, so this defaults much slower than the
+// shopping list sync. The "Sync Now" button in Settings still works any time.
 const SYNC_MINUTES = Number(process.env.FAMILY_PHOTO_SYNC_MINUTES) || 60;
 
 let syncing = false;
 
 async function tick() {
   if (syncing) return;
-  if (getFamilyPhotoAlbums().length === 0) return;
+  if (getFamilyPhotoFolders().length === 0) return;
 
   syncing = true;
   try {

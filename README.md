@@ -238,9 +238,9 @@ shopping list from another device.
   the screensaver's up. Also optionally shows a daily briefing card listing
   today's calendar events, which starts appearing at 5am (so it reads as
   "here's your day" rather than showing up overnight), and/or **family
-  photos** (synced in from a shared iCloud album, see below) cycling in
-  their own corner - deliberately not the background, so it doesn't compete
-  with the chosen theme. All three overlays periodically relocate to a
+  photos** (synced in from a shared Google Drive folder, see below) cycling
+  in their own corner - deliberately not the background, so it doesn't
+  compete with the chosen theme. All three overlays periodically relocate to a
   different corner of the screen to avoid burn-in on a display that's on
   all day, and never land on top of each other even with all three on.
 - **Music** (Settings → Music) — connects Spotify and controls whatever
@@ -440,40 +440,44 @@ its path is saved on the event.
 Note: the first OCR run downloads the English trained-data file, so the Pi
 needs internet access at least once.
 
-## Family Photos (screensaver from one or more iCloud Shared Albums)
+## Family Photos (screensaver from one or more Google Drive folders)
 
-**Settings → Family Photos** syncs in photos from one or more public iCloud
-Shared Albums, so anyone in the family can add a photo the normal way
-(Photos app → a shared album → the usual share sheet) without uploading
-anything to FamilyHub directly. Add more than one album (one per person, or
-however you want to split it up, using "+ Add another album") and they all
-mix into the same rotation — the same photo showing up in two albums is only
-ever stored once. Set one up from an iPhone:
+**Settings → Family Photos** syncs in photos from one or more shared Google
+Drive folders, so anyone in the family can add a photo the normal way
+(Photos app → the share icon → **Save to Drive** → pick the folder) without
+uploading anything to FamilyHub directly. Add more than one folder (one per
+person, or however you want to split it up, using "+ Add another folder")
+and they all mix into the same rotation — the same photo shared into two
+folders is only ever stored once. Set one up:
 
-1. Photos app → **Albums** → **+** → **New Shared Album**, add whoever should
-   be able to add photos to it.
-2. Open that album → **⋯** → **Shared Album Settings** → turn on **Public
-   Website** → copy the link it gives you.
-3. Paste that link into Settings → Family Photos → "Shared Album links" →
-   **Save**, then **Sync Now** for the first pull (after that it re-syncs on
-   its own every hour — `FAMILY_PHOTO_SYNC_MINUTES` in `.env` changes that).
-   Repeat for any other albums.
+1. In Google Drive, create a folder and share it (**⋮ → Share**) with
+   whoever should be able to add photos to it - make sure the Google account
+   you'll connect to FamilyHub (below) has at least viewer access too.
+2. From an iPhone: Photos app → pick a photo → the share icon → **Save to
+   Drive** (needs the Google Drive app installed) → choose that folder.
+   Repeat for however many photos, from however many phones.
+3. Copy the folder's link (its address bar when open in Drive, or just its
+   ID) into Settings → Family Photos → "Google Drive folders" → **Save**,
+   then **Sync Now** for the first pull (after that it re-syncs on its own
+   every hour — `FAMILY_PHOTO_SYNC_MINUTES` in `.env` changes that). Repeat
+   for any other folders.
 4. Turn on **"Show family photos as a corner overlay"** in Settings →
    Screensaver to cycle through them - deliberately a corner element (same
    idea as the whiteboard sticky note), not the background photo, so it
    doesn't replace whatever theme you've picked there.
 
-One album failing to sync (an expired link, say) doesn't hold up the others
-- Settings shows which one and why, right under the Sync Now button.
+Requires the same Google account connected for Calendar sync (Settings →
+Calendar) - connecting or reconnecting after this feature was added
+re-prompts for the added Drive permission (read-only; FamilyHub never writes
+to Drive). One folder failing to sync doesn't hold up the others - Settings
+shows which one and why, right under the Sync Now button. Downloaded photos
+are kept locally even if later removed from the Drive folder (removing one
+from Settings only drops FamilyHub's own copy, not the real file).
 
-This uses the same public link Apple's "Shared Album website" feature is
-built for — no Apple ID, password, or app on anyone's phone beyond the
-Photos app they already have. Downloaded photos are kept locally even if
-later removed from the shared album (removing one from Settings only drops
-FamilyHub's own copy, not the real album). Note this relies on an
-undocumented API behind that public link, since Apple doesn't offer an
-official one — it's the same approach several open-source tools use and has
-been stable for years, but could in principle break if Apple changes it.
+Note: HEIC photos (the default format on newer iPhones) may not preview in
+every browser. If a synced photo doesn't show up, switch the iPhone's Camera
+format to "Most Compatible" (Settings → Camera → Formats) going forward, or
+save existing ones as JPEG before adding them to the folder.
 
 ## Spotify / Music (the Pi as a real Connect speaker)
 
@@ -647,10 +651,13 @@ other file on the Pi.
 - Google Calendar sync is two-way for one-off events, but recurring
   ("Repeats weekly") events are never pushed to Google - they stay
   FamilyHub-only. The shared iCal feeds are always read-only, by design.
-- Family Photos relies on an undocumented Apple API behind the iCloud Shared
-  Album "Public Website" link, since there's no official one - it's the same
-  approach several open-source tools use and has been stable for years, but
-  could in principle stop working if Apple changes that page/API.
+- Family Photos syncs from Google Drive, not Google Photos - Google's Photos
+  API no longer allows an app like FamilyHub ongoing read access to a shared
+  album (a 2025 change; the only remaining option is an interactive
+  one-at-a-time picker UI, not something a background sync can use), so
+  Drive is the closest equivalent that still supports it. HEIC photos (the
+  default on newer iPhones) may not preview in every browser - see the setup
+  section above.
 - Music requires Spotify Premium - a free account can neither be controlled
   through Spotify's playback API nor used to run librespot as a Connect
   device at all, so there's no reduced/remote-only mode for a free account.
