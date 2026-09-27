@@ -166,8 +166,12 @@ router.put('/:id', async (req, res) => {
   // A real bulb: push only the fields this request actually touched out to
   // LIFX first, and only write the local row if that succeeds - so a
   // toggle that failed (bulb offline, bad token, ...) doesn't leave
-  // FamilyHub showing a state the bulb was never actually set to.
-  if (existing.platform === 'lifx' && existing.external_id) {
+  // FamilyHub showing a state the bulb was never actually set to. A rename
+  // (or room change) is FamilyHub-only metadata - is_on/brightness/color are
+  // the only fields that mean anything to the bulb, so only call out to
+  // LIFX when at least one of those was actually part of this request.
+  const touchesLifxState = req.body.is_on !== undefined || req.body.brightness !== undefined || req.body.color !== undefined;
+  if (existing.platform === 'lifx' && existing.external_id && touchesLifxState) {
     const token = getLifxToken();
     if (!token) return res.status(400).json({ error: 'No LIFX API token saved - add one in Smart Home Setup' });
     try {

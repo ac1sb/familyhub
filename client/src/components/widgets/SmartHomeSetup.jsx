@@ -14,7 +14,7 @@ function formatRemaining(minutes) {
 }
 
 export default function SmartHomeSetup() {
-  const { data, refresh } = usePolling(() => api.smartDevices(), [], 20000);
+  const { data, setData, refresh } = usePolling(() => api.smartDevices(), [], 20000);
   const [name, setName] = useState('');
   const [room, setRoom] = useState('');
   const [platform, setPlatform] = useState('lifx');
@@ -127,6 +127,21 @@ export default function SmartHomeSetup() {
 
   async function removeDevice(id) {
     await api.deleteSmartDevice(id);
+    refresh();
+  }
+
+  function handleNameChange(deviceId, name) {
+    setData((prev) => ({
+      devices: prev.devices.map((d) => (d.id === deviceId ? { ...d, name } : d)),
+    }));
+  }
+
+  async function commitName(deviceId, name) {
+    if (!name.trim()) {
+      refresh(); // empty name isn't saved - snap back to the last real value
+      return;
+    }
+    await api.updateSmartDevice(deviceId, { name: name.trim() });
     refresh();
   }
 
@@ -246,9 +261,20 @@ export default function SmartHomeSetup() {
 
       <div className="settings-section">
         <div className="settings-section-title">Devices</div>
+        <p className="settings-section-intro">
+          Tap a name to rename it. If the same bulb ended up added twice (e.g. once as a Caseta/mock
+          entry, once for real via Discover), keep whichever one says "Connected" and remove the
+          other with the ✕ - only the Connected one actually talks to the bulb.
+        </p>
         {devices.map((device) => (
           <div className="chore-row" key={device.id}>
-            <span className="chore-title">{device.name}</span>
+            <input
+              type="text"
+              className="chore-title-input"
+              value={device.name}
+              onChange={(e) => handleNameChange(device.id, e.target.value)}
+              onBlur={(e) => commitName(device.id, e.target.value)}
+            />
             {device.room && <span className="chore-tag family">{device.room}</span>}
             <span className="chore-tag family">{PLATFORM_LABEL[device.platform]}</span>
             <span className="chore-tag family">{KIND_LABEL[device.kind]}</span>
