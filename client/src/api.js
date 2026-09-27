@@ -51,7 +51,6 @@ export const api = {
 
   meals: (week) => request(`/meals?week=${week}`),
   setMeal: (week, day, name) => request(`/meals/${day}?week=${week}`, { method: 'PUT', body: JSON.stringify({ name }) }),
-  reorderMeals: (week, names) => request(`/meals?week=${week}`, { method: 'PUT', body: JSON.stringify({ names }) }),
 
   lunchRange: (start, end) => request(`/lunch?start=${start}&end=${end}`),
   setLunchDay: (date, data) => request(`/lunch/${date}`, { method: 'PUT', body: JSON.stringify(data) }),

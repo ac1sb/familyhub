@@ -12,11 +12,11 @@ const ICONS = {
   storm: '⛈️',
 };
 
-// Everything the dashboard's "Weather Today" card knows, laid out as a row
-// of small read-only chips (same shape as the smart-home toggle strip)
-// instead of a single card - the morning/afternoon/evening breakdown and
-// the clothing hint were already being fetched but never actually shown
-// anywhere, so this is also the first place either one appears.
+// A quick-glance strip in the header, on every page - just enough to answer
+// "do I need a coat" without leaving whatever else you're looking at. The
+// morning/afternoon/evening breakdown and the clothing hint are deliberately
+// left out here (they used to show in this same strip) - the full detail is
+// a tap away on the Weather page for anyone who wants it.
 export default function HeaderWeather({ zip }) {
   const { data, error, loading } = usePolling(() => api.weather(zip), [zip], 30 * 60 * 1000);
 
@@ -33,12 +33,6 @@ export default function HeaderWeather({ zip }) {
       {today.precipitation_chance != null && today.precipitation_chance > 0 && (
         <span className="header-info-chip">💧 {today.precipitation_chance}%</span>
       )}
-      {(today.timeline || []).map((t) => (
-        <span className="header-info-chip" key={t.label}>
-          {ICONS[t.icon] || '☁️'} {t.label} {t.temperature}&deg;
-        </span>
-      ))}
-      {today.clothing_hint && <span className="header-info-chip">{today.clothing_hint}</span>}
     </div>
   );
 }

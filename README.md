@@ -169,7 +169,12 @@ shopping list from another device.
   stay in one row and shrink or grow to exactly fill however wide you
   resize the widget, rather than wrapping into extra rows or overflowing
   past its edge - meal names ellipsize (…) if a box gets too narrow to show
-  the whole thing.
+  the whole thing. The dashboard widget specifically is a rolling "next 5
+  days" view (like the calendar's), not a fixed Mon-Sun week - so on a
+  Saturday or Sunday it rolls into next week's menu instead of running out
+  of days to show; editing or swapping a day there still writes to the
+  correct week underneath even when two boxes span a week boundary. The
+  full page always shows the current Mon-Sun week for planning ahead.
 - **Lunch calendar** for one child — a full monthly view (tap a day to toggle
   School/Pack-from-home, mark no-school days, jot the menu item), always
   filling the whole screen instead of stopping at a fixed cell size and
@@ -233,10 +238,12 @@ shopping list from another device.
   idle, since a leftover remaining time on a finished cycle isn't meaningful.
 - **Weather** — a row of quick-glance chips in the header on every page,
   opposite the smart-home toggles with a prominent date/time between them
-  (current temp, high/low, precipitation chance, a
-  morning/afternoon/evening timeline, and a clothing hint), a "Today" card
-  on the dashboard, and a full 7-day forecast on its own sidebar tab.
-  Geocoded from a US zip code via Open-Meteo (no API key required).
+  (current temp, high/low, and precipitation chance - deliberately just
+  those three; the morning/afternoon/evening breakdown and the clothing hint
+  are a tap away on the Weather page instead of cluttering every page's
+  header), a "Today" card on the dashboard, and a full 7-day forecast on its
+  own sidebar tab. Geocoded from a US zip code via Open-Meteo (no API key
+  required).
 - **Day/night theme** — switches automatically on a schedule you set in
   Settings → Appearance (or pin it to always-light/always-dark).
 - **Control style** — per-device (Settings → Appearance): Flat (the original

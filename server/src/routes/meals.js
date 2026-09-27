@@ -40,23 +40,4 @@ router.put('/:day_of_week', (req, res) => {
   res.json({ week_start, meals: rows });
 });
 
-// PUT /api/meals/reorder  { names: [ 'Tacos', 'Pizza', ... ] } (7 entries, index = day_of_week)
-// Used by the drag-and-drop UI: days stay fixed Mon->Sun, only which meal sits in which slot changes.
-router.put('/', (req, res) => {
-  const week_start = weekStartParam(req.query);
-  const { names } = req.body;
-  if (!Array.isArray(names) || names.length !== 7) {
-    return res.status(400).json({ error: 'names must be an array of 7 items (Mon..Sun)' });
-  }
-  ensureWeekRows(week_start);
-
-  const update = db.prepare('UPDATE meals SET name = ? WHERE week_start = ? AND day_of_week = ?');
-  withTransaction(() => {
-    names.forEach((name, day_of_week) => update.run(name || '', week_start, day_of_week));
-  });
-
-  const rows = db.prepare('SELECT * FROM meals WHERE week_start = ? ORDER BY day_of_week ASC').all(week_start);
-  res.json({ week_start, meals: rows });
-});
-
 export default router;
