@@ -109,13 +109,15 @@ export default function ChoreSetup() {
   }
 
   return (
-    <div>
-      <p style={{ color: 'var(--color-text-muted)', fontSize: '0.85rem', marginTop: 0 }}>
-        Chores added here automatically appear on everyone's weekly chore list, on whichever days you pick,
-        already unchecked. Turn one off instead of deleting it if it's just paused for a while.
-      </p>
+    <div className="settings-content">
+      <div className="settings-section">
+        <div className="settings-section-title">Recurring Chores</div>
+        <p className="settings-section-intro">
+          Chores added here automatically appear on everyone's weekly chore list, on whichever days you pick,
+          already unchecked. Turn one off instead of deleting it if it's just paused for a while.
+        </p>
 
-      {(data?.templates || []).map((template) => (
+        {(data?.templates || []).map((template) => (
         <div className="chore-setup-row" key={template.id}>
           <div className="chore-row">
             <input type="checkbox" checked={template.active} onChange={() => toggleActive(template)} title="Active" />
@@ -159,6 +161,7 @@ export default function ChoreSetup() {
         </p>
       )}
       {addError && <p style={{ color: 'var(--color-danger)', margin: '8px 0 0' }}>{addError}</p>}
+      </div>
     </div>
   );
 }

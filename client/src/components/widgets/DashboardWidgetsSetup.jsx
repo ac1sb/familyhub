@@ -85,19 +85,22 @@ export default function DashboardWidgetsSetup() {
   }
 
   return (
-    <div>
-      <p style={{ color: 'var(--color-text-muted)', fontSize: '0.85rem', marginTop: 0 }}>
-        Choose which widgets show on this device's Home dashboard - this is per-device, so a phone
-        can show fewer widgets than the wall display. Turning one off doesn't delete its data or its
-        saved position, and every widget stays reachable from the sidebar either way. Pick a background
-        color for a widget to pin it to that color regardless of day/night theme; leave it alone and
-        it keeps following the normal theme. Whenever a dashboard background photo is on (below), every
-        widget - custom color or not - goes frosted/translucent instead of a flat fill, so the photo
-        shows through the whole dashboard instead of just the gaps between widgets.
-      </p>
+    <div className="settings-content">
+      <div className="settings-section">
+        <div className="settings-section-title">Widgets</div>
+        <p className="settings-section-intro">
+          Choose which widgets show on this device's Home dashboard - this is per-device, so a phone
+          can show fewer widgets than the wall display. Turning one off doesn't delete its data or its
+          saved position, and every widget stays reachable from the sidebar either way. Pick a background
+          color for a widget to pin it to that color regardless of day/night theme; leave it alone and
+          it keeps following the normal theme. Whenever a dashboard background photo is on (below), every
+          widget - custom color or not - goes frosted/translucent instead of a flat fill, so the photo
+          shows through the whole dashboard instead of just the gaps between widgets.
+        </p>
+      </div>
 
-      <div className="field" style={{ marginBottom: 18 }}>
-        <label style={{ display: 'block', marginBottom: 6 }}>Dashboard background</label>
+      <div className="settings-section">
+        <div className="settings-section-title">Dashboard Background</div>
         <div className="mode-toggle-row">
           <button
             type="button"
@@ -176,83 +179,89 @@ export default function DashboardWidgetsSetup() {
         </p>
       </div>
 
-      {DISPLAY_MODE_WIDGETS.map((widget) => (
-        <div className="checkbox-row" key={widget.id} style={{ marginBottom: 10 }}>
-          <span style={{ flex: 1, fontWeight: 600 }}>{widget.label} widget style</span>
-          <div className="mode-toggle-row">
-            <button
-              type="button"
-              className={`mode-toggle-btn${displayModes[widget.id] === 'list' ? ' active' : ''}`}
-              onClick={() => chooseDisplayMode(widget.id, 'list')}
-            >
-              List
-            </button>
-            <button
-              type="button"
-              className={`mode-toggle-btn${displayModes[widget.id] === 'squares' ? ' active' : ''}`}
-              onClick={() => chooseDisplayMode(widget.id, 'squares')}
-            >
-              Squares
-            </button>
-            <button
-              type="button"
-              className={`mode-toggle-btn${displayModes[widget.id] === 'carousel' ? ' active' : ''}`}
-              onClick={() => chooseDisplayMode(widget.id, 'carousel')}
-            >
-              Carousel
-            </button>
-          </div>
-        </div>
-      ))}
-      <p style={{ color: 'var(--color-text-muted)', fontSize: '0.8rem', marginTop: 0 }}>
-        List shows several items stacked as full-width bars. Squares shows them as a small-tile 2x2
-        grid, sized to only take up as much height as it actually needs (2 tiles fill just the top
-        row, not the whole box) - past 4 items it pages through the rest 4 at a time (swipe or the
-        arrow buttons). Carousel shows one big tile at a time - swipe it left/right (or use the arrow
-        buttons) to move through the items. Tapping a tile/bar itself always toggles it (done for
-        Chores/Daily Checklist, School/Home for Lunch), in any style. Set independently for each,
-        per-device, like everything else on this page.
-      </p>
-
-      {WIDGET_CATALOG.map((widget) => (
-        <div className="field" key={widget.id}>
-          <div className="checkbox-row">
-            <input
-              id={`widget-${widget.id}`}
-              type="checkbox"
-              checked={enabled.has(widget.id)}
-              onChange={() => toggle(widget.id)}
-            />
-            <label htmlFor={`widget-${widget.id}`} style={{ margin: 0, flex: 1 }}>{widget.label}</label>
-            <input
-              type="color"
-              aria-label={`${widget.label} background color`}
-              value={colors[widget.id] || PICKER_DEFAULT}
-              onChange={(e) => setColor(widget.id, e.target.value)}
-              className="widget-color-swatch"
-            />
-            {colors[widget.id] && (
+      <div className="settings-section">
+        <div className="settings-section-title">Widget Display Style</div>
+        {DISPLAY_MODE_WIDGETS.map((widget) => (
+          <div className="checkbox-row" key={widget.id} style={{ marginBottom: 10 }}>
+            <span style={{ flex: 1, fontWeight: 600 }}>{widget.label} widget style</span>
+            <div className="mode-toggle-row">
               <button
                 type="button"
-                className="btn-icon"
-                title="Use theme default instead"
-                onClick={() => clearColor(widget.id)}
+                className={`mode-toggle-btn${displayModes[widget.id] === 'list' ? ' active' : ''}`}
+                onClick={() => chooseDisplayMode(widget.id, 'list')}
               >
-                ✕
+                List
               </button>
-            )}
+              <button
+                type="button"
+                className={`mode-toggle-btn${displayModes[widget.id] === 'squares' ? ' active' : ''}`}
+                onClick={() => chooseDisplayMode(widget.id, 'squares')}
+              >
+                Squares
+              </button>
+              <button
+                type="button"
+                className={`mode-toggle-btn${displayModes[widget.id] === 'carousel' ? ' active' : ''}`}
+                onClick={() => chooseDisplayMode(widget.id, 'carousel')}
+              >
+                Carousel
+              </button>
+            </div>
           </div>
-        </div>
-      ))}
+        ))}
+        <p style={{ color: 'var(--color-text-muted)', fontSize: '0.8rem', marginTop: 0, marginBottom: 0 }}>
+          List shows several items stacked as full-width bars. Squares shows them as a small-tile 2x2
+          grid, sized to only take up as much height as it actually needs (2 tiles fill just the top
+          row, not the whole box) - past 4 items it pages through the rest 4 at a time (swipe or the
+          arrow buttons). Carousel shows one big tile at a time - swipe it left/right (or use the arrow
+          buttons) to move through the items. Tapping a tile/bar itself always toggles it (done for
+          Chores/Daily Checklist, School/Home for Lunch), in any style. Set independently for each,
+          per-device, like everything else on this page.
+        </p>
+      </div>
 
-      <button className="btn btn-secondary" onClick={handleReset} style={{ marginTop: 12 }}>
-        &#8635; Reset to default layout
-      </button>
-      <p style={{ color: 'var(--color-text-muted)', fontSize: '0.8rem', marginTop: 8 }}>
-        Turns every widget back on, puts them back in their default positions/sizes, and clears any
-        custom colors on this device - undoes any dragging, resizing, recoloring, or hiding done from
-        the Home dashboard.
-      </p>
+      <div className="settings-section">
+        <div className="settings-section-title">Show/Hide &amp; Colors</div>
+        {WIDGET_CATALOG.map((widget) => (
+          <div className="field" key={widget.id}>
+            <div className="checkbox-row">
+              <input
+                id={`widget-${widget.id}`}
+                type="checkbox"
+                checked={enabled.has(widget.id)}
+                onChange={() => toggle(widget.id)}
+              />
+              <label htmlFor={`widget-${widget.id}`} style={{ margin: 0, flex: 1 }}>{widget.label}</label>
+              <input
+                type="color"
+                aria-label={`${widget.label} background color`}
+                value={colors[widget.id] || PICKER_DEFAULT}
+                onChange={(e) => setColor(widget.id, e.target.value)}
+                className="widget-color-swatch"
+              />
+              {colors[widget.id] && (
+                <button
+                  type="button"
+                  className="btn-icon"
+                  title="Use theme default instead"
+                  onClick={() => clearColor(widget.id)}
+                >
+                  ✕
+                </button>
+              )}
+            </div>
+          </div>
+        ))}
+
+        <button className="btn btn-secondary" onClick={handleReset} style={{ marginTop: 12 }}>
+          &#8635; Reset to default layout
+        </button>
+        <p style={{ color: 'var(--color-text-muted)', fontSize: '0.8rem', marginTop: 8, marginBottom: 0 }}>
+          Turns every widget back on, puts them back in their default positions/sizes, and clears any
+          custom colors on this device - undoes any dragging, resizing, recoloring, or hiding done from
+          the Home dashboard.
+        </p>
+      </div>
     </div>
   );
 }

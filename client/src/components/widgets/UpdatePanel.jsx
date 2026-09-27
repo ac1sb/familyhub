@@ -91,9 +91,9 @@ export default function UpdatePanel() {
   const isUpdating = updateStatus && ACTIVE_STATUSES.has(updateStatus.status);
 
   return (
-    <div className="field" style={{ marginTop: 24 }}>
-      <label>Software Update</label>
-      <p style={{ color: 'var(--color-text-muted)', fontSize: '0.85rem', margin: '0 0 8px' }}>
+    <div className="settings-section">
+      <div className="settings-section-title">Software Update</div>
+      <p className="settings-section-intro">
         Pulls the latest code from git, reinstalls dependencies, rebuilds, and restarts the server -
         the same steps as running <code>npm run update</code> by hand, from a button instead of SSH.
       </p>

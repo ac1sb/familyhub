@@ -26,20 +26,20 @@ export default function MusicSetup() {
   }
 
   return (
-    <div>
-      <p style={{ color: 'var(--color-text-muted)', fontSize: '0.85rem', marginTop: 0 }}>
-        Controls Spotify playback on whatever device is active on the account - including a
-        Raspberry Pi running <strong>librespot</strong>, an open-source Spotify Connect client that
-        makes the Pi itself (plus whatever speaker it's wired to, aux or Bluetooth) a real,
-        selectable speaker rather than just a remote. Requires <strong>Spotify Premium</strong> -
-        free accounts can't be controlled this way, and librespot itself needs a Premium login to
-        act as a Connect device at all. See the README's "Spotify / Music" section for the full
-        librespot setup (it needs to run directly on the Pi, not something this Settings page can
-        do for you).
-      </p>
+    <div className="settings-content">
+      <div className="settings-section">
+        <div className="settings-section-title">Spotify</div>
+        <p className="settings-section-intro">
+          Controls Spotify playback on whatever device is active on the account - including a
+          Raspberry Pi running <strong>librespot</strong>, an open-source Spotify Connect client that
+          makes the Pi itself (plus whatever speaker it's wired to, aux or Bluetooth) a real,
+          selectable speaker rather than just a remote. Requires <strong>Spotify Premium</strong> -
+          free accounts can't be controlled this way, and librespot itself needs a Premium login to
+          act as a Connect device at all. See the README's "Spotify / Music" section for the full
+          librespot setup (it needs to run directly on the Pi, not something this Settings page can
+          do for you).
+        </p>
 
-      <div className="field">
-        <label>Spotify</label>
         {!status && !error && <p>Checking status…</p>}
         {error && <p style={{ color: 'var(--color-danger)' }}>{error}</p>}
         {status && !status.configured && (
@@ -58,13 +58,13 @@ export default function MusicSetup() {
             )}
           </div>
         )}
-      </div>
 
-      <p style={{ color: 'var(--color-text-muted)', fontSize: '0.8rem' }}>
-        Once connected, the Music page controls whatever's active - press play on a phone first,
-        then use Music &rarr; "Change device" to move playback to the Pi once librespot is running
-        there.
-      </p>
+        <p className="settings-section-intro" style={{ marginTop: 14, marginBottom: 0 }}>
+          Once connected, the Music page controls whatever's active - press play on a phone first,
+          then use Music &rarr; "Change device" to move playback to the Pi once librespot is running
+          there.
+        </p>
+      </div>
     </div>
   );
 }

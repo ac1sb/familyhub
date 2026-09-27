@@ -107,13 +107,15 @@ export default function DailyTaskSetup() {
   }
 
   return (
-    <div>
-      <p style={{ color: 'var(--color-text-muted)', fontSize: '0.85rem', marginTop: 0 }}>
-        Daily routine items (empty lunch box, practice clarinet, ...) show up on whichever days you pick,
-        already unchecked - and reset again fresh the next day, unlike weekly chores.
-      </p>
+    <div className="settings-content">
+      <div className="settings-section">
+        <div className="settings-section-title">Daily Checklist</div>
+        <p className="settings-section-intro">
+          Daily routine items (empty lunch box, practice clarinet, ...) show up on whichever days you pick,
+          already unchecked - and reset again fresh the next day, unlike weekly chores.
+        </p>
 
-      {(data?.templates || []).map((template) => (
+        {(data?.templates || []).map((template) => (
         <div className="chore-setup-row" key={template.id}>
           <div className="chore-row">
             <input type="checkbox" checked={template.active} onChange={() => toggleActive(template)} title="Active" />
@@ -157,6 +159,7 @@ export default function DailyTaskSetup() {
         </p>
       )}
       {addError && <p style={{ color: 'var(--color-danger)', margin: '8px 0 0' }}>{addError}</p>}
+      </div>
     </div>
   );
 }

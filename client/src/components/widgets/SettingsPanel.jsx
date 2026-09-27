@@ -45,51 +45,53 @@ function GeneralSettings({ config, onConfigUpdated }) {
   }
 
   return (
-    <>
-      <div className="field">
-        <label htmlFor="name-member-1">Member 1 name</label>
-        <input
-          id="name-member-1"
-          type="text"
-          value={names.member_1}
-          onChange={(e) => setNames((n) => ({ ...n, member_1: e.target.value }))}
-        />
-      </div>
-      <div className="field">
-        <label htmlFor="name-member-2">Member 2 name</label>
-        <input
-          id="name-member-2"
-          type="text"
-          value={names.member_2}
-          onChange={(e) => setNames((n) => ({ ...n, member_2: e.target.value }))}
-        />
-      </div>
-      <div className="field">
-        <label htmlFor="name-member-3">Member 3 name (lunch tracker child)</label>
-        <input
-          id="name-member-3"
-          type="text"
-          value={names.member_3}
-          onChange={(e) => setNames((n) => ({ ...n, member_3: e.target.value }))}
-        />
-      </div>
-      <div className="field">
-        <label htmlFor="weather-zip">Weather zip code</label>
-        <input id="weather-zip" type="text" inputMode="numeric" maxLength={5} value={zip} onChange={(e) => setZip(e.target.value)} />
+    <div className="settings-content">
+      <div className="settings-section">
+        <div className="settings-section-title">Household</div>
+        <div className="field">
+          <label htmlFor="name-member-1">Member 1 name</label>
+          <input
+            id="name-member-1"
+            type="text"
+            value={names.member_1}
+            onChange={(e) => setNames((n) => ({ ...n, member_1: e.target.value }))}
+          />
+        </div>
+        <div className="field">
+          <label htmlFor="name-member-2">Member 2 name</label>
+          <input
+            id="name-member-2"
+            type="text"
+            value={names.member_2}
+            onChange={(e) => setNames((n) => ({ ...n, member_2: e.target.value }))}
+          />
+        </div>
+        <div className="field">
+          <label htmlFor="name-member-3">Member 3 name (lunch tracker child)</label>
+          <input
+            id="name-member-3"
+            type="text"
+            value={names.member_3}
+            onChange={(e) => setNames((n) => ({ ...n, member_3: e.target.value }))}
+          />
+        </div>
+        <div className="field">
+          <label htmlFor="weather-zip">Weather zip code</label>
+          <input id="weather-zip" type="text" inputMode="numeric" maxLength={5} value={zip} onChange={(e) => setZip(e.target.value)} />
+        </div>
+
+        {error && <p style={{ color: 'var(--color-danger)' }}>{error}</p>}
+        {saveMessage && <p style={{ color: 'var(--color-primary)', fontWeight: 600 }}>{saveMessage}</p>}
+
+        <button className="btn btn-primary" onClick={handleSave} disabled={saving}>
+          {saving ? 'Saving…' : 'Save Changes'}
+        </button>
       </div>
 
       <ShoppingSheetSettings />
       <SheetsServiceAccountSettings />
-
-      {error && <p style={{ color: 'var(--color-danger)' }}>{error}</p>}
-      {saveMessage && <p style={{ color: 'var(--color-primary)', fontWeight: 600 }}>{saveMessage}</p>}
-
-      <button className="btn btn-primary" onClick={handleSave} disabled={saving}>
-        {saving ? 'Saving…' : 'Save Changes'}
-      </button>
-
       <UpdatePanel />
-    </>
+    </div>
   );
 }
 
@@ -168,10 +170,10 @@ function CalendarSettings({ config, onConfigUpdated }) {
   }
 
   return (
-    <>
-      <div className="field">
-        <label>Shared calendar feeds (optional)</label>
-        <p style={{ color: 'var(--color-text-muted)', fontSize: '0.8rem', marginTop: 0 }}>
+    <div className="settings-content">
+      <div className="settings-section">
+        <div className="settings-section-title">Shared calendar feeds (optional)</div>
+        <p className="settings-section-intro">
           Paste a calendar's "Secret address in iCal format" (Google Calendar &rarr; that calendar's
           Settings &rarr; Integrate calendar) to show its events on the agenda - read-only, and no
           Google sign-in needed. Add one per person to keep each on their own column. This is separate
@@ -208,8 +210,8 @@ function CalendarSettings({ config, onConfigUpdated }) {
         </button>
       </div>
 
-      <div className="field" style={{ marginTop: 24 }}>
-        <label>Google Calendar</label>
+      <div className="settings-section">
+        <div className="settings-section-title">Google Calendar</div>
         {!googleStatus && <p>Checking status…</p>}
         {googleStatus && !googleStatus.configured && (
           <p style={{ color: 'var(--color-text-muted)' }}>
@@ -218,18 +220,18 @@ function CalendarSettings({ config, onConfigUpdated }) {
           </p>
         )}
         {googleStatus && googleStatus.configured && (
-          <div>
-            <p>
+          <div className="field">
+            <p style={{ margin: 0 }}>
               {googleStatus.connected
                 ? '✅ Connected — two-way sync: that calendar\'s events show up here, and events added in FamilyHub are pushed to it too.'
                 : 'Not connected yet.'}
             </p>
             {googleStatus.connected ? (
-              <button className="btn btn-secondary" onClick={disconnectGoogle}>Disconnect</button>
+              <button className="btn btn-secondary" onClick={disconnectGoogle} style={{ alignSelf: 'flex-start' }}>Disconnect</button>
             ) : (
-              <button className="btn btn-primary" onClick={connectGoogle}>Connect Google Calendar</button>
+              <button className="btn btn-primary" onClick={connectGoogle} style={{ alignSelf: 'flex-start' }}>Connect Google Calendar</button>
             )}
-            <p style={{ color: 'var(--color-text-muted)', fontSize: '0.8rem', marginTop: 8 }}>
+            <p style={{ color: 'var(--color-text-muted)', fontSize: '0.8rem', margin: 0 }}>
               Connected before and FamilyHub-created events aren't showing up on Google? That connection
               only granted read access - disconnect and reconnect once to approve the write permission
               two-way sync needs.
@@ -237,44 +239,44 @@ function CalendarSettings({ config, onConfigUpdated }) {
           </div>
         )}
         {googleError && <p style={{ color: 'var(--color-danger)' }}>{googleError}</p>}
-      </div>
 
-      {googleStatus?.connected && (
-        <div className="field">
-          <label htmlFor="google-calendar-id">Google Calendar to sync events to</label>
-          <input
-            id="google-calendar-id"
-            type="text"
-            placeholder="primary"
-            value={googleCalendarId}
-            onChange={(e) => setGoogleCalendarId(e.target.value)}
-          />
-          <p style={{ color: 'var(--color-text-muted)', fontSize: '0.8rem', marginTop: 4 }}>
-            Leave as "primary" to use the signed-in account's own calendar. To sync to a shared family
-            calendar instead, share it with that account as an editor in Google Calendar, then paste its
-            Calendar ID here (that calendar's Settings &rarr; Integrate calendar).
-          </p>
-        </div>
-      )}
-      {googleStatus?.connected && (
-        <div className="field">
-          <label htmlFor="google-events-member">Show its events under</label>
-          <select
-            id="google-events-member"
-            value={googleEventsMember}
-            onChange={(e) => setGoogleEventsMember(e.target.value)}
-          >
-            <option value="family">Family (all columns)</option>
-            <option value="member_1">{names.member_1 || 'Member 1'}</option>
-            <option value="member_2">{names.member_2 || 'Member 2'}</option>
-            <option value="member_3">{names.member_3 || 'Member 3'}</option>
-          </select>
-          <p style={{ color: 'var(--color-text-muted)', fontSize: '0.8rem', marginTop: 4 }}>
-            If this connection is really one person's calendar rather than a shared household one, pin
-            it to their column instead of showing it under all three.
-          </p>
-        </div>
-      )}
+        {googleStatus?.connected && (
+          <div className="field" style={{ marginTop: 18 }}>
+            <label htmlFor="google-calendar-id">Google Calendar to sync events to</label>
+            <input
+              id="google-calendar-id"
+              type="text"
+              placeholder="primary"
+              value={googleCalendarId}
+              onChange={(e) => setGoogleCalendarId(e.target.value)}
+            />
+            <p style={{ color: 'var(--color-text-muted)', fontSize: '0.8rem', margin: 0 }}>
+              Leave as "primary" to use the signed-in account's own calendar. To sync to a shared family
+              calendar instead, share it with that account as an editor in Google Calendar, then paste its
+              Calendar ID here (that calendar's Settings &rarr; Integrate calendar).
+            </p>
+          </div>
+        )}
+        {googleStatus?.connected && (
+          <div className="field">
+            <label htmlFor="google-events-member">Show its events under</label>
+            <select
+              id="google-events-member"
+              value={googleEventsMember}
+              onChange={(e) => setGoogleEventsMember(e.target.value)}
+            >
+              <option value="family">Family (all columns)</option>
+              <option value="member_1">{names.member_1 || 'Member 1'}</option>
+              <option value="member_2">{names.member_2 || 'Member 2'}</option>
+              <option value="member_3">{names.member_3 || 'Member 3'}</option>
+            </select>
+            <p style={{ color: 'var(--color-text-muted)', fontSize: '0.8rem', margin: 0 }}>
+              If this connection is really one person's calendar rather than a shared household one, pin
+              it to their column instead of showing it under all three.
+            </p>
+          </div>
+        )}
+      </div>
 
       {error && <p style={{ color: 'var(--color-danger)' }}>{error}</p>}
       {saveMessage && <p style={{ color: 'var(--color-primary)', fontWeight: 600 }}>{saveMessage}</p>}
@@ -282,7 +284,7 @@ function CalendarSettings({ config, onConfigUpdated }) {
       <button className="btn btn-primary" onClick={handleSave} disabled={saving}>
         {saving ? 'Saving…' : 'Save Changes'}
       </button>
-    </>
+    </div>
   );
 }
 
@@ -310,32 +312,34 @@ function ShoppingSheetSettings() {
   }
 
   return (
-    <div className="field" style={{ marginTop: 24 }}>
-      <label htmlFor="shopping-sheet-id">Shopping List Google Sheet</label>
-      <div style={{ display: 'flex', gap: 8 }}>
-        <input
-          id="shopping-sheet-id"
-          type="text"
-          placeholder="Google Sheet URL or ID"
-          value={sheetId}
-          onChange={(e) => setSheetId(e.target.value)}
-          style={{ flex: 1 }}
-        />
-        <button className="btn btn-secondary" onClick={handleSave} disabled={saving || sheetId.trim() === saved}>
-          {saving ? 'Saving…' : 'Save'}
-        </button>
+    <div className="settings-section">
+      <div className="settings-section-title">Shopping List Google Sheet</div>
+      <div className="field">
+        <div style={{ display: 'flex', gap: 8 }}>
+          <input
+            id="shopping-sheet-id"
+            type="text"
+            placeholder="Google Sheet URL or ID"
+            value={sheetId}
+            onChange={(e) => setSheetId(e.target.value)}
+            style={{ flex: 1 }}
+          />
+          <button className="btn btn-secondary" onClick={handleSave} disabled={saving || sheetId.trim() === saved}>
+            {saving ? 'Saving…' : 'Save'}
+          </button>
+        </div>
+        <p style={{ color: 'var(--color-text-muted)', fontSize: '0.8rem', margin: 0 }}>
+          Two-way with column F (row 2 down) on that spreadsheet's first tab, alongside whatever other
+          columns are already there - column G quietly tracks which row is which item and can be ignored.
+          Syncs automatically every few minutes once a sheet is set here (the "Sync with Sheet" button on
+          the Shopping List page is just for pulling in a change right away). Type a new item into column
+          F from your phone and it lands here on the next sync; an item added here gets a row there.
+          Never deletes, clears, or shifts anything on either side - removing a row from the sheet
+          doesn't remove it here (it'll just reappear there next sync, as long as it's still on the
+          list). Requires the Google account connected in Settings &rarr; Calendar (or a Sheets service
+          account below).
+        </p>
       </div>
-      <p style={{ color: 'var(--color-text-muted)', fontSize: '0.8rem', marginTop: 4 }}>
-        Two-way with column F (row 2 down) on that spreadsheet's first tab, alongside whatever other
-        columns are already there - column G quietly tracks which row is which item and can be ignored.
-        Syncs automatically every few minutes once a sheet is set here (the "Sync with Sheet" button on
-        the Shopping List page is just for pulling in a change right away). Type a new item into column
-        F from your phone and it lands here on the next sync; an item added here gets a row there.
-        Never deletes, clears, or shifts anything on either side - removing a row from the sheet
-        doesn't remove it here (it'll just reappear there next sync, as long as it's still on the
-        list). Requires the Google account connected in Settings &rarr; Calendar (or a Sheets service
-        account below).
-      </p>
     </div>
   );
 }
@@ -382,9 +386,9 @@ function SheetsServiceAccountSettings() {
   }
 
   return (
-    <div className="field" style={{ marginTop: 24 }}>
-      <label>Sheets Service Account (optional)</label>
-      <p style={{ color: 'var(--color-text-muted)', fontSize: '0.8rem', marginTop: 0 }}>
+    <div className="settings-section">
+      <div className="settings-section-title">Sheets Service Account (optional)</div>
+      <p className="settings-section-intro">
         An alternative to the Google connection in Settings &rarr; Calendar, just for the Shopping
         List sheet sync - no sign-in or redirect URL needed, so it works before a stable host/IP is
         settled. Create a service account in Google Cloud Console, download its JSON key, share the
@@ -453,61 +457,63 @@ function AppearanceSettings({ config, onConfigUpdated }) {
   }
 
   return (
-    <>
-      <div className="field">
-        <label>Theme</label>
-        <div className="member-choice-row">
-          {[
-            { id: 'auto', label: 'Automatic (schedule)' },
-            { id: 'light', label: 'Always Light' },
-            { id: 'dark', label: 'Always Dark' },
-          ].map((opt) => (
-            <button
-              key={opt.id}
-              type="button"
-              className={`member-choice family${themeMode === opt.id ? ' selected' : ''}`}
-              onClick={() => setThemeMode(opt.id)}
-            >
-              {opt.label}
-            </button>
-          ))}
+    <div className="settings-content">
+      <div className="settings-section">
+        <div className="settings-section-title">Theme</div>
+        <div className="field">
+          <div className="member-choice-row">
+            {[
+              { id: 'auto', label: 'Automatic (schedule)' },
+              { id: 'light', label: 'Always Light' },
+              { id: 'dark', label: 'Always Dark' },
+            ].map((opt) => (
+              <button
+                key={opt.id}
+                type="button"
+                className={`member-choice family${themeMode === opt.id ? ' selected' : ''}`}
+                onClick={() => setThemeMode(opt.id)}
+              >
+                {opt.label}
+              </button>
+            ))}
+          </div>
         </div>
+
+        {themeMode === 'auto' && (
+          <>
+            <div className="field">
+              <label htmlFor="dark-start">Switch to dark at</label>
+              <input id="dark-start" type="time" value={darkStart} onChange={(e) => setDarkStart(e.target.value)} />
+            </div>
+            <div className="field">
+              <label htmlFor="dark-end">Switch back to light at</label>
+              <input id="dark-end" type="time" value={darkEnd} onChange={(e) => setDarkEnd(e.target.value)} />
+            </div>
+          </>
+        )}
+
+        {error && <p style={{ color: 'var(--color-danger)' }}>{error}</p>}
+        {saveMessage && <p style={{ color: 'var(--color-primary)', fontWeight: 600 }}>{saveMessage}</p>}
+
+        <button className="btn btn-primary" onClick={handleSave} disabled={saving}>
+          {saving ? 'Saving…' : 'Save Changes'}
+        </button>
       </div>
-
-      {themeMode === 'auto' && (
-        <>
-          <div className="field">
-            <label htmlFor="dark-start">Switch to dark at</label>
-            <input id="dark-start" type="time" value={darkStart} onChange={(e) => setDarkStart(e.target.value)} />
-          </div>
-          <div className="field">
-            <label htmlFor="dark-end">Switch back to light at</label>
-            <input id="dark-end" type="time" value={darkEnd} onChange={(e) => setDarkEnd(e.target.value)} />
-          </div>
-        </>
-      )}
-
-      {error && <p style={{ color: 'var(--color-danger)' }}>{error}</p>}
-      {saveMessage && <p style={{ color: 'var(--color-primary)', fontWeight: 600 }}>{saveMessage}</p>}
-
-      <button className="btn btn-primary" onClick={handleSave} disabled={saving}>
-        {saving ? 'Saving…' : 'Save Changes'}
-      </button>
-    </>
+    </div>
   );
 }
 
 const TABS = [
-  { id: 'general', label: 'General' },
-  { id: 'calendar', label: 'Calendar' },
-  { id: 'appearance', label: 'Appearance' },
-  { id: 'widgets', label: 'Dashboard Widgets' },
-  { id: 'chores', label: 'Chore Setup' },
-  { id: 'daily', label: 'Daily Checklist Setup' },
-  { id: 'smarthome', label: 'Smart Home Setup' },
-  { id: 'familyphotos', label: 'Family Photos' },
-  { id: 'music', label: 'Music' },
-  { id: 'screensaver', label: 'Screensaver' },
+  { id: 'general', label: 'General', icon: '⚙️' },
+  { id: 'calendar', label: 'Calendar', icon: '📅' },
+  { id: 'appearance', label: 'Appearance', icon: '🎨' },
+  { id: 'widgets', label: 'Dashboard Widgets', icon: '🧩' },
+  { id: 'chores', label: 'Chore Setup', icon: '✅' },
+  { id: 'daily', label: 'Daily Checklist Setup', icon: '📋' },
+  { id: 'smarthome', label: 'Smart Home Setup', icon: '💡' },
+  { id: 'familyphotos', label: 'Family Photos', icon: '📷' },
+  { id: 'music', label: 'Music', icon: '🎵' },
+  { id: 'screensaver', label: 'Screensaver', icon: '🖥️' },
 ];
 
 export default function SettingsPanel({ config, onConfigUpdated, screensaverSettings, onScreensaverSettingsChange }) {
@@ -526,7 +532,8 @@ export default function SettingsPanel({ config, onConfigUpdated, screensaverSett
             className={`settings-tab${tab === t.id ? ' active' : ''}`}
             onClick={() => setTab(t.id)}
           >
-            {t.label}
+            <span className="settings-tab-icon">{t.icon}</span>
+            <span>{t.label}</span>
           </button>
         ))}
       </div>

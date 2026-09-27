@@ -632,20 +632,60 @@ button {
 .settings-tabs {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
-  margin-bottom: 18px;
+  gap: 6px;
+  margin-bottom: 22px;
   border-bottom: 1px solid var(--color-border);
-  padding-bottom: 8px;
+  padding-bottom: 16px;
 }
 .settings-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
   background: var(--color-bg);
   border: 1px solid var(--color-border);
   border-radius: 999px;
-  padding: 10px 18px;
+  padding: 8px 16px 8px 13px;
   font-weight: 600;
-  min-height: 44px;
+  font-size: 0.85rem;
+  min-height: 40px;
+  transition: border-color 0.15s ease, background-color 0.15s ease, color 0.15s ease;
 }
+.settings-tab:hover { border-color: var(--color-primary); }
+.settings-tab-icon { font-size: 1rem; line-height: 1; }
 .settings-tab.active { background: var(--color-primary); color: #fff; border-color: var(--color-primary); }
+
+/* A tab's content, capped to a comfortable reading/form width rather than
+   stretching edge-to-edge in a wide window - the single biggest thing that
+   made this page read as "a pile of form fields" instead of Settings. */
+.settings-content { max-width: 640px; }
+
+/* Groups related fields into their own visually distinct card (subtly
+   different shade from the surrounding widget-card) instead of everything
+   running together with nothing but a bold label between unrelated
+   groups - e.g. household names vs. the Shopping List's Google Sheet vs.
+   its service-account fallback, which used to all look like one form. */
+.settings-section {
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: 14px;
+  padding: 18px 20px;
+  margin-bottom: 18px;
+}
+.settings-section:last-child { margin-bottom: 0; }
+.settings-section .field:last-child { margin-bottom: 0; }
+.settings-section-title {
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--color-text-muted);
+  margin: 0 0 14px;
+}
+.settings-section-intro {
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+  margin: -6px 0 14px;
+}
 
 .checkbox-row { display: flex; align-items: center; gap: 10px; }
 .checkbox-row input[type=checkbox] { width: 22px; height: 22px; }

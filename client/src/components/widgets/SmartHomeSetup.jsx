@@ -76,16 +76,14 @@ export default function SmartHomeSetup() {
   const devices = data?.devices || [];
 
   return (
-    <div>
-      <p style={{ color: 'var(--color-text-muted)', fontSize: '0.85rem', marginTop: 0 }}>
-        Add the Caseta switches and LIFX bulbs you want to show up on the Smart Home widget. LIFX
-        bulbs added via Discover below control a real bulb (toggle/brightness/color all call the
-        LIFX Cloud API); Caseta and manually-typed devices are still a local-only mockup - nothing
-        is sent to a real switch or bridge for those yet.
-      </p>
-
-      <div className="field" style={{ marginBottom: 18 }}>
-        <label style={{ display: 'block', marginBottom: 6 }}>LIFX</label>
+    <div className="settings-content">
+      <div className="settings-section">
+        <div className="settings-section-title">LIFX</div>
+        <p className="settings-section-intro">
+          LIFX bulbs added via Discover below control a real bulb (toggle/brightness/color all call
+          the LIFX Cloud API); Caseta and manually-typed devices are still a local-only mockup -
+          nothing is sent to a real switch or bridge for those yet.
+        </p>
         <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
           <span className={`chore-tag ${lifxConnected ? 'family' : ''}`} style={!lifxConnected ? { background: 'var(--color-border)' } : undefined}>
             {lifxConnected ? '✅ Token saved' : 'Not connected'}
@@ -131,56 +129,62 @@ export default function SmartHomeSetup() {
         )}
       </div>
 
-      {devices.map((device) => (
-        <div className="chore-row" key={device.id}>
-          <span className="chore-title">{device.name}</span>
-          {device.room && <span className="chore-tag family">{device.room}</span>}
-          <span className="chore-tag family">{PLATFORM_LABEL[device.platform]}</span>
-          <span className="chore-tag family">{KIND_LABEL[device.kind]}</span>
-          {device.platform === 'lifx' && device.external_id && <span className="chore-tag family">Connected</span>}
-          <button className="btn-icon" onClick={() => removeDevice(device.id)}>✕</button>
-        </div>
-      ))}
-      {data && devices.length === 0 && <p style={{ color: 'var(--color-text-muted)' }}>No devices added yet.</p>}
-
-      <div className="add-row" style={{ flexWrap: 'wrap' }}>
-        <input
-          type="text"
-          placeholder="e.g. Living Room Lamp"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          onKeyDown={(e) => e.key === 'Enter' && addDevice()}
-        />
-        <input
-          type="text"
-          placeholder="Room (optional)"
-          value={room}
-          onChange={(e) => setRoom(e.target.value)}
-          onKeyDown={(e) => e.key === 'Enter' && addDevice()}
-        />
-        <select
-          value={platform}
-          onChange={(e) => {
-            setPlatform(e.target.value);
-            if (e.target.value === 'lifx') setKind('light');
-            else setKind('dimmer');
-          }}
-        >
-          <option value="lifx">LIFX</option>
-          <option value="caseta">Lutron Caseta</option>
-        </select>
-        {platform === 'caseta' && (
-          <select value={kind} onChange={(e) => setKind(e.target.value)}>
-            <option value="dimmer">Dimmer switch</option>
-            <option value="switch">On/off switch</option>
-          </select>
-        )}
-        <button className="btn btn-primary" onClick={addDevice}>Add</button>
+      <div className="settings-section">
+        <div className="settings-section-title">Devices</div>
+        {devices.map((device) => (
+          <div className="chore-row" key={device.id}>
+            <span className="chore-title">{device.name}</span>
+            {device.room && <span className="chore-tag family">{device.room}</span>}
+            <span className="chore-tag family">{PLATFORM_LABEL[device.platform]}</span>
+            <span className="chore-tag family">{KIND_LABEL[device.kind]}</span>
+            {device.platform === 'lifx' && device.external_id && <span className="chore-tag family">Connected</span>}
+            <button className="btn-icon" onClick={() => removeDevice(device.id)}>✕</button>
+          </div>
+        ))}
+        {data && devices.length === 0 && <p style={{ color: 'var(--color-text-muted)' }}>No devices added yet.</p>}
       </div>
-      <p style={{ color: 'var(--color-text-muted)', fontSize: '0.8rem', marginTop: 8 }}>
-        Adding a LIFX device by typing its name here (instead of using Discover above) creates a
-        local-only mock entry, same as Caseta - only Discover links it to a real bulb.
-      </p>
+
+      <div className="settings-section">
+        <div className="settings-section-title">Add a Device</div>
+        <div className="add-row" style={{ flexWrap: 'wrap' }}>
+          <input
+            type="text"
+            placeholder="e.g. Living Room Lamp"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && addDevice()}
+          />
+          <input
+            type="text"
+            placeholder="Room (optional)"
+            value={room}
+            onChange={(e) => setRoom(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && addDevice()}
+          />
+          <select
+            value={platform}
+            onChange={(e) => {
+              setPlatform(e.target.value);
+              if (e.target.value === 'lifx') setKind('light');
+              else setKind('dimmer');
+            }}
+          >
+            <option value="lifx">LIFX</option>
+            <option value="caseta">Lutron Caseta</option>
+          </select>
+          {platform === 'caseta' && (
+            <select value={kind} onChange={(e) => setKind(e.target.value)}>
+              <option value="dimmer">Dimmer switch</option>
+              <option value="switch">On/off switch</option>
+            </select>
+          )}
+          <button className="btn btn-primary" onClick={addDevice}>Add</button>
+        </div>
+        <p className="settings-section-intro" style={{ marginTop: 8, marginBottom: 0 }}>
+          Adding a LIFX device by typing its name here (instead of using Discover above) creates a
+          local-only mock entry, same as Caseta - only Discover links it to a real bulb.
+        </p>
+      </div>
     </div>
   );
 }
