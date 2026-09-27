@@ -43,7 +43,7 @@ shopping list from another device.
   syncing a sheet that already has some of the same items typed into column
   F links them up by name
   instead of creating duplicates. Requires the same connected Google
-  account as Calendar sync (Settings → General → Google Calendar) -
+  account as Calendar sync (Settings → Calendar → Google Calendar) -
   connecting or reconnecting after this feature was added re-prompts for
   the added Sheets permission. If OAuth isn't set up yet (it needs a
   stable, reachable redirect URL, which a not-yet-networked Pi might not
@@ -380,7 +380,7 @@ If you just want a calendar's events to show up on the agenda and don't need
 FamilyHub to write anything back to it, skip Google OAuth entirely: open
 that calendar's Settings in Google Calendar -> "Integrate calendar" -> copy
 its **Secret address in iCal format**, then paste that URL into Settings ->
-General -> "Shared calendar feeds." No Google Cloud project, no sign-in, no
+Calendar -> "Shared calendar feeds." No Google Cloud project, no sign-in, no
 client ID/secret - the secret URL is the only credential involved, and it's
 read-only (FamilyHub never writes to it).
 
@@ -416,7 +416,7 @@ occurrence twice.
 By default this syncs to the signed-in account's own ("primary") calendar.
 To sync to a *shared* family calendar instead, share that calendar with the
 OAuth account as an editor, then paste its Calendar ID (same "Integrate
-calendar" settings page as above) into Settings -> General -> "Google
+calendar" settings page as above) into Settings -> Calendar -> "Google
 Calendar to sync events to".
 
 If you connected Google Calendar before this two-way sync existed, that

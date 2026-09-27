@@ -12,6 +12,89 @@ import UpdatePanel from './UpdatePanel.jsx';
 function GeneralSettings({ config, onConfigUpdated }) {
   const [names, setNames] = useState({ member_1: '', member_2: '', member_3: '' });
   const [zip, setZip] = useState('');
+  const [saving, setSaving] = useState(false);
+  const [saveMessage, setSaveMessage] = useState(null);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    if (config) {
+      setNames(config.members);
+      setZip(config.weather_zip);
+    }
+  }, [config]);
+
+  async function handleSave() {
+    setSaving(true);
+    setError(null);
+    setSaveMessage(null);
+    try {
+      const updated = await api.updateSettings({
+        member_1: names.member_1,
+        member_2: names.member_2,
+        member_3: names.member_3,
+        weather_zip: zip,
+      });
+      onConfigUpdated?.(updated);
+      setSaveMessage('Saved!');
+      setTimeout(() => setSaveMessage(null), 3000);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <>
+      <div className="field">
+        <label htmlFor="name-member-1">Member 1 name</label>
+        <input
+          id="name-member-1"
+          type="text"
+          value={names.member_1}
+          onChange={(e) => setNames((n) => ({ ...n, member_1: e.target.value }))}
+        />
+      </div>
+      <div className="field">
+        <label htmlFor="name-member-2">Member 2 name</label>
+        <input
+          id="name-member-2"
+          type="text"
+          value={names.member_2}
+          onChange={(e) => setNames((n) => ({ ...n, member_2: e.target.value }))}
+        />
+      </div>
+      <div className="field">
+        <label htmlFor="name-member-3">Member 3 name (lunch tracker child)</label>
+        <input
+          id="name-member-3"
+          type="text"
+          value={names.member_3}
+          onChange={(e) => setNames((n) => ({ ...n, member_3: e.target.value }))}
+        />
+      </div>
+      <div className="field">
+        <label htmlFor="weather-zip">Weather zip code</label>
+        <input id="weather-zip" type="text" inputMode="numeric" maxLength={5} value={zip} onChange={(e) => setZip(e.target.value)} />
+      </div>
+
+      <ShoppingSheetSettings />
+      <SheetsServiceAccountSettings />
+
+      {error && <p style={{ color: 'var(--color-danger)' }}>{error}</p>}
+      {saveMessage && <p style={{ color: 'var(--color-primary)', fontWeight: 600 }}>{saveMessage}</p>}
+
+      <button className="btn btn-primary" onClick={handleSave} disabled={saving}>
+        {saving ? 'Saving…' : 'Save Changes'}
+      </button>
+
+      <UpdatePanel />
+    </>
+  );
+}
+
+function CalendarSettings({ config, onConfigUpdated }) {
+  const names = config?.members || { member_1: '', member_2: '', member_3: '' };
   const [icalFeeds, setIcalFeeds] = useState([{ url: '', member: 'family' }]);
   const [googleCalendarId, setGoogleCalendarId] = useState('');
   const [googleEventsMember, setGoogleEventsMember] = useState('family');
@@ -24,8 +107,6 @@ function GeneralSettings({ config, onConfigUpdated }) {
 
   useEffect(() => {
     if (config) {
-      setNames(config.members);
-      setZip(config.weather_zip);
       setIcalFeeds(config.ical_feeds?.length ? config.ical_feeds : [{ url: '', member: 'family' }]);
       setGoogleCalendarId(config.google_calendar_id || 'primary');
       setGoogleEventsMember(config.google_events_member || 'family');
@@ -72,10 +153,6 @@ function GeneralSettings({ config, onConfigUpdated }) {
     setSaveMessage(null);
     try {
       const updated = await api.updateSettings({
-        member_1: names.member_1,
-        member_2: names.member_2,
-        member_3: names.member_3,
-        weather_zip: zip,
         ical_feeds: icalFeeds,
         google_calendar_id: googleCalendarId,
         google_events_member: googleEventsMember,
@@ -92,37 +169,6 @@ function GeneralSettings({ config, onConfigUpdated }) {
 
   return (
     <>
-      <div className="field">
-        <label htmlFor="name-member-1">Member 1 name</label>
-        <input
-          id="name-member-1"
-          type="text"
-          value={names.member_1}
-          onChange={(e) => setNames((n) => ({ ...n, member_1: e.target.value }))}
-        />
-      </div>
-      <div className="field">
-        <label htmlFor="name-member-2">Member 2 name</label>
-        <input
-          id="name-member-2"
-          type="text"
-          value={names.member_2}
-          onChange={(e) => setNames((n) => ({ ...n, member_2: e.target.value }))}
-        />
-      </div>
-      <div className="field">
-        <label htmlFor="name-member-3">Member 3 name (lunch tracker child)</label>
-        <input
-          id="name-member-3"
-          type="text"
-          value={names.member_3}
-          onChange={(e) => setNames((n) => ({ ...n, member_3: e.target.value }))}
-        />
-      </div>
-      <div className="field">
-        <label htmlFor="weather-zip">Weather zip code</label>
-        <input id="weather-zip" type="text" inputMode="numeric" maxLength={5} value={zip} onChange={(e) => setZip(e.target.value)} />
-      </div>
       <div className="field">
         <label>Shared calendar feeds (optional)</label>
         <p style={{ color: 'var(--color-text-muted)', fontSize: '0.8rem', marginTop: 0 }}>
@@ -230,17 +276,12 @@ function GeneralSettings({ config, onConfigUpdated }) {
         </div>
       )}
 
-      <ShoppingSheetSettings />
-      <SheetsServiceAccountSettings />
-
       {error && <p style={{ color: 'var(--color-danger)' }}>{error}</p>}
       {saveMessage && <p style={{ color: 'var(--color-primary)', fontWeight: 600 }}>{saveMessage}</p>}
 
       <button className="btn btn-primary" onClick={handleSave} disabled={saving}>
         {saving ? 'Saving…' : 'Save Changes'}
       </button>
-
-      <UpdatePanel />
     </>
   );
 }
@@ -292,7 +333,8 @@ function ShoppingSheetSettings() {
         F from your phone and it lands here on the next sync; an item added here gets a row there.
         Never deletes, clears, or shifts anything on either side - removing a row from the sheet
         doesn't remove it here (it'll just reappear there next sync, as long as it's still on the
-        list). Requires the Google account above to be connected.
+        list). Requires the Google account connected in Settings &rarr; Calendar (or a Sheets service
+        account below).
       </p>
     </div>
   );
@@ -343,11 +385,11 @@ function SheetsServiceAccountSettings() {
     <div className="field" style={{ marginTop: 24 }}>
       <label>Sheets Service Account (optional)</label>
       <p style={{ color: 'var(--color-text-muted)', fontSize: '0.8rem', marginTop: 0 }}>
-        An alternative to the Google connection above, just for the Shopping List sheet sync - no
-        sign-in or redirect URL needed, so it works before a stable host/IP is settled. Create a
-        service account in Google Cloud Console, download its JSON key, share the target Google Sheet
-        with its email as an Editor, then paste the whole downloaded file below. Used instead of the
-        Google connection above whenever it's set.
+        An alternative to the Google connection in Settings &rarr; Calendar, just for the Shopping
+        List sheet sync - no sign-in or redirect URL needed, so it works before a stable host/IP is
+        settled. Create a service account in Google Cloud Console, download its JSON key, share the
+        target Google Sheet with its email as an Editor, then paste the whole downloaded file below.
+        Used instead of that Google connection whenever it's set.
       </p>
       {connected ? (
         <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
@@ -457,6 +499,7 @@ function AppearanceSettings({ config, onConfigUpdated }) {
 
 const TABS = [
   { id: 'general', label: 'General' },
+  { id: 'calendar', label: 'Calendar' },
   { id: 'appearance', label: 'Appearance' },
   { id: 'widgets', label: 'Dashboard Widgets' },
   { id: 'chores', label: 'Chore Setup' },
@@ -489,6 +532,7 @@ export default function SettingsPanel({ config, onConfigUpdated, screensaverSett
       </div>
 
       {tab === 'general' && <GeneralSettings config={config} onConfigUpdated={onConfigUpdated} />}
+      {tab === 'calendar' && <CalendarSettings config={config} onConfigUpdated={onConfigUpdated} />}
       {tab === 'appearance' && <AppearanceSettings config={config} onConfigUpdated={onConfigUpdated} />}
       {tab === 'widgets' && <DashboardWidgetsSetup />}
       {tab === 'chores' && <ChoreSetup />}
