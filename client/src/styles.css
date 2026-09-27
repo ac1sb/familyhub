@@ -687,6 +687,138 @@ button {
   margin: -6px 0 14px;
 }
 
+/* ---------- Control style (Settings -> Appearance) ----------
+   A purely visual depth preset for buttons and widget cards, chosen via
+   uiStyleSettings.js and set as <html data-ui-style="flat|soft|tactile">.
+   "flat" is the original look above and needs no rules here; "soft" and
+   "tactile" only add shadows/gradients/press feedback on top of the
+   existing colors, radius and layout, so switching between them can't
+   break anything else. Grouped by shape: rectangular controls (buttons,
+   member-choice) can take a chamfered corner cut in "tactile"; pill-shaped
+   controls (tabs, mode toggles, weekday chips) keep their round shape and
+   just get weight; cards only ever get elevation, never a gradient or cut
+   corner, since bevelling something that holds scrollable content looks
+   broken. */
+.btn, .btn-icon, .member-choice, .member-tap,
+.settings-tab, .mode-toggle-btn, .weekday-chip,
+.tile-row, .tile-square, .tile-carousel-tile {
+  transition: transform 0.08s ease, box-shadow 0.15s ease, background-image 0.15s ease, border-color 0.15s ease;
+}
+.widget-card, .settings-section {
+  transition: box-shadow 0.15s ease, border-color 0.15s ease;
+}
+
+/* Depth has to read on both the light and dark theme, and a plain black
+   drop shadow all but disappears against the dark theme's already-near-black
+   background - so every rule below leans on a bright inset "edge catching
+   the light" highlight as much as the drop shadow itself, since that shows
+   up against a button or card's own fill color regardless of what's behind
+   it. */
+[data-ui-style="soft"] .widget-card,
+[data-ui-style="soft"] .settings-section {
+  border-color: color-mix(in srgb, var(--color-border) 40%, white 20%);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3), 0 2px 6px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.12);
+}
+[data-ui-style="soft"] .btn,
+[data-ui-style="soft"] .btn-icon,
+[data-ui-style="soft"] .member-choice,
+[data-ui-style="soft"] .member-tap {
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.4), inset 0 -1px 0 rgba(0, 0, 0, 0.15);
+}
+/* Checkable "physical button" tiles (Chores/Daily Checklist) - raised while
+   untouched, pressed in once done, so ticking one off is a small tactile
+   payoff instead of just a color/strikethrough change. */
+[data-ui-style="soft"] .tile-row,
+[data-ui-style="soft"] .tile-square,
+[data-ui-style="soft"] .tile-carousel-tile {
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.22), inset 0 1px 0 rgba(255, 255, 255, 0.18);
+}
+[data-ui-style="soft"] .tile-row.done,
+[data-ui-style="soft"] .tile-square.done,
+[data-ui-style="soft"] .tile-carousel-tile.done {
+  box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.3);
+}
+[data-ui-style="soft"] .settings-tab,
+[data-ui-style="soft"] .mode-toggle-row,
+[data-ui-style="soft"] .weekday-chip {
+  border-color: color-mix(in srgb, var(--color-border) 40%, white 15%);
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.15);
+}
+[data-ui-style="soft"] .settings-tab.active {
+  box-shadow: 0 3px 10px color-mix(in srgb, var(--color-primary) 55%, transparent), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+}
+[data-ui-style="soft"] .btn:active,
+[data-ui-style="soft"] .btn-icon:active,
+[data-ui-style="soft"] .member-choice:active,
+[data-ui-style="soft"] .member-tap:active,
+[data-ui-style="soft"] .settings-tab:active,
+[data-ui-style="soft"] .weekday-chip:active {
+  transform: translateY(1px);
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.4);
+}
+
+[data-ui-style="tactile"] .widget-card,
+[data-ui-style="tactile"] .settings-section {
+  border-color: color-mix(in srgb, var(--color-border) 30%, white 30%);
+  box-shadow: 0 14px 30px rgba(0, 0, 0, 0.35), 0 3px 8px rgba(0, 0, 0, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+[data-ui-style="tactile"] .btn,
+[data-ui-style="tactile"] .btn-icon,
+[data-ui-style="tactile"] .member-choice,
+[data-ui-style="tactile"] .member-tap {
+  clip-path: polygon(
+    8px 0, calc(100% - 8px) 0, 100% 8px,
+    100% calc(100% - 8px), calc(100% - 8px) 100%, 8px 100%,
+    0 calc(100% - 8px), 0 8px
+  );
+  border: 1px solid rgba(0, 0, 0, 0.3);
+  background-image: linear-gradient(180deg, rgba(255, 255, 255, 0.45), rgba(255, 255, 255, 0) 40%, rgba(0, 0, 0, 0.2));
+  box-shadow: 0 5px 0 rgba(0, 0, 0, 0.35), 0 10px 20px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.5);
+}
+/* The tactile border override above (needed to darken the bevel edge) would
+   otherwise also cover up .selected's own border color, which is the only
+   thing marking which choice is currently picked. */
+[data-ui-style="tactile"] .member-choice.selected {
+  border-color: var(--color-text);
+}
+[data-ui-style="tactile"] .btn:active,
+[data-ui-style="tactile"] .btn-icon:active,
+[data-ui-style="tactile"] .member-choice:active,
+[data-ui-style="tactile"] .member-tap:active {
+  transform: translateY(5px);
+  box-shadow: 0 0 0 rgba(0, 0, 0, 0.35), 0 2px 4px rgba(0, 0, 0, 0.35), inset 0 2px 4px rgba(0, 0, 0, 0.35);
+  background-image: linear-gradient(180deg, rgba(0, 0, 0, 0.25), rgba(255, 255, 255, 0) 60%, rgba(255, 255, 255, 0.12));
+}
+[data-ui-style="tactile"] .tile-row,
+[data-ui-style="tactile"] .tile-square,
+[data-ui-style="tactile"] .tile-carousel-tile {
+  border-color: color-mix(in srgb, var(--color-border) 40%, white 20%);
+  background-image: linear-gradient(180deg, rgba(255, 255, 255, 0.18), rgba(0, 0, 0, 0) 50%);
+  box-shadow: 0 3px 0 rgba(0, 0, 0, 0.2), 0 6px 12px rgba(0, 0, 0, 0.22), inset 0 1px 0 rgba(255, 255, 255, 0.25);
+}
+[data-ui-style="tactile"] .tile-row.done,
+[data-ui-style="tactile"] .tile-square.done,
+[data-ui-style="tactile"] .tile-carousel-tile.done {
+  background-image: linear-gradient(180deg, rgba(0, 0, 0, 0.15), rgba(255, 255, 255, 0) 60%);
+  box-shadow: inset 0 3px 6px rgba(0, 0, 0, 0.35);
+  transform: translateY(2px);
+}
+[data-ui-style="tactile"] .settings-tab,
+[data-ui-style="tactile"] .mode-toggle-row,
+[data-ui-style="tactile"] .weekday-chip {
+  border-color: color-mix(in srgb, var(--color-border) 30%, white 25%);
+  background-image: linear-gradient(180deg, rgba(255, 255, 255, 0.35), rgba(0, 0, 0, 0.1));
+  box-shadow: 0 4px 0 rgba(0, 0, 0, 0.3), 0 8px 16px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+}
+[data-ui-style="tactile"] .settings-tab.active {
+  box-shadow: 0 4px 0 var(--color-primary-dark), 0 8px 18px color-mix(in srgb, var(--color-primary) 60%, transparent), inset 0 1px 0 rgba(255, 255, 255, 0.35);
+}
+[data-ui-style="tactile"] .settings-tab:active,
+[data-ui-style="tactile"] .weekday-chip:active {
+  transform: translateY(4px);
+  box-shadow: 0 0 0 rgba(0, 0, 0, 0.3), 0 2px 4px rgba(0, 0, 0, 0.3), inset 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
 .checkbox-row { display: flex; align-items: center; gap: 10px; }
 .checkbox-row input[type=checkbox] { width: 22px; height: 22px; }
 .widget-color-swatch { width: 32px; height: 32px; padding: 0; border: 1px solid var(--color-border); border-radius: 8px; cursor: pointer; flex-shrink: 0; }

@@ -424,7 +424,41 @@ function SheetsServiceAccountSettings() {
   );
 }
 
-function AppearanceSettings({ config, onConfigUpdated }) {
+const CONTROL_STYLES = [
+  { id: 'flat', label: 'Flat', description: 'Thin borders, no shadows - the original minimal look.' },
+  { id: 'soft', label: 'Soft', description: 'A gentle shadow and lift, so buttons and cards float a little above the background.' },
+  { id: 'tactile', label: 'Tactile', description: 'Chamfered, beveled buttons with real weight, plus a pressed-in click when tapped.' },
+];
+
+function ControlStyleSettings({ uiStyle, onUiStyleChange }) {
+  const active = CONTROL_STYLES.find((o) => o.id === uiStyle) || CONTROL_STYLES[0];
+  return (
+    <div className="settings-section">
+      <div className="settings-section-title">Control Style</div>
+      <p className="settings-section-intro">
+        Adds depth to buttons and widget cards across the app. Purely visual, and per-device like the
+        dashboard display styles - it applies immediately, no Save needed.
+      </p>
+      <div className="member-choice-row">
+        {CONTROL_STYLES.map((opt) => (
+          <button
+            key={opt.id}
+            type="button"
+            className={`member-choice family${uiStyle === opt.id ? ' selected' : ''}`}
+            onClick={() => onUiStyleChange(opt.id)}
+          >
+            {opt.label}
+          </button>
+        ))}
+      </div>
+      <p style={{ color: 'var(--color-text-muted)', fontSize: '0.8rem', margin: '10px 0 0' }}>
+        {active.description}
+      </p>
+    </div>
+  );
+}
+
+function AppearanceSettings({ config, onConfigUpdated, uiStyle, onUiStyleChange }) {
   const [themeMode, setThemeMode] = useState('auto');
   const [darkStart, setDarkStart] = useState('19:00');
   const [darkEnd, setDarkEnd] = useState('07:00');
@@ -499,6 +533,8 @@ function AppearanceSettings({ config, onConfigUpdated }) {
           {saving ? 'Saving…' : 'Save Changes'}
         </button>
       </div>
+
+      <ControlStyleSettings uiStyle={uiStyle} onUiStyleChange={onUiStyleChange} />
     </div>
   );
 }
@@ -516,7 +552,14 @@ const TABS = [
   { id: 'screensaver', label: 'Screensaver', icon: '🖥️' },
 ];
 
-export default function SettingsPanel({ config, onConfigUpdated, screensaverSettings, onScreensaverSettingsChange }) {
+export default function SettingsPanel({
+  config,
+  onConfigUpdated,
+  screensaverSettings,
+  onScreensaverSettingsChange,
+  uiStyle,
+  onUiStyleChange,
+}) {
   const [tab, setTab] = useState('general');
 
   return (
@@ -540,7 +583,14 @@ export default function SettingsPanel({ config, onConfigUpdated, screensaverSett
 
       {tab === 'general' && <GeneralSettings config={config} onConfigUpdated={onConfigUpdated} />}
       {tab === 'calendar' && <CalendarSettings config={config} onConfigUpdated={onConfigUpdated} />}
-      {tab === 'appearance' && <AppearanceSettings config={config} onConfigUpdated={onConfigUpdated} />}
+      {tab === 'appearance' && (
+        <AppearanceSettings
+          config={config}
+          onConfigUpdated={onConfigUpdated}
+          uiStyle={uiStyle}
+          onUiStyleChange={onUiStyleChange}
+        />
+      )}
       {tab === 'widgets' && <DashboardWidgetsSetup />}
       {tab === 'chores' && <ChoreSetup />}
       {tab === 'daily' && <DailyTaskSetup />}

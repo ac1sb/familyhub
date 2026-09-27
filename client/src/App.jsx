@@ -18,6 +18,7 @@ import Screensaver from './components/Screensaver.jsx';
 import { api } from './api.js';
 import { isNightNow } from './lib/theme.js';
 import { getScreensaverSettings, setScreensaverSettings } from './lib/screensaverSettings.js';
+import { getUiStyle, setUiStyle } from './lib/uiStyleSettings.js';
 import { useIdleTimer } from './hooks/useIdleTimer.js';
 
 const DEFAULT_MEMBERS = { member_1: 'Mom', member_2: 'Dad', member_3: 'Child' };
@@ -27,10 +28,15 @@ export default function App() {
   const [config, setConfig] = useState(null);
   const [now, setNow] = useState(new Date());
   const [screensaver, setScreensaver] = useState(getScreensaverSettings());
+  const [uiStyle, setUiStyleState] = useState(getUiStyle());
 
   function updateScreensaverSettings(next) {
     setScreensaver(next);
     setScreensaverSettings(next);
+  }
+
+  function updateUiStyle(next) {
+    setUiStyleState(setUiStyle(next));
   }
 
   // Tapping the overlay is itself "activity", so useIdleTimer's own window
@@ -53,6 +59,10 @@ export default function App() {
     const dark = isNightNow(config?.theme, now);
     document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light');
   }, [config?.theme, now]);
+
+  useEffect(() => {
+    document.documentElement.setAttribute('data-ui-style', uiStyle);
+  }, [uiStyle]);
 
   const members = config?.members || DEFAULT_MEMBERS;
   const zip = config?.weather_zip || '05255';
@@ -91,6 +101,8 @@ export default function App() {
               onConfigUpdated={setConfig}
               screensaverSettings={screensaver}
               onScreensaverSettingsChange={updateScreensaverSettings}
+              uiStyle={uiStyle}
+              onUiStyleChange={updateUiStyle}
             />
           )}
         </main>

@@ -226,6 +226,10 @@ shopping list from another device.
   Geocoded from a US zip code via Open-Meteo (no API key required).
 - **Day/night theme** — switches automatically on a schedule you set in
   Settings → Appearance (or pin it to always-light/always-dark).
+- **Control style** — per-device (Settings → Appearance): Flat (the original
+  minimal look), Soft (a gentle shadow/lift on buttons and cards), or Tactile
+  (chamfered, beveled buttons with a pressed-in click) - purely visual, applies
+  immediately with no Save button.
 - **Screensaver** — per-device (Settings → Screensaver): idle timeout, photo
   interval, and background theme (landscapes/mountains/waterfalls/lakes/
   forests), with a clock/date/weather overlay and a Preview button. Off by
