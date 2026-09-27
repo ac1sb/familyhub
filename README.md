@@ -217,7 +217,18 @@ shopping list from another device.
   LIFX device added by typing a name instead of using Discover) stays a
   local-only mock, same as the four example devices (Dining Room, Living
   Room, Lamp, Kitchen Counter) seeded in on first run; see "Known
-  limitations" below for what real Caseta support would need.
+  limitations" below for what real Caseta support would need. **LG ThinQ
+  washer/dryer status is also real** - read-only (no remote start/stop, just
+  whether it's running and how much time is left), using LG's official
+  ThinQ Connect API rather than a reverse-engineered one, so it needs no
+  Home Assistant server or bridge. Generate a Personal Access Token at
+  [thinq.developer.lge.com](https://thinq.developer.lge.com) (Cloud
+  Developer → Docs → ThinQ Connect → Personal Access Token, for the LG
+  account the appliances are registered to), paste it in Settings → Smart
+  Home Setup along with the two-letter country code they're registered in,
+  then tap **Discover LG Appliances** to add the washer/dryer it finds.
+  Status is fetched fresh on every request, never cached, so there's nothing
+  to go stale.
 - **Weather** — a row of quick-glance chips in the header on every page,
   opposite the smart-home toggles with a prominent date/time between them
   (current temp, high/low, precipitation chance, a
@@ -637,7 +648,8 @@ other file on the Pi.
 
 ## Known limitations (v1)
 
-- LIFX control is real (see above); Lutron Caseta is still a mockup -
+- LIFX control and LG ThinQ washer/dryer status are both real (see above);
+  Lutron Caseta is still a mockup -
   toggling a Caseta device only updates FamilyHub's own database, not a
   real switch. The base Smart Bridge (non-Pro) has no public local API for
   third-party apps like FamilyHub to call directly, even though it natively

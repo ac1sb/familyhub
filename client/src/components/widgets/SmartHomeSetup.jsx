@@ -2,8 +2,16 @@ import { useEffect, useState } from 'react';
 import { usePolling } from '../../hooks/usePolling.js';
 import { api } from '../../api.js';
 
-const PLATFORM_LABEL = { lifx: 'LIFX', caseta: 'Lutron Caseta' };
-const KIND_LABEL = { light: 'Color light', dimmer: 'Dimmer switch', switch: 'On/off switch' };
+const PLATFORM_LABEL = { lifx: 'LIFX', caseta: 'Lutron Caseta', lg_thinq: 'LG ThinQ' };
+const KIND_LABEL = { light: 'Color light', dimmer: 'Dimmer switch', switch: 'On/off switch', washer: 'Washer', dryer: 'Dryer' };
+
+function formatRemaining(minutes) {
+  if (minutes == null) return null;
+  const h = Math.floor(minutes / 60);
+  const m = minutes % 60;
+  if (h > 0) return `${h}h ${m}m left`;
+  return `${m}m left`;
+}
 
 export default function SmartHomeSetup() {
   const { data, refresh } = usePolling(() => api.smartDevices(), [], 20000);
@@ -19,8 +27,20 @@ export default function SmartHomeSetup() {
   const [discovering, setDiscovering] = useState(false);
   const [discoverError, setDiscoverError] = useState(null);
 
+  const [thinqConnected, setThinqConnected] = useState(false);
+  const [thinqCountry, setThinqCountry] = useState('US');
+  const [thinqPatInput, setThinqPatInput] = useState('');
+  const [savingThinqPat, setSavingThinqPat] = useState(false);
+  const [thinqCandidates, setThinqCandidates] = useState(null);
+  const [discoveringThinq, setDiscoveringThinq] = useState(false);
+  const [thinqDiscoverError, setThinqDiscoverError] = useState(null);
+
   useEffect(() => {
     api.lifxSettings().then((r) => setLifxConnected(r.connected)).catch(() => {});
+    api.lgThinqSettings().then((r) => {
+      setThinqConnected(r.connected);
+      setThinqCountry(r.country || 'US');
+    }).catch(() => {});
   }, []);
 
   async function saveToken() {
@@ -57,6 +77,43 @@ export default function SmartHomeSetup() {
       external_id: light.external_id,
     });
     setCandidates((prev) => prev.filter((l) => l.external_id !== light.external_id));
+    refresh();
+  }
+
+  async function saveThinqPat() {
+    if (!thinqPatInput.trim()) return;
+    setSavingThinqPat(true);
+    try {
+      const r = await api.saveLgThinqSettings(thinqPatInput.trim(), thinqCountry);
+      setThinqConnected(r.connected);
+      setThinqPatInput('');
+    } finally {
+      setSavingThinqPat(false);
+    }
+  }
+
+  async function discoverThinqDevices() {
+    setDiscoveringThinq(true);
+    setThinqDiscoverError(null);
+    setThinqCandidates(null);
+    try {
+      const r = await api.discoverLgThinqDevices();
+      setThinqCandidates(r.devices);
+    } catch (err) {
+      setThinqDiscoverError(err.message);
+    } finally {
+      setDiscoveringThinq(false);
+    }
+  }
+
+  async function addDiscoveredThinqDevice(device) {
+    await api.createSmartDevice({
+      name: device.label,
+      platform: 'lg_thinq',
+      external_id: device.external_id,
+      kind: device.kind,
+    });
+    setThinqCandidates((prev) => prev.filter((d) => d.external_id !== device.external_id));
     refresh();
   }
 
@@ -130,6 +187,64 @@ export default function SmartHomeSetup() {
       </div>
 
       <div className="settings-section">
+        <div className="settings-section-title">LG ThinQ (Washer/Dryer)</div>
+        <p className="settings-section-intro">
+          Read-only status - no remote start/stop, just whether it's running and how much time is
+          left. Uses LG's official ThinQ Connect API with a Personal Access Token, not your regular
+          LG account login. Generate one at{' '}
+          <strong>thinq.developer.lge.com</strong> (Cloud Developer &rarr; Docs &rarr; ThinQ Connect
+          &rarr; Personal Access Token) for the account the washer/dryer are registered to.
+        </p>
+        <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
+          <span className={`chore-tag ${thinqConnected ? 'family' : ''}`} style={!thinqConnected ? { background: 'var(--color-border)' } : undefined}>
+            {thinqConnected ? '✅ Token saved' : 'Not connected'}
+          </span>
+          <input
+            type="text"
+            placeholder="LG ThinQ Personal Access Token"
+            value={thinqPatInput}
+            onChange={(e) => setThinqPatInput(e.target.value)}
+            style={{ flex: 1, minWidth: 220 }}
+          />
+          <input
+            type="text"
+            placeholder="Country"
+            value={thinqCountry}
+            onChange={(e) => setThinqCountry(e.target.value.toUpperCase())}
+            maxLength={2}
+            style={{ width: 70 }}
+            title="Two-letter country code the appliances are registered in, e.g. US"
+          />
+          <button className="btn btn-secondary" onClick={saveThinqPat} disabled={savingThinqPat || !thinqPatInput.trim()}>
+            {savingThinqPat ? 'Saving…' : 'Save Token'}
+          </button>
+        </div>
+
+        {thinqConnected && (
+          <>
+            <button className="btn btn-secondary" onClick={discoverThinqDevices} disabled={discoveringThinq} style={{ marginTop: 10 }}>
+              {discoveringThinq ? 'Looking…' : '🔍 Discover LG Appliances'}
+            </button>
+            {thinqDiscoverError && <p style={{ color: 'var(--color-danger)' }}>⚠️ {thinqDiscoverError}</p>}
+            {thinqCandidates && thinqCandidates.length === 0 && (
+              <p style={{ color: 'var(--color-text-muted)' }}>No new washer/dryer found - already added, or none on this account.</p>
+            )}
+            {thinqCandidates && thinqCandidates.length > 0 && (
+              <div style={{ marginTop: 8 }}>
+                {thinqCandidates.map((device) => (
+                  <div className="chore-row" key={device.external_id}>
+                    <span className="chore-title">{device.label}</span>
+                    <span className="chore-tag family">{KIND_LABEL[device.kind]}</span>
+                    <button className="btn btn-primary" onClick={() => addDiscoveredThinqDevice(device)}>Add</button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </>
+        )}
+      </div>
+
+      <div className="settings-section">
         <div className="settings-section-title">Devices</div>
         {devices.map((device) => (
           <div className="chore-row" key={device.id}>
@@ -138,6 +253,11 @@ export default function SmartHomeSetup() {
             <span className="chore-tag family">{PLATFORM_LABEL[device.platform]}</span>
             <span className="chore-tag family">{KIND_LABEL[device.kind]}</span>
             {device.platform === 'lifx' && device.external_id && <span className="chore-tag family">Connected</span>}
+            {device.platform === 'lg_thinq' && (
+              <span className="chore-tag family">
+                {device.thinq_error ? `⚠️ ${device.thinq_error}` : [device.state, formatRemaining(device.remainMinutes)].filter(Boolean).join(' · ')}
+              </span>
+            )}
             <button className="btn-icon" onClick={() => removeDevice(device.id)}>✕</button>
           </div>
         ))}

@@ -1,3 +1,4 @@
+import crypto from 'node:crypto';
 import { getSetting, setSetting, getJSON, setJSON } from './settings.js';
 
 // Household member names and the weather zip code are editable from the
@@ -163,6 +164,28 @@ export function setLifxToken(token) {
 // 'family', which the agenda shows in every column - fine for a household-
 // wide calendar, but a single person's own Google Calendar usually reads
 // better pinned to just their column instead of appearing three times over.
+// LG ThinQ Connect (thinq.developer.lge.com) - a Personal Access Token plus a
+// self-chosen client ID (any random UUID; LG just asks that each integration
+// use its own, generated once and reused, rather than a fresh one per
+// request) and the country the appliances are registered in, which decides
+// which of LG's three regional API gateways to call. Only used for read-only
+// washer/dryer status (see lib/lgThinq.js), never control.
+export function getLgThinqSettings() {
+  return getJSON('lg_thinq_settings', null) || { pat: '', clientId: '', country: 'US' };
+}
+
+export function setLgThinqSettings({ pat, country }) {
+  const existing = getLgThinqSettings();
+  setJSON('lg_thinq_settings', {
+    pat: pat !== undefined ? pat.trim() : existing.pat,
+    country: country !== undefined ? country.trim().toUpperCase() : existing.country || 'US',
+    // Generated once on first save and kept stable after that - LG asks
+    // integrations not to mint a new client ID on every request.
+    clientId: existing.clientId || crypto.randomUUID(),
+  });
+  return getLgThinqSettings();
+}
+
 export function getGoogleEventsMember() {
   return getSetting('google_events_member') || 'family';
 }

@@ -92,6 +92,10 @@ export const api = {
   lifxSettings: () => request('/smart-devices/lifx/settings'),
   saveLifxToken: (token) => request('/smart-devices/lifx/settings', { method: 'POST', body: JSON.stringify({ token }) }),
   discoverLifxLights: () => request('/smart-devices/lifx/discover'),
+  lgThinqSettings: () => request('/smart-devices/lg-thinq/settings'),
+  saveLgThinqSettings: (pat, country) =>
+    request('/smart-devices/lg-thinq/settings', { method: 'POST', body: JSON.stringify({ pat, country }) }),
+  discoverLgThinqDevices: () => request('/smart-devices/lg-thinq/discover'),
 
   familyPhotos: () => request('/family-photos'),
   familyPhotoSettings: () => request('/family-photos/settings'),

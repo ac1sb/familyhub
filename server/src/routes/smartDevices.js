@@ -1,15 +1,19 @@
 import { Router } from 'express';
 import db from '../db.js';
-import { getLifxToken, setLifxToken } from '../lib/appConfig.js';
+import { getLifxToken, setLifxToken, getLgThinqSettings, setLgThinqSettings } from '../lib/appConfig.js';
 import { listLifxLights, setLifxState } from '../lib/lifx.js';
+import { listThinqDevices, getThinqDeviceStatus, humanizeThinqStatus, LAUNDRY_DEVICE_TYPES } from '../lib/lgThinq.js';
 
 const router = Router();
 
 // A 'lifx' device with external_id set is wired to a real bulb - toggling/
 // dimming/coloring it calls the LIFX Cloud API (see the try/catch in the
-// PUT route below). Everything else - no external_id, or platform 'caseta'
-// (no real Lutron integration exists yet) - stays the original mock
-// behavior: only this table is read/written, no network call.
+// PUT route below). A 'lg_thinq' device is read-only - its washer/dryer
+// status is fetched fresh on every list request (see the Promise.all below)
+// rather than cached in this table, so there's nothing here to go stale.
+// Everything else - no external_id, or platform 'caseta' (no real Lutron
+// integration exists yet) - stays the original mock behavior: only this
+// table is read/written, no network call.
 function serialize(row) {
   return {
     ...row,
@@ -19,9 +23,63 @@ function serialize(row) {
   };
 }
 
-router.get('/', (req, res) => {
+async function withThinqStatus(row) {
+  if (row.platform !== 'lg_thinq' || !row.external_id) return row;
+  const settings = getLgThinqSettings();
+  if (!settings.pat) return { ...row, thinq_error: 'Not connected' };
+  try {
+    const status = await getThinqDeviceStatus(settings, row.external_id);
+    return { ...row, ...humanizeThinqStatus(status) };
+  } catch (err) {
+    return { ...row, thinq_error: err.message };
+  }
+}
+
+router.get('/', async (req, res) => {
   const rows = db.prepare('SELECT * FROM smart_devices ORDER BY room ASC, sort_order ASC, id ASC').all();
-  res.json({ devices: rows.map(serialize) });
+  const withStatus = await Promise.all(rows.map(withThinqStatus));
+  res.json({ devices: withStatus.map(serialize) });
+});
+
+// GET /api/smart-devices/lg-thinq/settings -> whether a Personal Access
+// Token is saved (and which country), so the setup page can show
+// connected/not without the token itself ever coming back down to the client.
+router.get('/lg-thinq/settings', (req, res) => {
+  const { pat, country } = getLgThinqSettings();
+  res.json({ connected: !!pat, country: country || 'US' });
+});
+
+router.post('/lg-thinq/settings', (req, res) => {
+  const { pat, country } = setLgThinqSettings({ pat: req.body.pat, country: req.body.country });
+  res.json({ connected: !!pat, country: country || 'US' });
+});
+
+// GET /api/smart-devices/lg-thinq/discover -> every washer/dryer on the
+// account that isn't already linked to a local device, same "one-tap Add
+// candidate" idea as the LIFX discover route.
+router.get('/lg-thinq/discover', async (req, res) => {
+  const settings = getLgThinqSettings();
+  if (!settings.pat) {
+    return res.status(400).json({ error: 'No LG ThinQ Personal Access Token saved yet - add one in Smart Home Setup first' });
+  }
+
+  try {
+    const devices = await listThinqDevices(settings);
+    const linkedIds = new Set(
+      db.prepare("SELECT external_id FROM smart_devices WHERE platform = 'lg_thinq' AND external_id IS NOT NULL").all()
+        .map((r) => r.external_id)
+    );
+    const candidates = devices
+      .filter((d) => LAUNDRY_DEVICE_TYPES.has(d.deviceInfo?.deviceType) && !linkedIds.has(d.deviceId))
+      .map((d) => ({
+        external_id: d.deviceId,
+        label: d.deviceInfo?.alias || d.deviceInfo?.modelName || 'LG appliance',
+        kind: d.deviceInfo.deviceType.includes('DRYER') ? 'dryer' : 'washer',
+      }));
+    res.json({ devices: candidates });
+  } catch (err) {
+    res.status(502).json({ error: err.message });
+  }
 });
 
 // GET /api/smart-devices/lifx/settings -> whether a token is saved, so the
@@ -67,12 +125,15 @@ router.get('/lifx/discover', async (req, res) => {
 router.post('/', (req, res) => {
   const { name, room = '', platform, external_id = null } = req.body;
   if (!name || !platform) return res.status(400).json({ error: 'name and platform are required' });
-  if (!['lifx', 'caseta'].includes(platform)) return res.status(400).json({ error: 'platform must be lifx or caseta' });
+  if (!['lifx', 'caseta', 'lg_thinq'].includes(platform)) {
+    return res.status(400).json({ error: 'platform must be lifx, caseta, or lg_thinq' });
+  }
 
   // LIFX bulbs (the color line this integration targets) are always dimmable and
   // color-capable; Caseta covers plain on/off switches and dimmer switches,
-  // never color.
-  const kind = platform === 'lifx' ? 'light' : req.body.kind === 'dimmer' ? 'dimmer' : 'switch';
+  // never color; LG ThinQ washers/dryers are read-only status, never either.
+  const kind =
+    platform === 'lifx' ? 'light' : platform === 'lg_thinq' ? (req.body.kind === 'dryer' ? 'dryer' : 'washer') : req.body.kind === 'dimmer' ? 'dimmer' : 'switch';
   const dimmable = platform === 'lifx' || kind === 'dimmer' ? 1 : 0;
   const color_capable = platform === 'lifx' ? 1 : 0;
 
@@ -81,7 +142,7 @@ router.post('/', (req, res) => {
     .prepare(
       'INSERT INTO smart_devices (name, room, platform, kind, dimmable, color_capable, external_id, sort_order) VALUES (?, ?, ?, ?, ?, ?, ?, ?)'
     )
-    .run(name, room, platform, kind, dimmable, color_capable, platform === 'lifx' ? external_id : null, maxOrder + 1);
+    .run(name, room, platform, kind, dimmable, color_capable, platform === 'lifx' || platform === 'lg_thinq' ? external_id : null, maxOrder + 1);
 
   const row = db.prepare('SELECT * FROM smart_devices WHERE id = ?').get(info.lastInsertRowid);
   res.status(201).json(serialize(row));

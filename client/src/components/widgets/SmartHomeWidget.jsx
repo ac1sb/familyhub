@@ -2,7 +2,15 @@ import { useState } from 'react';
 import { usePolling } from '../../hooks/usePolling.js';
 import { api } from '../../api.js';
 
-const PLATFORM_ICON = { lifx: '💡', caseta: '🔘' };
+const PLATFORM_ICON = { lifx: '💡', caseta: '🔘', lg_thinq: '🧺' };
+
+function formatRemaining(minutes) {
+  if (minutes == null) return null;
+  const h = Math.floor(minutes / 60);
+  const m = minutes % 60;
+  if (h > 0) return `${h}h ${m}m left`;
+  return `${m}m left`;
+}
 
 function groupByRoom(devices) {
   const groups = new Map();
@@ -26,6 +34,29 @@ function ToggleSwitch({ checked, onChange }) {
 }
 
 function DeviceRow({ device, onToggle, onBrightness, onColor, showRoom }) {
+  if (device.platform === 'lg_thinq') {
+    const statusText = device.thinq_error
+      ? `⚠️ ${device.thinq_error}`
+      : [device.state, formatRemaining(device.remainMinutes)].filter(Boolean).join(' · ');
+    return (
+      <div className="smart-device-row">
+        <div className="smart-device-main">
+          <span className="smart-device-icon">{PLATFORM_ICON.lg_thinq}</span>
+          <div className="smart-device-name-col">
+            <span className="smart-device-name">{device.name}</span>
+            {showRoom && device.room && <span className="smart-device-room">{device.room}</span>}
+          </div>
+          <span
+            className="chore-tag family"
+            style={device.thinq_error ? { background: 'var(--color-danger)' } : undefined}
+          >
+            {statusText || 'Unknown'}
+          </span>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="smart-device-row">
       <div className="smart-device-main">
@@ -148,7 +179,8 @@ export default function SmartHomeWidget({ compact = false, onExpand }) {
         <p style={{ color: 'var(--color-text-muted)', fontSize: '0.8rem', marginTop: 10, marginBottom: 0 }}>
           A LIFX bulb added via Discover (Settings &rarr; Smart Home Setup) is real - toggles,
           brightness, and color all call the actual bulb. Caseta switches and manually-typed devices
-          are still a local-only mockup with nothing behind them yet.
+          are still a local-only mockup with nothing behind them yet. An LG ThinQ washer/dryer shows
+          its real status (fetched fresh each time) but has no toggle - status only, no remote control.
         </p>
       )}
     </section>
