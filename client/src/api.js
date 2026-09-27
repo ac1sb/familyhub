@@ -95,7 +95,7 @@ export const api = {
 
   familyPhotos: () => request('/family-photos'),
   familyPhotoSettings: () => request('/family-photos/settings'),
-  saveFamilyPhotoAlbumUrl: (albumUrl) => request('/family-photos/settings', { method: 'POST', body: JSON.stringify({ albumUrl }) }),
+  saveFamilyPhotoAlbums: (albums) => request('/family-photos/settings', { method: 'POST', body: JSON.stringify({ albums }) }),
   syncFamilyPhotos: () => request('/family-photos/sync', { method: 'POST' }),
   deleteFamilyPhoto: (id) => request(`/family-photos/${id}`, { method: 'DELETE' }),
 

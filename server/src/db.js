@@ -163,19 +163,24 @@ CREATE TABLE IF NOT EXISTS whiteboard_notes (
   created_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
 
--- Photos mirrored in from an iCloud Shared Album (see
+-- Photos mirrored in from one or more iCloud Shared Albums (see
 -- lib/icloudSharedAlbum.js) for the "Family Photos" screensaver/background
 -- theme - guid is Apple's own id for the photo, used to tell an already-
--- synced photo from a new one on the next sync without re-downloading it.
--- Once downloaded, a photo stays here even if removed from the shared album
--- later (nothing here ever gets deleted by a sync, only by someone
--- explicitly removing it from Settings).
+-- synced photo from a new one on the next sync without re-downloading it
+-- (globally, across every configured album - the same photo shared into two
+-- albums is still only stored once). Once downloaded, a photo stays here
+-- even if removed from its shared album later (nothing here ever gets
+-- deleted by a sync, only by someone explicitly removing it from Settings).
+-- album_label is that album's own name (Apple's streamName), captured at
+-- sync time just so the gallery can show which album a photo came from.
 CREATE TABLE IF NOT EXISTS family_photos (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   guid TEXT NOT NULL UNIQUE,
   filename TEXT NOT NULL,
   caption TEXT,
   taken_at TEXT,
+  album_url TEXT,
+  album_label TEXT,
   created_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
 `);
@@ -222,6 +227,15 @@ try {
   db.exec('ALTER TABLE smart_devices ADD COLUMN external_id TEXT');
 } catch {
   // column already exists
+}
+for (const column of ['album_url', 'album_label']) {
+  try {
+    // Which iCloud Shared Album a photo came from - added when Family
+    // Photos grew from one album to a list of them.
+    db.exec(`ALTER TABLE family_photos ADD COLUMN ${column} TEXT`);
+  } catch {
+    // column already exists
+  }
 }
 
 // Seed a handful of example smart-home devices once, so the header quick-

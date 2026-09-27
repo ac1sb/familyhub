@@ -432,23 +432,29 @@ its path is saved on the event.
 Note: the first OCR run downloads the English trained-data file, so the Pi
 needs internet access at least once.
 
-## Family Photos (screensaver from an iCloud Shared Album)
+## Family Photos (screensaver from one or more iCloud Shared Albums)
 
-**Settings → Family Photos** syncs in photos from a public iCloud Shared
-Album, so anyone in the family can add a photo the normal way (Photos app →
-a shared album → the usual share sheet) without uploading anything to
-FamilyHub directly, and it works from as many iPhones as are added to that
-album. Set it up once from an iPhone:
+**Settings → Family Photos** syncs in photos from one or more public iCloud
+Shared Albums, so anyone in the family can add a photo the normal way
+(Photos app → a shared album → the usual share sheet) without uploading
+anything to FamilyHub directly. Add more than one album (one per person, or
+however you want to split it up, using "+ Add another album") and they all
+mix into the same rotation — the same photo showing up in two albums is only
+ever stored once. Set one up from an iPhone:
 
 1. Photos app → **Albums** → **+** → **New Shared Album**, add whoever should
    be able to add photos to it.
 2. Open that album → **⋯** → **Shared Album Settings** → turn on **Public
    Website** → copy the link it gives you.
-3. Paste that link into Settings → Family Photos → "Shared Album link" →
+3. Paste that link into Settings → Family Photos → "Shared Album links" →
    **Save**, then **Sync Now** for the first pull (after that it re-syncs on
    its own every hour — `FAMILY_PHOTO_SYNC_MINUTES` in `.env` changes that).
+   Repeat for any other albums.
 4. Pick **"Family Photos"** as the theme in Screensaver settings (or the
    dashboard background) to cycle through them like any other photo theme.
+
+One album failing to sync (an expired link, say) doesn't hold up the others
+- Settings shows which one and why, right under the Sync Now button.
 
 This uses the same public link Apple's "Shared Album website" feature is
 built for — no Apple ID, password, or app on anyone's phone beyond the

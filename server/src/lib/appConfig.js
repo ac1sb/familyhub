@@ -128,16 +128,29 @@ export function setGoogleServiceAccountKey(key) {
   setJSON('google_service_account_key', key);
 }
 
-// The iCloud Shared Album link (Photos app -> that album -> Shared Album
-// settings -> "Public Website") the "Family Photos" screensaver/background
-// theme syncs from - just the URL, same DB-wins-over-.env pattern as
-// everything else here. See lib/icloudSharedAlbum.js.
-export function getFamilyPhotoAlbumUrl() {
-  return getSetting('family_photo_album_url') || process.env.FAMILY_PHOTO_ALBUM_URL || '';
+// One or more iCloud Shared Album links (Photos app -> an album -> Shared
+// Album settings -> "Public Website") the "Family Photos" screensaver/
+// background theme syncs from - a list, so photos from more than one
+// family member's album mix into the same rotation. See
+// lib/icloudSharedAlbum.js.
+export function getFamilyPhotoAlbums() {
+  const stored = getJSON('family_photo_albums', null);
+  if (Array.isArray(stored)) return stored;
+
+  // One-time fallback for whoever set up the original single-album URL
+  // (via Settings, or the FAMILY_PHOTO_ALBUM_URL env var, from before this
+  // became a list) - not written back, so a still-unconfigured install
+  // stays free to pick up a later env var change instead of getting stuck
+  // on today's value.
+  const legacyUrl = getSetting('family_photo_album_url') || process.env.FAMILY_PHOTO_ALBUM_URL || '';
+  return legacyUrl ? [legacyUrl] : [];
 }
 
-export function setFamilyPhotoAlbumUrl(url) {
-  setSetting('family_photo_album_url', url);
+export function setFamilyPhotoAlbums(albums) {
+  // Drop half-filled "add another album" rows (no URL typed yet) instead of
+  // saving them as phantom entries, same as the shared calendar feeds list.
+  const cleaned = (albums || []).map((url) => (url || '').trim()).filter(Boolean);
+  setJSON('family_photo_albums', cleaned);
 }
 
 // LIFX Cloud API personal access token (from cloud.lifx.com/settings) -

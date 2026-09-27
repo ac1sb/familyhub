@@ -53,10 +53,12 @@ function largestDerivative(derivatives) {
   return entries.reduce((best, d) => (Number(d.width) > Number(best.width) ? d : best));
 }
 
-// Returns every photo currently in the album as
-// { guid, checksum, width, height, caption, takenAt } - takenAt is whichever
-// of dateCreated/batchDateCreated iCloud actually sent (its shape has varied
-// across accounts), and may be null.
+// Returns { streamName, photos } for the album - streamName is the album's
+// own title (so callers can label where a photo came from without the
+// person having to type a name for it themselves), and each photo is
+// { guid, checksum, width, height, caption, takenAt, url } - takenAt is
+// whichever of dateCreated/batchDateCreated iCloud actually sent (its shape
+// has varied across accounts), and may be null.
 export async function listSharedAlbumPhotos(albumUrlOrToken) {
   const token = extractAlbumToken(albumUrlOrToken);
   if (!token) throw new Error('That doesn\'t look like an iCloud Shared Album link');
@@ -82,18 +84,20 @@ export async function listSharedAlbumPhotos(albumUrlOrToken) {
     })
     .filter(Boolean);
 
-  if (chosen.length === 0) return [];
+  if (chosen.length === 0) return { streamName: data.streamName || null, photos: [] };
 
   const assetData = await postJSON(host, token, 'webasseturls', {
     photoGuids: chosen.map((p) => p.guid),
   });
   const items = assetData.items || {};
 
-  return chosen
+  const withUrls = chosen
     .map((p) => {
       const asset = items[p.checksum];
       if (!asset) return null;
       return { ...p, url: `https://${asset.url_location}${asset.url_path}` };
     })
     .filter(Boolean);
+
+  return { streamName: data.streamName || null, photos: withUrls };
 }
