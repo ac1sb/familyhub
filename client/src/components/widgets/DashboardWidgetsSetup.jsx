@@ -6,6 +6,8 @@ import {
   getWidgetColors,
   setWidgetColors,
   resetDashboardLayout,
+  getDashboardLocked,
+  setDashboardLocked,
 } from '../../lib/dashboardLayout.js';
 import { getWidgetDisplayMode, setWidgetDisplayMode } from '../../lib/widgetDisplayMode.js';
 import { getDashboardBackgroundSettings, setDashboardBackgroundSettings } from '../../lib/dashboardBackgroundSettings.js';
@@ -31,6 +33,15 @@ export default function DashboardWidgetsSetup() {
     Object.fromEntries(DISPLAY_MODE_WIDGETS.map((w) => [w.id, getWidgetDisplayMode(w.id)]))
   );
   const [background, setBackground] = useState(() => getDashboardBackgroundSettings());
+  const [locked, setLocked] = useState(() => getDashboardLocked());
+
+  function toggleLocked() {
+    setLocked((prev) => {
+      const next = !prev;
+      setDashboardLocked(next);
+      return next;
+    });
+  }
 
   function updateBackground(patch) {
     setBackground((prev) => {
@@ -217,6 +228,27 @@ export default function DashboardWidgetsSetup() {
           buttons) to move through the items. Tapping a tile/bar itself always toggles it (done for
           Chores/Daily Checklist, School/Home for Lunch), in any style. Set independently for each,
           per-device, like everything else on this page.
+        </p>
+      </div>
+
+      <div className="settings-section">
+        <div className="settings-section-title">Layout Lock</div>
+        <div className="checkbox-row">
+          <input
+            id="dashboard-locked"
+            type="checkbox"
+            checked={locked}
+            onChange={toggleLocked}
+          />
+          <label htmlFor="dashboard-locked" style={{ margin: 0 }}>
+            Lock dashboard layout on this device
+          </label>
+        </div>
+        <p style={{ color: 'var(--color-text-muted)', fontSize: '0.8rem', marginTop: 6, marginBottom: 0 }}>
+          Prevents dragging or resizing any widget on the Home dashboard - a stray drag on a
+          touchscreen (or a curious kid) can't move anything out of place. Everything else still
+          works as normal: checking off a chore, editing the menu, tapping "See all," and so on.
+          Per-device, like the layout itself - turn it off here again any time you want to rearrange.
         </p>
       </div>
 

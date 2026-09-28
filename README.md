@@ -80,7 +80,12 @@ shopping list from another device.
   any style - these are just different skins on the same list, not separate
   features, so switching back and forth never loses anything. Every widget
   can be dragged and resized to your own layout, which is saved per-device
-  (in the browser) and survives `git pull`/rebuilds. Widgets free-float
+  (in the browser) and survives `git pull`/rebuilds - or turn on **"Lock
+  dashboard layout on this device"** in Settings → Dashboard Widgets once
+  it's arranged the way you want, so a stray touchscreen drag (or a curious
+  kid) can't move or resize anything; everything else about the dashboard
+  still works normally, and it's a one-tap toggle to unlock again for
+  rearranging. Widgets free-float
   rather than snapping tightly together - moving one out of the way, or
   hiding it in Settings, leaves the gap it left behind instead of the rest
   of the board auto-packing to close it up; dragging one onto another still

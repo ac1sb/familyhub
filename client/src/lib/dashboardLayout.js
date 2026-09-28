@@ -1,6 +1,7 @@
 const KEY = 'familyhub.dashboardLayout.v1';
 const WIDGETS_KEY = 'familyhub.dashboardWidgets.v1';
 const COLORS_KEY = 'familyhub.dashboardColors.v1';
+const LOCKED_KEY = 'familyhub.dashboardLocked.v1';
 
 // The catalog of every widget the Home dashboard can show, in the order
 // they're offered in Settings - independent of DEFAULT_LAYOUT's ids so
@@ -124,6 +125,26 @@ export function getWidgetColors() {
 export function setWidgetColors(colors) {
   try {
     localStorage.setItem(COLORS_KEY, JSON.stringify(colors));
+  } catch {
+    // private browsing / storage blocked - choice just won't persist on this device
+  }
+}
+
+// Per-device, like the layout itself - freezes every widget on the Home
+// dashboard against dragging/resizing (kids on a touchscreen, an accidental
+// long-press) without touching anything about the widgets' own content or
+// their saved positions/sizes, which stay exactly where they were left.
+export function getDashboardLocked() {
+  try {
+    return localStorage.getItem(LOCKED_KEY) === 'true';
+  } catch {
+    return false;
+  }
+}
+
+export function setDashboardLocked(locked) {
+  try {
+    localStorage.setItem(LOCKED_KEY, locked ? 'true' : 'false');
   } catch {
     // private browsing / storage blocked - choice just won't persist on this device
   }

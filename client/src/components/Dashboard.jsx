@@ -19,6 +19,7 @@ import {
   setDashboardLayout,
   getEnabledWidgets,
   getWidgetColors,
+  getDashboardLocked,
 } from '../lib/dashboardLayout.js';
 import { getWidgetDisplayMode } from '../lib/widgetDisplayMode.js';
 import { getDashboardBackgroundSettings, setDashboardBackgroundSettings } from '../lib/dashboardBackgroundSettings.js';
@@ -79,6 +80,7 @@ export default function Dashboard({ members, zip, onNavigate }) {
   const [layout, setLayout] = useState(getDashboardLayout());
   const [enabledWidgets] = useState(() => getEnabledWidgets());
   const [widgetColors] = useState(() => getWidgetColors());
+  const [locked] = useState(() => getDashboardLocked());
   const [background] = useState(() => getDashboardBackgroundSettings());
   const [backgroundPhoto, setBackgroundPhoto] = useState(background.photo);
   const wrapRef = useRef(null);
@@ -140,6 +142,7 @@ export default function Dashboard({ members, zip, onNavigate }) {
   // height against its allocated box and grow (never shrink) the box to
   // fit, saving the result like a manual resize would.
   useEffect(() => {
+    if (locked) return undefined;
     const id = setInterval(() => {
       const container = wrapRef.current;
       if (!container) return;
@@ -163,7 +166,7 @@ export default function Dashboard({ members, zip, onNavigate }) {
       });
     }, 4000);
     return () => clearInterval(id);
-  }, []);
+  }, [locked]);
 
   const widgetContent = {
     calendar: <CalendarAgenda members={members} compact fillHeight onExpand={() => onNavigate('calendar')} />,
@@ -211,6 +214,8 @@ export default function Dashboard({ members, zip, onNavigate }) {
         draggableCancel="button, input, select, textarea, a"
         resizeHandles={['se']}
         compactType={null}
+        isDraggable={!locked}
+        isResizable={!locked}
         onLayoutChange={handleLayoutChange}
       >
         {WIDGET_CATALOG.filter((w) => enabledWidgets.has(w.id)).map((w) => (
