@@ -62,8 +62,16 @@ export default function MusicSetup() {
         <p className="settings-section-intro" style={{ marginTop: 14, marginBottom: 0 }}>
           Once connected, the Music page controls whatever's active - press play on a phone first,
           then use Music &rarr; "Change device" to move playback to the Pi once librespot is running
-          there.
+          there. It can also list your own playlists and start one directly (Music &rarr; "Play a
+          playlist") without needing anything playing elsewhere first.
         </p>
+        {status?.connected && (
+          <p className="settings-section-intro" style={{ marginTop: 6, marginBottom: 0 }}>
+            Connected before playlists were added here and not seeing any on the Music page? That
+            connection only granted the playback-control permissions - disconnect and reconnect once
+            to approve the added playlist-reading permission.
+          </p>
+        )}
       </div>
     </div>
   );

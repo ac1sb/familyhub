@@ -17,6 +17,9 @@ export default function MusicWidget({ compact = false, onExpand }) {
   const [devices, setDevices] = useState(null);
   const [showDevices, setShowDevices] = useState(false);
   const [transferring, setTransferring] = useState(null);
+  const [playlists, setPlaylists] = useState(null);
+  const [showPlaylists, setShowPlaylists] = useState(false);
+  const [startingPlaylist, setStartingPlaylist] = useState(null);
 
   useEffect(() => {
     api.spotifyStatus().then(setStatus).catch((err) => setStatusError(err.message));
@@ -66,6 +69,48 @@ export default function MusicWidget({ compact = false, onExpand }) {
     setShowDevices((v) => !v);
   }
 
+  async function loadPlaylists() {
+    try {
+      const r = await api.spotifyPlaylists();
+      setPlaylists(r.playlists);
+    } catch (err) {
+      setActionError(err.message);
+    }
+  }
+
+  function togglePlaylistPicker() {
+    if (!showPlaylists) loadPlaylists();
+    setShowPlaylists((v) => !v);
+  }
+
+  // Nothing has to be playing anywhere yet for this to work - Spotify starts
+  // the playlist fresh on whichever device id is passed. Prefers whatever's
+  // currently active so tapping a playlist mid-song just changes what's
+  // playing in place; only falls back to picking a device (and loading the
+  // device list if it hasn't been already) when nothing is active at all.
+  async function handlePlayPlaylist(playlist) {
+    setActionError(null);
+    setStartingPlaylist(playlist.id);
+    try {
+      let deviceId = device?.id;
+      if (!deviceId) {
+        const list = devices || (await api.spotifyDevices()).devices;
+        if (!devices) setDevices(list);
+        deviceId = list.find((d) => d.isActive)?.id || list[0]?.id;
+      }
+      if (!deviceId) {
+        throw new Error('No Spotify devices found - open Spotify somewhere, or make sure librespot is running on the Pi.');
+      }
+      await api.spotifyPlayPlaylist(playlist.uri, deviceId);
+      setShowPlaylists(false);
+      refresh();
+    } catch (err) {
+      setActionError(err.message);
+    } finally {
+      setStartingPlaylist(null);
+    }
+  }
+
   if (statusError) {
     return (
       <section className={`widget-card${compact ? ' compact' : ''}`}>
@@ -112,7 +157,7 @@ export default function MusicWidget({ compact = false, onExpand }) {
 
       {!track && (
         <p style={{ color: 'var(--color-text-muted)' }}>
-          Nothing playing. {!compact && 'Start something on Spotify, then pick a device below to move it here.'}
+          Nothing playing. {!compact && 'Pick a playlist below to start it, or start something on Spotify elsewhere and pick a device to move it here.'}
         </p>
       )}
 
@@ -181,6 +226,31 @@ export default function MusicWidget({ compact = false, onExpand }) {
                     disabled={d.isActive || transferring === d.id}
                   >
                     {transferring === d.id ? 'Switching…' : d.isActive ? 'Playing here' : 'Play here'}
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+
+          <button className="btn btn-secondary" onClick={togglePlaylistPicker} style={{ marginTop: 6 }}>
+            {showPlaylists ? 'Hide playlists' : 'Play a playlist'}
+          </button>
+          {showPlaylists && (
+            <div style={{ marginTop: 8 }}>
+              {playlists === null && <p style={{ color: 'var(--color-text-muted)' }}>Loading playlists…</p>}
+              {playlists?.length === 0 && (
+                <p style={{ color: 'var(--color-text-muted)' }}>No playlists found on this account.</p>
+              )}
+              {playlists?.map((p) => (
+                <div className="chore-row" key={p.id}>
+                  {p.imageUrl && <img src={p.imageUrl} alt="" className="music-playlist-art" />}
+                  <span className="chore-title">{p.name}</span>
+                  <button
+                    className="btn btn-primary"
+                    onClick={() => handlePlayPlaylist(p)}
+                    disabled={startingPlaylist === p.id}
+                  >
+                    {startingPlaylist === p.id ? 'Starting…' : '▶️ Play'}
                   </button>
                 </div>
               ))}

@@ -4,14 +4,18 @@ import { getJSON, setJSON } from '../lib/settings.js';
 const router = Router();
 
 // user-read-playback-state/user-modify-playback-state/user-read-currently-
-// playing cover everything the Music page needs (reading and controlling
-// whatever device is active, including one running librespot) - no
-// "streaming" scope, since FamilyHub never plays audio itself, only tells
-// Spotify which already-registered device (the Pi) should.
+// playing cover reading and controlling whatever device is active,
+// including one running librespot - no "streaming" scope, since FamilyHub
+// never plays audio itself, only tells Spotify which already-registered
+// device (the Pi) should. playlist-read-private/-collaborative are only for
+// listing the account's own playlists on the Music page, so a saved one can
+// be started directly instead of always resuming whatever played last.
 const SCOPES = [
   'user-read-playback-state',
   'user-modify-playback-state',
   'user-read-currently-playing',
+  'playlist-read-private',
+  'playlist-read-collaborative',
 ];
 
 function isConfigured() {
@@ -194,9 +198,41 @@ router.post('/transfer', async (req, res) => {
   }
 });
 
-router.post('/play', async (req, res) => {
+// GET /api/spotify/playlists -> the account's own playlists (owned or
+// followed), so the Music page can start one directly rather than only
+// being able to resume whatever Spotify last remembers playing.
+router.get('/playlists', async (req, res) => {
   try {
-    await spotifyFetch('/me/player/play', { method: 'PUT' });
+    const data = await spotifyFetch('/me/playlists?limit=50');
+    const playlists = (data?.items || []).map((p) => ({
+      id: p.id,
+      name: p.name,
+      uri: p.uri,
+      imageUrl: p.images?.[0]?.url || null,
+      trackCount: p.tracks?.total ?? null,
+      owner: p.owner?.display_name || null,
+    }));
+    res.json({ playlists });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// POST /api/spotify/play [{ contextUri, deviceId }] -> plain resume of
+// whatever's currently active (needs an already-active device) when called
+// with no body, same as before; passing contextUri + deviceId instead starts
+// that specific playlist on that specific device even with nothing active
+// anywhere yet - the actual "play something from FamilyHub" path.
+router.post('/play', async (req, res) => {
+  const { contextUri, deviceId } = req.body || {};
+  try {
+    const path = deviceId ? `/me/player/play?device_id=${encodeURIComponent(deviceId)}` : '/me/player/play';
+    const body = contextUri ? { context_uri: contextUri } : undefined;
+    await spotifyFetch(path, {
+      method: 'PUT',
+      headers: body ? { 'Content-Type': 'application/json' } : undefined,
+      body: body ? JSON.stringify(body) : undefined,
+    });
     res.status(204).end();
   } catch (err) {
     res.status(500).json({ error: err.message });

@@ -124,8 +124,11 @@ export const api = {
   spotifyDisconnect: () => request('/spotify/disconnect', { method: 'POST' }),
   spotifyNowPlaying: () => request('/spotify/now-playing'),
   spotifyDevices: () => request('/spotify/devices'),
+  spotifyPlaylists: () => request('/spotify/playlists'),
   spotifyTransfer: (deviceId) => request('/spotify/transfer', { method: 'POST', body: JSON.stringify({ deviceId }) }),
   spotifyPlay: () => request('/spotify/play', { method: 'POST' }),
+  spotifyPlayPlaylist: (contextUri, deviceId) =>
+    request('/spotify/play', { method: 'POST', body: JSON.stringify({ contextUri, deviceId }) }),
   spotifyPause: () => request('/spotify/pause', { method: 'POST' }),
   spotifyNext: () => request('/spotify/next', { method: 'POST' }),
   spotifyPrevious: () => request('/spotify/previous', { method: 'POST' }),

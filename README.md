@@ -575,8 +575,11 @@ Calendar).
 ## Spotify / Music (the Pi as a real Connect speaker)
 
 **Settings → Music** connects Spotify and lets the Music page (and its
-dashboard tile) control whatever device is currently playing. On its own
-that's just a remote control - the interesting part is making the **Pi
+dashboard tile) control whatever device is currently playing, and also start
+something itself: **"Play a playlist"** lists the account's own playlists and
+starts one directly on the current (or a chosen) device, even with nothing
+playing anywhere yet - no need to press play on a phone first just to get
+something going. The interesting part beyond that is making the **Pi
 itself** one of those devices, with a real speaker wired to it, using
 [librespot](https://github.com/librespot-org/librespot) (an open-source
 Spotify Connect client). Once it's running, "FamilyHub" (or whatever name
