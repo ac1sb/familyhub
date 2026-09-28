@@ -592,20 +592,30 @@ without one.
 
 1. Go to the [Spotify Developer Dashboard](https://developer.spotify.com/dashboard)
    → **Create app**.
-2. Add a **Redirect URI**: `http://<your-host>:4000/api/spotify/oauth2callback`
-   (use whatever host/IP you access FamilyHub at - same idea as Google's
-   redirect URI. If your networking isn't settled yet, you can do this
-   one-time authorization step from a browser on the Pi itself using
-   `http://localhost:4000/...`, then use FamilyHub normally from other
-   devices afterward - the OAuth step is the only part that cares about
-   the exact address).
+2. Add a **Redirect URI**. Spotify now rejects a plain `http://` URI outright
+   unless the host is the literal loopback IP - `http://localhost:...`
+   is **not** treated the same as `http://127.0.0.1:...` even though both
+   point at the same machine, and using `localhost` gets a
+   `redirect_uri: Insecure` error. Without real HTTPS set up (a reverse
+   proxy with a certificate - out of scope here), use:
+   `http://127.0.0.1:4000/api/spotify/oauth2callback`
+   This means the one-time "Connect Spotify" click has to happen from a
+   browser running **on the machine hosting FamilyHub itself** (the Pi's own
+   browser, or `http://127.0.0.1:4000` typed there directly) - `127.0.0.1`
+   always means "this machine" to whatever browser opens it, so it can't be
+   done from your phone or another computer on the network. Once connected,
+   the saved tokens work from every device as normal; only this first
+   authorization click cares about the exact address. If you do have real
+   HTTPS in front of FamilyHub, use that URL instead and skip the
+   same-machine requirement.
 3. Copy its **Client ID** and **Client Secret** into `server/.env`:
    ```
    SPOTIFY_CLIENT_ID=...
    SPOTIFY_CLIENT_SECRET=...
-   SPOTIFY_REDIRECT_URI=http://<your-host>:4000/api/spotify/oauth2callback
+   SPOTIFY_REDIRECT_URI=http://127.0.0.1:4000/api/spotify/oauth2callback
    ```
-4. Restart the server, then Settings → Music → **Connect Spotify**.
+4. Restart the server, then from a browser on that same machine, Settings →
+   Music → **Connect Spotify**.
 
 ### 2. Install librespot on the Pi
 
