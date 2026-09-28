@@ -1,5 +1,18 @@
 // Week helpers: weeks run Monday (0) -> Sunday (6) to match the agenda/meal/lunch/chore views.
 
+// A bare "YYYY-MM-DD" string handed to `new Date(...)` is parsed as UTC
+// midnight, not local midnight - on any server whose local timezone is
+// behind UTC (every US timezone), converting that back to local time lands
+// on the PREVIOUS calendar day, which then throws off every local-time
+// calculation built on top of it (startOfWeek, day-of-week, etc.). Query
+// params like ?week=YYYY-MM-DD must be parsed with this instead of a bare
+// `new Date(str)` for that reason - constructing from the three numbers
+// directly is unambiguously local, no timezone conversion involved at all.
+export function parseDateOnly(str) {
+  const [y, m, d] = str.split('-').map(Number);
+  return new Date(y, m - 1, d);
+}
+
 export function startOfWeek(date = new Date()) {
   const d = new Date(date);
   const day = d.getDay(); // 0 = Sunday .. 6 = Saturday
@@ -18,7 +31,7 @@ export function toISODate(date) {
 }
 
 export function weekStartParam(query) {
-  const base = query && query.week ? new Date(query.week) : new Date();
+  const base = query && query.week ? parseDateOnly(query.week) : new Date();
   return toISODate(startOfWeek(base));
 }
 
@@ -34,7 +47,7 @@ export function startOfWeekSunday(date = new Date()) {
 }
 
 export function weekStartParamSunday(query) {
-  const base = query && query.week ? new Date(query.week) : new Date();
+  const base = query && query.week ? parseDateOnly(query.week) : new Date();
   return toISODate(startOfWeekSunday(base));
 }
 

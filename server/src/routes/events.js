@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import db from '../db.js';
 import { expandOccurrences } from '../lib/recurrence.js';
-import { addDays, startOfWeek } from '../lib/week.js';
+import { addDays, startOfWeek, parseDateOnly } from '../lib/week.js';
 import {
   fetchGoogleEvents,
   isGoogleWriteEnabled,
@@ -76,7 +76,7 @@ router.get('/', async (req, res) => {
     rangeStart = new Date(`${req.query.start}T00:00:00`);
     rangeEnd = addDays(rangeStart, Number(req.query.days) || 7);
   } else {
-    const base = req.query.week ? new Date(req.query.week) : new Date();
+    const base = req.query.week ? parseDateOnly(req.query.week) : new Date();
     rangeStart = startOfWeek(base);
     rangeEnd = addDays(rangeStart, 7);
   }
