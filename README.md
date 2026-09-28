@@ -58,9 +58,10 @@ shopping list from another device.
   **List** (the classic stacked full-width bars); **Squares** (a 2x2 tile
   grid that only takes up as much height as it needs - 1-2 items sit at
   their normal size in the top row rather than stretching to fill the whole
-  box, and past 4 items it pages through the rest 4 at a time, swipe or the
-  arrow buttons, dots marking pages rather than individual items; each tile
-  leads with a large icon - guessed from the task's title against a
+  box; like List, it only ever shows the top 4 - the rest are a tap away on
+  "See all" - so the widget is always the same fixed size, never wider or
+  taller than the 2x2 grid; each tile leads with a large icon - guessed from
+  the task's title against a
   ~130-icon library (`client/src/lib/taskIcons.js`) organized into 14
   categories for Chores/Daily Checklist (Personal Care, School, Pets,
   Kitchen, Cleaning, and so on; anything unrecognized falls back to a plain

@@ -1153,6 +1153,7 @@ button {
   text-align: center;
   cursor: pointer;
   transition: background-color 0.15s ease;
+  overflow: hidden;
 }
 .tile-square:active { filter: brightness(0.95); }
 .tile-square.done { background: rgba(63, 145, 90, 0.22); border-color: var(--color-primary); }
@@ -1164,6 +1165,10 @@ button {
   justify-content: center;
   font-size: 2.6rem;
   line-height: 1;
+  /* Font-size doesn't shrink just because flex-basis does, so a squeezed
+     icon box would otherwise render full-size anyway and spill out over the
+     title below it - clip it down to whatever room it actually got instead. */
+  overflow: hidden;
 }
 .tile-square .tile-title {
   flex: none;
@@ -1189,20 +1194,6 @@ button {
   left: 6px;
   font-size: 0.75rem;
 }
-
-/* ---------- Tile grid pager (Squares mode, more than 4 items) ----------
-   Same swipe-or-arrows page-turning as the tile carousel below, but each
-   "page" is a full .tile-grid (up to 4 tiles) instead of one big tile -
-   dots mark pages, not individual items. */
-/* overflow: hidden here (not just min-height: 0) because nested flex
-   layouts like this one round to a few stray sub-pixels in the browser -
-   with .widget-card's own overflow-y: auto, that's enough to pop a real
-   scrollbar no matter how big the widget is resized, even though paging is
-   the actual intended way to see more than fits (never scrolling). Clipping
-   the rounding error here keeps it invisible instead of bubbling up. */
-.tile-pager { display: flex; flex-direction: column; gap: 8px; flex: 1; min-height: 0; overflow: hidden; }
-.tile-pager-track { display: flex; align-items: stretch; gap: 6px; width: 100%; flex: 1; min-height: 0; }
-.tile-pager-track .tile-grid { flex: 1; min-height: 0; }
 
 /* ---------- Tile carousel (Settings -> Dashboard Widgets: Carousel mode) ----------
    One big tile at a time instead of a stacked list - swipe it (touch drag,
@@ -1505,6 +1496,14 @@ button {
   overflow: hidden;
   min-width: 0;
 }
+/* Dragging a meal box slides it (via CSS transform, still inside its own
+   .meal-box) toward whichever neighboring day it's headed for. The overflow:
+   hidden above exists for the box's own rounded corners, but it also clips
+   the dragged box the instant it crosses its own edge - so it visually
+   vanishes behind the next day's (opaque, unclipped) box instead of sliding
+   over it. Suspend the clipping only while something inside is actually
+   being dragged. */
+.meal-box:has(.meal-input-wrap.dragging) { overflow: visible; }
 /* Boxes grow to fill however wide the widget gets resized (shrinking back
    down to min-width, then scrolling, if the widget is narrower than that) -
    not a fixed size regardless of the available space. */

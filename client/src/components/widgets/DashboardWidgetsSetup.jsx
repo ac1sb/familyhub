@@ -223,8 +223,9 @@ export default function DashboardWidgetsSetup() {
         <p style={{ color: 'var(--color-text-muted)', fontSize: '0.8rem', marginTop: 0, marginBottom: 0 }}>
           List shows several items stacked as full-width bars. Squares shows them as a small-tile 2x2
           grid, sized to only take up as much height as it actually needs (2 tiles fill just the top
-          row, not the whole box) - past 4 items it pages through the rest 4 at a time (swipe or the
-          arrow buttons). Carousel shows one big tile at a time - swipe it left/right (or use the arrow
+          row, not the whole box) - like List, it only ever shows the top 4; the rest are a tap away on
+          "See all," so the widget stays the same size no matter how many items pile up. Carousel shows
+          one big tile at a time - swipe it left/right (or use the arrow
           buttons) to move through the items. Tapping a tile/bar itself always toggles it (done for
           Chores/Daily Checklist, School/Home for Lunch), in any style. Set independently for each,
           per-device, like everything else on this page.

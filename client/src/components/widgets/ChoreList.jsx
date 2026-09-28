@@ -6,7 +6,6 @@ import { getWidgetDisplayMode } from '../../lib/widgetDisplayMode.js';
 import { getTaskIcon } from '../../lib/taskIcons.js';
 import { sortDoneLast } from '../../lib/tileOrder.js';
 import TileCarousel from '../TileCarousel.jsx';
-import TileGridPager from '../TileGridPager.jsx';
 
 const SUNDAY_FIRST_RANK = (dayOfWeek) => (dayOfWeek == null ? 7 : (dayOfWeek + 1) % 7);
 // The dashboard tile is a glance, not the whole list - past this many
@@ -89,9 +88,9 @@ export default function ChoreList({ compact = false, onExpand }) {
   // Open chores first (in their existing order), done ones dropped to the
   // bottom - checking one off gives up its spot to the next open chore
   // instead of sitting frozen in place, so what's left to do stays what's
-  // most visible. List/Carousel only ever show the top COMPACT_ITEM_LIMIT of
-  // this; Squares (below) pages through the whole sorted list instead of
-  // capping it.
+  // most visible. Every display mode caps at COMPACT_ITEM_LIMIT so the
+  // widget is always the same size regardless of how many chores exist -
+  // "See all" is where the rest live.
   const sortedToday = sortDoneLast(todayChores);
   const visible = sortedToday.slice(0, COMPACT_ITEM_LIMIT);
 
@@ -132,9 +131,8 @@ export default function ChoreList({ compact = false, onExpand }) {
         )}
 
         {displayMode === 'squares' && (
-          <TileGridPager
-            items={sortedToday}
-            renderTile={(chore) => (
+          <div className="tile-grid">
+            {visible.map((chore) => (
               <button
                 type="button"
                 className={`tile-square${chore.done ? ' done' : ''}`}
@@ -147,8 +145,8 @@ export default function ChoreList({ compact = false, onExpand }) {
                 <span className="tile-title">{chore.title}</span>
                 {chore.done && <span className="tile-check">✓</span>}
               </button>
-            )}
-          />
+            ))}
+          </div>
         )}
 
         {displayMode === 'list' && visible.map((chore) => (
