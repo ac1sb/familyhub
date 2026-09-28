@@ -1172,7 +1172,13 @@ button {
    Same swipe-or-arrows page-turning as the tile carousel below, but each
    "page" is a full .tile-grid (up to 4 tiles) instead of one big tile -
    dots mark pages, not individual items. */
-.tile-pager { display: flex; flex-direction: column; gap: 8px; flex: 1; min-height: 0; }
+/* overflow: hidden here (not just min-height: 0) because nested flex
+   layouts like this one round to a few stray sub-pixels in the browser -
+   with .widget-card's own overflow-y: auto, that's enough to pop a real
+   scrollbar no matter how big the widget is resized, even though paging is
+   the actual intended way to see more than fits (never scrolling). Clipping
+   the rounding error here keeps it invisible instead of bubbling up. */
+.tile-pager { display: flex; flex-direction: column; gap: 8px; flex: 1; min-height: 0; overflow: hidden; }
 .tile-pager-track { display: flex; align-items: stretch; gap: 6px; width: 100%; flex: 1; min-height: 0; }
 .tile-pager-track .tile-grid { flex: 1; min-height: 0; }
 
@@ -1180,7 +1186,10 @@ button {
    One big tile at a time instead of a stacked list - swipe it (touch drag,
    handled in JS via pointer events) or use the arrow buttons to move
    through the items, tap the tile to toggle it done. */
-.tile-carousel { display: flex; flex-direction: column; align-items: center; gap: 8px; flex: 1; min-height: 0; }
+/* overflow: hidden for the same reason as .tile-pager above - a few stray
+   sub-pixels of flex rounding shouldn't be enough to pop a scrollbar on the
+   whole widget card. */
+.tile-carousel { display: flex; flex-direction: column; align-items: center; gap: 8px; flex: 1; min-height: 0; overflow: hidden; }
 .tile-carousel-track { display: flex; align-items: stretch; gap: 6px; width: 100%; flex: 1; min-height: 0; }
 .tile-carousel-arrow { flex-shrink: 0; align-self: center; }
 .tile-carousel-tile {
