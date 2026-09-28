@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { usePolling } from '../../hooks/usePolling.js';
 import { api } from '../../api.js';
-import { formatMonthLabel, weekdayGridDays, toISODate, WEEKDAY_SHORT } from '../../lib/week.js';
+import { formatMonthLabel, weekdayGridDays, toISODate, addDays, WEEKDAY_SHORT } from '../../lib/week.js';
 import { stripDailyChoices } from '../../lib/lunchText.js';
 import { getLunchPageView, setLunchPageView } from '../../lib/lunchPageSettings.js';
 
@@ -52,11 +52,15 @@ export default function LunchCalendar({ childName }) {
     api.lunchImportSettings().then((r) => setMenuUrl(r.url || '')).catch(() => {});
   }, []);
 
-  const monthStart = toISODate(new Date(year, monthIndex, 1));
-  const monthEnd = toISODate(new Date(year, monthIndex + 1, 1));
+  const cells = useMemo(() => weekdayGridDays(year, monthIndex), [year, monthIndex]);
+  // The grid now borrows a few days from the adjacent month to complete the
+  // first/last week (see weekdayGridDays) - fetch that same full span rather
+  // than just this month, or those borrowed days would always show blank.
+  const rangeStart = cells[0].date;
+  const rangeEnd = toISODate(addDays(new Date(`${cells[cells.length - 1].date}T00:00:00`), 1));
   const { data, setData, refresh } = usePolling(
-    () => api.lunchRange(monthStart, monthEnd),
-    [monthStart, monthEnd],
+    () => api.lunchRange(rangeStart, rangeEnd),
+    [rangeStart, rangeEnd],
     30000
   );
 
@@ -66,9 +70,7 @@ export default function LunchCalendar({ childName }) {
     return map;
   }, [data]);
 
-  const cells = useMemo(() => weekdayGridDays(year, monthIndex), [year, monthIndex]);
   const weekRows = Math.ceil(cells.length / WEEKDAYS_ONLY.length);
-  const schoolDays = useMemo(() => cells.filter(Boolean), [cells]);
   const todayKey = toISODate(now);
 
   function goMonth(offset) {
@@ -218,8 +220,7 @@ export default function LunchCalendar({ childName }) {
           </div>
 
           <div className="lunch-cal-grid" style={{ gridTemplateRows: `repeat(${weekRows}, 1fr)` }}>
-            {cells.map((date, idx) => {
-              if (!date) return <div className="lunch-cal-day empty" key={`empty-${idx}`} />;
+            {cells.map(({ date, inMonth }) => {
               const day = byDate[date] || { status: 'home', no_school: false, menu_item: '' };
               const dayNum = Number(date.slice(-2));
               const isToday = date === todayKey;
@@ -228,7 +229,7 @@ export default function LunchCalendar({ childName }) {
 
               return (
                 <div
-                  className={`lunch-cal-day ${statusClass}${isToday ? ' today' : ''}`}
+                  className={`lunch-cal-day ${statusClass}${isToday ? ' today' : ''}${inMonth ? '' : ' other-month'}`}
                   key={date}
                   onClick={() => !day.no_school && toggleStatus(date, day.status)}
                   title={day.no_school ? undefined : day.status === 'school' ? 'Tap to switch to Pack from home' : 'Tap to switch to School lunch'}
@@ -264,17 +265,20 @@ export default function LunchCalendar({ childName }) {
 
       {viewMode === 'list' && (
         <div className="lunch-list">
-          {schoolDays.map((date) => {
+          {cells.map(({ date, inMonth }) => {
             const day = byDate[date] || { status: 'home', no_school: false, menu_item: '' };
             const isToday = date === todayKey;
             const statusClass = day.no_school ? 'no-school' : `status-${day.status}`;
             const dateObj = new Date(`${date}T00:00:00`);
 
             return (
-              <div className={`lunch-list-row ${statusClass}${isToday ? ' today' : ''}`} key={date}>
+              <div className={`lunch-list-row ${statusClass}${isToday ? ' today' : ''}${inMonth ? '' : ' other-month'}`} key={date}>
                 <div className="lunch-list-date">
                   <span className="lunch-list-weekday">{dateObj.toLocaleDateString(undefined, { weekday: 'short' })}</span>
-                  <span className="lunch-list-daynum">{dateObj.getDate()}</span>
+                  <span className="lunch-list-daynum">
+                    {dateObj.getDate()}
+                    {!inMonth && <span className="lunch-list-month">{dateObj.toLocaleDateString(undefined, { month: 'short' })}</span>}
+                  </span>
                 </div>
 
                 {day.no_school ? (

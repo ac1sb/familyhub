@@ -80,17 +80,40 @@ export function formatMonthLabel(year, monthIndex) {
 }
 
 // Same as monthGridDays, but skips Saturday/Sunday entirely (a 5-column
-// Mon-Fri grid) instead of including them as filler cells.
+// Mon-Fri grid), and - unlike monthGridDays - fills the first/last partial
+// week with real days from the adjacent month instead of leaving blank
+// cells. A school week spanning a month boundary (the common case right
+// around the 1st) is then one continuous, fully editable run of days rather
+// than getting cut off mid-week; each cell reports whether it's actually in
+// the month being viewed (inMonth) so the caller can dim the borrowed ones.
 export function weekdayGridDays(year, monthIndex) {
-  const first = new Date(year, monthIndex, 1);
-  const firstWeekday = (first.getDay() + 6) % 7; // 0=Mon..6=Sun
   const daysInMonth = new Date(year, monthIndex + 1, 0).getDate();
+  const firstWeekday = (new Date(year, monthIndex, 1).getDay() + 6) % 7; // 0=Mon..6=Sun
+  const lastWeekday = (new Date(year, monthIndex, daysInMonth).getDay() + 6) % 7;
 
-  const cells = firstWeekday <= 4 ? Array(firstWeekday).fill(null) : [];
+  const cells = [];
+
+  // Leading weekdays borrowed from the previous month, back to that week's
+  // Monday - only needed when the 1st itself falls on a weekday.
+  if (firstWeekday <= 4) {
+    for (let i = firstWeekday; i >= 1; i--) {
+      cells.push({ date: toISODate(new Date(year, monthIndex, 1 - i)), inMonth: false });
+    }
+  }
+
   for (let day = 1; day <= daysInMonth; day++) {
     const date = new Date(year, monthIndex, day);
     const weekday = (date.getDay() + 6) % 7;
-    if (weekday <= 4) cells.push(toISODate(date));
+    if (weekday <= 4) cells.push({ date: toISODate(date), inMonth: true });
   }
+
+  // Trailing weekdays borrowed from the next month, forward to that week's
+  // Friday - only needed when the last day itself falls on a weekday.
+  if (lastWeekday <= 4) {
+    for (let i = 1; i <= 4 - lastWeekday; i++) {
+      cells.push({ date: toISODate(new Date(year, monthIndex, daysInMonth + i)), inMonth: false });
+    }
+  }
+
   return cells;
 }

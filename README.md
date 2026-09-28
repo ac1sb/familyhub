@@ -185,7 +185,10 @@ shopping list from another device.
   original month grid, its day cells stretched to fill the page (so they
   end up roughly square instead of short and wide) for a real wall-calendar
   feel; **List** is a full-width row per school day instead - better for a
-  long entree name that a small grid cell would cramp. Plus a
+  long entree name that a small grid cell would cramp. Both layouts extend
+  into the tail end of the adjacent month to complete a week that spans a
+  month boundary - shown dimmed but fully editable - instead of cutting off
+  mid-week right when the month changes over. Plus a
   dashboard card that shows *today's* status until 3pm and then flips to
   *tomorrow's*, so packing a lunch is never a last-minute scramble. Can
   auto-sync the entrée for each day from a school lunch menu site (including

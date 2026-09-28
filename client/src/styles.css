@@ -1607,8 +1607,11 @@ button {
   cursor: pointer;
   transition: background-color 0.15s ease;
 }
-.lunch-cal-day.empty { background: transparent; border: none; cursor: default; }
 .lunch-cal-day.today { border-color: var(--color-primary); border-width: 2px; }
+/* A day borrowed from the adjacent month to complete the week - still the
+   real thing (tap to edit, same as any other day), just visually quieter so
+   it reads as "not this month" at a glance. */
+.lunch-cal-day.other-month { opacity: 0.55; }
 .lunch-cal-day.no-school { background: var(--color-border); opacity: 0.6; cursor: default; }
 /* Fixed (non-theme) colors with alpha so the tint reads as red/green in both
    light and dark mode, and the menu text sitting on top stays legible. */
@@ -1689,7 +1692,9 @@ button {
   flex-shrink: 0;
 }
 .lunch-list-weekday { font-size: 0.75rem; font-weight: 700; color: var(--color-text-muted); }
-.lunch-list-daynum { font-size: 1.3rem; font-weight: 700; }
+.lunch-list-daynum { font-size: 1.3rem; font-weight: 700; display: flex; flex-direction: column; align-items: center; }
+.lunch-list-month { font-size: 0.6rem; font-weight: 700; color: var(--color-text-muted); text-transform: uppercase; }
+.lunch-list-row.other-month { opacity: 0.55; }
 .lunch-list-menu {
   flex: 1;
   border: 1px solid var(--color-border);
