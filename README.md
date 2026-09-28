@@ -69,8 +69,11 @@ shopping list from another device.
   name to browse the same categorized library and override the guess (or
   pick "Auto-guess from name" to go back to it); Lunch's tiles use a fixed
   status icon instead (🏫 school lunch day, 🥪 packed from home, 🚫 no
-  school). A long title clamps to 2 lines with an ellipsis instead of
-  overflowing the tile, full text via hover or "See all"); or **Carousel**
+  school) with the day and the actual menu item as the tile's text (e.g.
+  "Today: Turkey Sandwich"), so what's actually being served is readable at
+  a glance instead of needing a tap to find out. A long title/menu item
+  clamps to 2 lines with an ellipsis instead of overflowing the tile, full
+  text via hover or "See all"); or **Carousel**
   (one big tile at a time - swipe it left/right, use the arrow buttons, or
   tap a dot to jump to a specific item). Tapping a tile/bar itself always
   toggles it (done for Chores/Daily Checklist, School/Home for Lunch), in
@@ -241,6 +244,10 @@ shopping list from another device.
   to go stale. Its tile shows a live, ticking countdown clock while it's
   actually running (client-side, between polls) - hidden once it's done or
   idle, since a leftover remaining time on a finished cycle isn't meaningful.
+  The header's quick-access strip shows it too, as a read-only status chip
+  (not a toggle) - unlike the Smart Home page's tile, this one never hides
+  itself, so a glance at the header answers "is it done yet" (Running with a
+  countdown, or Done) without opening the full page.
 - **Weather** — a row of quick-glance chips in the header on every page,
   opposite the smart-home toggles with a prominent date/time between them
   (current temp, high/low, and precipitation chance - deliberately just
@@ -266,12 +273,15 @@ shopping list from another device.
   sticky-note prop, so a message left on the board is still visible while
   the screensaver's up. Also optionally shows a daily briefing card listing
   today's calendar events, which starts appearing at 5am (so it reads as
-  "here's your day" rather than showing up overnight), and/or **family
+  "here's your day" rather than showing up overnight), **family
   photos** (synced in from a shared Google Drive folder, see below) cycling
-  in their own corner - deliberately not the background, so it doesn't
-  compete with the chosen theme. All three overlays periodically relocate to a
-  different corner of the screen to avoid burn-in on a display that's on
-  all day, and never land on top of each other even with all three on.
+  in their own corner, and/or **laundry status** - the same LG ThinQ
+  washer/dryer status and live countdown as the header chip, for a glance at
+  the screensaver instead of dismissing it - deliberately not the
+  background, so none of these compete with the chosen theme. All four
+  overlays periodically relocate to a different corner of the screen to
+  avoid burn-in on a display that's on all day, and never land on top of
+  each other even with all four on.
 - **Music** (Settings → Music) — connects Spotify and controls whatever
   device is currently active on the account: play/pause, skip, volume, and
   switching devices, from a dashboard tile or its own page. With

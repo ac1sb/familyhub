@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { fetchThemedPhoto } from '../lib/photoLibrary.js';
 import { api } from '../api.js';
 import { formatTime, todayISO } from '../lib/week.js';
+import { useCountdown, formatCountdown } from '../hooks/useCountdown.js';
 
 const BRIEFING_START_HOUR = 5;
 const BRIEFING_ITEM_LIMIT = 5;
@@ -15,6 +16,24 @@ const CORNERS = ['top-left', 'top-right', 'bottom-left', 'bottom-right'];
 const MOVE_INTERVAL_MS = 4 * 60000;
 const MOVE_FADE_MS = 600;
 
+// A live ticking countdown while a cycle is actually running - the state
+// label itself (not just the countdown) is what answers "is it done yet",
+// so this row is shown for every washer/dryer regardless of state.
+function LaundryStatusRow({ device }) {
+  const isRunning = device.state === 'Running';
+  const msLeft = useCountdown(isRunning ? device.remainMinutes : null);
+
+  return (
+    <div className="screensaver-briefing-row">
+      <span className="screensaver-briefing-time">
+        {device.thinq_error ? '⚠️' : device.state || 'Unknown'}
+        {isRunning && msLeft != null ? ` · ${formatCountdown(msLeft)}` : ''}
+      </span>
+      <span className="screensaver-briefing-title">{device.name}</span>
+    </div>
+  );
+}
+
 export default function Screensaver({ settings, zip, onDismiss }) {
   const [photo, setPhoto] = useState(null);
   const [weather, setWeather] = useState(null);
@@ -23,6 +42,7 @@ export default function Screensaver({ settings, zip, onDismiss }) {
   const [todayEvents, setTodayEvents] = useState([]);
   const [familyPhotos, setFamilyPhotos] = useState([]);
   const [familyPhotoIndex, setFamilyPhotoIndex] = useState(0);
+  const [laundryDevices, setLaundryDevices] = useState([]);
   const [cornerIndex, setCornerIndex] = useState(0);
   const [moving, setMoving] = useState(false);
 
@@ -117,6 +137,25 @@ export default function Screensaver({ settings, zip, onDismiss }) {
     return () => clearInterval(id);
   }, [settings.showFamilyPhotos, settings.photoIntervalSeconds, familyPhotos.length]);
 
+  // Same device list and status the header/Smart Home page use - just
+  // filtered down to washer/dryer, so a cycle finishing overnight shows up
+  // here without having to dismiss the screensaver to check.
+  useEffect(() => {
+    if (!settings.showLaundryStatus) return;
+    let cancelled = false;
+    function load() {
+      api.smartDevices().then((data) => {
+        if (!cancelled) setLaundryDevices((data.devices || []).filter((d) => d.platform === 'lg_thinq'));
+      }).catch(() => {});
+    }
+    load();
+    const id = setInterval(load, 30000);
+    return () => {
+      cancelled = true;
+      clearInterval(id);
+    };
+  }, [settings.showLaundryStatus]);
+
   useEffect(() => {
     api.weather(zip).then(setWeather).catch(() => setWeather(null));
   }, [zip]);
@@ -189,6 +228,17 @@ export default function Screensaver({ settings, zip, onDismiss }) {
           {todayEvents.length > BRIEFING_ITEM_LIMIT && (
             <div className="screensaver-briefing-more">+{todayEvents.length - BRIEFING_ITEM_LIMIT} more</div>
           )}
+        </div>
+      )}
+      {settings.showLaundryStatus && laundryDevices.length > 0 && (
+        <div
+          className={`screensaver-briefing corner-${CORNERS[(cornerIndex + 3) % CORNERS.length]}`}
+          style={{ opacity: moving ? 0 : 1 }}
+        >
+          <div className="screensaver-briefing-label">🧺 Laundry</div>
+          {laundryDevices.map((device) => (
+            <LaundryStatusRow key={device.id} device={device} />
+          ))}
         </div>
       )}
       <div className="screensaver-tap-hint">Tap anywhere to continue</div>

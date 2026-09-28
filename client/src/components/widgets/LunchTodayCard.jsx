@@ -94,7 +94,7 @@ export default function LunchTodayCard({ childName, onExpand }) {
               onClick={() => toggleItem(item)}
             >
               <span className="tile-icon">{statusIcon(item)}</span>
-              <span className="tile-title">{item.label}</span>
+              <span className="tile-title">{item.label}: {item.menuItem}</span>
               {item.done && <span className="tile-check">✓</span>}
             </button>
           ))}

@@ -73,6 +73,20 @@ export default function ScreensaverSettings({ zip, settings, onChange }) {
             </label>
           </div>
         </div>
+
+        <div className="field">
+          <div className="checkbox-row">
+            <input
+              id="ss-laundry"
+              type="checkbox"
+              checked={settings.showLaundryStatus}
+              onChange={(e) => update({ showLaundryStatus: e.target.checked })}
+            />
+            <label htmlFor="ss-laundry" style={{ margin: 0 }}>
+              Show washer/dryer status as a corner overlay (Settings &rarr; Smart Home Setup)
+            </label>
+          </div>
+        </div>
       </div>
 
       <div className="settings-section">

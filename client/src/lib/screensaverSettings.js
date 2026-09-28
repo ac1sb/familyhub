@@ -11,6 +11,7 @@ const DEFAULTS = {
   showWhiteboard: true,
   showDailyBriefing: true,
   showFamilyPhotos: false,
+  showLaundryStatus: false,
 };
 
 export function getScreensaverSettings() {

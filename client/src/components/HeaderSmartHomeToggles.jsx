@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { usePolling } from '../hooks/usePolling.js';
 import { usePressHold } from '../hooks/usePressHold.js';
+import { useCountdown, formatCountdown } from '../hooks/useCountdown.js';
 import { api } from '../api.js';
 
 function HeaderToggle({ device, onToggle, onSetBrightness }) {
@@ -50,6 +51,27 @@ function HeaderToggle({ device, onToggle, onSetBrightness }) {
   );
 }
 
+// A washer/dryer's header chip is read-only status, not a toggle - the
+// point is a glance at "still running" vs "done" without opening the Smart
+// Home page, with a live ticking countdown (not just whatever number the
+// last poll happened to report) while it's actually running. The state
+// label itself (not just the countdown) is what answers "is it done yet" -
+// so unlike the toggle chips, this never hides itself.
+function HeaderThinqChip({ device }) {
+  const isRunning = device.state === 'Running';
+  const msLeft = useCountdown(isRunning ? device.remainMinutes : null);
+
+  return (
+    <div className={`header-toggle thinq-status${isRunning ? ' on' : ''}`} title={device.name}>
+      <span className="header-toggle-name">🧺 {device.name}</span>
+      <span className="header-thinq-state">
+        {device.thinq_error ? '⚠️' : device.state || 'Unknown'}
+        {isRunning && msLeft != null ? ` · ${formatCountdown(msLeft)}` : ''}
+      </span>
+    </div>
+  );
+}
+
 // A quick-access strip of smart-home toggles, always visible right below
 // the date/time (not just on the Home dashboard) - a single tap flips a
 // device on/off, and pressing and holding one that supports dimming opens
@@ -88,9 +110,13 @@ export default function HeaderSmartHomeToggles() {
 
   return (
     <div className="topbar-smarthome-group">
-      {devices.map((device) => (
-        <HeaderToggle key={device.id} device={device} onToggle={toggle} onSetBrightness={setBrightness} />
-      ))}
+      {devices.map((device) =>
+        device.platform === 'lg_thinq' ? (
+          <HeaderThinqChip key={device.id} device={device} />
+        ) : (
+          <HeaderToggle key={device.id} device={device} onToggle={toggle} onSetBrightness={setBrightness} />
+        )
+      )}
     </div>
   );
 }

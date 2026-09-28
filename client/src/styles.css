@@ -288,6 +288,9 @@ button {
   color: var(--color-text);
 }
 .header-toggle.on .header-toggle-dot { background: var(--color-primary); }
+.header-toggle.thinq-status { cursor: default; }
+.header-thinq-state { color: var(--color-text-muted); font-size: 0.78rem; }
+.header-toggle.thinq-status.on .header-thinq-state { color: inherit; }
 
 .header-toggle-popover {
   position: absolute;
