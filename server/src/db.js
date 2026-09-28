@@ -184,6 +184,19 @@ CREATE TABLE IF NOT EXISTS family_photos (
   album_label TEXT,
   created_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
+
+-- Which Drive photos (meal-order-slip screenshots) have already been OCR'd
+-- and applied to the Dinner Menu, keyed by Drive's own file id (guid) so the
+-- same photo is never re-parsed/re-applied on the next hourly sync. Kept
+-- indefinitely (not just a dedup set) so Settings can show what a sync
+-- actually found and where it landed.
+CREATE TABLE IF NOT EXISTS meal_plan_syncs (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  guid TEXT NOT NULL UNIQUE,
+  recipe_names TEXT NOT NULL,
+  applied_dates TEXT NOT NULL,
+  synced_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
 `);
 
 // Migration for databases created before chore_templates existed: CREATE TABLE

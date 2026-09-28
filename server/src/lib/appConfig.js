@@ -147,6 +147,29 @@ export function setFamilyPhotoFolders(folders) {
   setJSON('family_photo_folders', cleaned);
 }
 
+// A single Google Drive folder (same account as Family Photos/the shopping
+// sheet) that gets watched for meal-plan screenshots - e.g. a delivery
+// service's order-slip photo, dropped in from a phone. skip_day is which
+// day of the week never gets a meal written to it when a synced photo's
+// recipes are applied (0=Mon..6=Sun) - defaults to Saturday (5), the day
+// after a Friday delivery that's typically not part of the rotation.
+export function getMealPlanPhotoSettings() {
+  const stored = getJSON('meal_plan_photo_settings', null);
+  return {
+    folderId: stored?.folderId || '',
+    skipDay: Number.isInteger(stored?.skipDay) ? stored.skipDay : 5,
+  };
+}
+
+export function setMealPlanPhotoSettings({ folderId, skipDay }) {
+  const existing = getMealPlanPhotoSettings();
+  setJSON('meal_plan_photo_settings', {
+    folderId: folderId !== undefined ? folderId.trim() : existing.folderId,
+    skipDay: Number.isInteger(skipDay) ? Math.max(0, Math.min(6, skipDay)) : existing.skipDay,
+  });
+  return getMealPlanPhotoSettings();
+}
+
 // LIFX Cloud API personal access token (from cloud.lifx.com/settings) -
 // lets the Smart Home widget/setup page discover and control real bulbs
 // instead of the local-only mock. Same DB-wins-over-.env pattern as

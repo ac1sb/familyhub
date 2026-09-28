@@ -100,6 +100,12 @@ export const api = {
   familyPhotoSettings: () => request('/family-photos/settings'),
   saveFamilyPhotoFolders: (folders) => request('/family-photos/settings', { method: 'POST', body: JSON.stringify({ folders }) }),
   syncFamilyPhotos: () => request('/family-photos/sync', { method: 'POST' }),
+
+  mealPlanPhotoSettings: () => request('/meal-plan-photos/settings'),
+  saveMealPlanPhotoSettings: (folderId, skipDay) =>
+    request('/meal-plan-photos/settings', { method: 'POST', body: JSON.stringify({ folderId, skipDay }) }),
+  mealPlanPhotoSyncs: () => request('/meal-plan-photos'),
+  syncMealPlanPhotos: () => request('/meal-plan-photos/sync', { method: 'POST' }),
   deleteFamilyPhoto: (id) => request(`/family-photos/${id}`, { method: 'DELETE' }),
 
   weather: (zip) => request(`/weather${zip ? `?zip=${zip}` : ''}`),

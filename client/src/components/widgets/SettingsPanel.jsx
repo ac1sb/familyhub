@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { api } from '../../api.js';
+import { WEEKDAY_LABELS } from '../../lib/week.js';
 import ChoreSetup from './ChoreSetup.jsx';
 import DailyTaskSetup from './DailyTaskSetup.jsx';
 import ScreensaverSettings from './ScreensaverSettings.jsx';
@@ -90,6 +91,7 @@ function GeneralSettings({ config, onConfigUpdated }) {
 
       <ShoppingSheetSettings />
       <SheetsServiceAccountSettings />
+      <MealPlanPhotoSettings />
       <UpdatePanel />
     </div>
   );
@@ -340,6 +342,124 @@ function ShoppingSheetSettings() {
           account below).
         </p>
       </div>
+    </div>
+  );
+}
+
+function MealPlanPhotoSettings() {
+  const [folderId, setFolderId] = useState('');
+  const [savedFolderId, setSavedFolderId] = useState('');
+  const [skipDay, setSkipDay] = useState(5);
+  const [savedSkipDay, setSavedSkipDay] = useState(5);
+  const [saving, setSaving] = useState(false);
+  const [syncs, setSyncs] = useState([]);
+  const [syncing, setSyncing] = useState(false);
+  const [syncError, setSyncError] = useState(null);
+
+  function loadSyncs() {
+    api.mealPlanPhotoSyncs().then((r) => setSyncs(r.syncs)).catch(() => {});
+  }
+
+  useEffect(() => {
+    api.mealPlanPhotoSettings().then((r) => {
+      setFolderId(r.folderId || '');
+      setSavedFolderId(r.folderId || '');
+      setSkipDay(r.skipDay);
+      setSavedSkipDay(r.skipDay);
+    }).catch(() => {});
+    loadSyncs();
+  }, []);
+
+  async function handleSave() {
+    setSaving(true);
+    try {
+      const r = await api.saveMealPlanPhotoSettings(folderId.trim(), skipDay);
+      setFolderId(r.folderId);
+      setSavedFolderId(r.folderId);
+      setSkipDay(r.skipDay);
+      setSavedSkipDay(r.skipDay);
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function handleSync() {
+    setSyncing(true);
+    setSyncError(null);
+    try {
+      await api.syncMealPlanPhotos();
+      loadSyncs();
+    } catch (err) {
+      setSyncError(err.message);
+    } finally {
+      setSyncing(false);
+    }
+  }
+
+  return (
+    <div className="settings-section">
+      <div className="settings-section-title">Meal Plan Photos</div>
+      <p className="settings-section-intro">
+        Drop a screenshot of your meal delivery's recipe list (e.g. Hungryroot's order slip) into a
+        shared Google Drive folder, and it gets read automatically and written straight onto the
+        upcoming Dinner Menu - no typing, no button to press. There's no review step: whatever OCR
+        reads off the photo goes straight onto the menu, so double-check the result after the first
+        try. Requires the Google account connected in Settings &rarr; Calendar.
+      </p>
+      <div className="field">
+        <label htmlFor="meal-plan-folder">Google Drive folder</label>
+        <div style={{ display: 'flex', gap: 8 }}>
+          <input
+            id="meal-plan-folder"
+            type="text"
+            placeholder="https://drive.google.com/drive/folders/..."
+            value={folderId}
+            onChange={(e) => setFolderId(e.target.value)}
+            style={{ flex: 1 }}
+          />
+        </div>
+      </div>
+      <div className="field">
+        <label htmlFor="meal-plan-skip-day">Never fill in a meal on</label>
+        <select id="meal-plan-skip-day" value={skipDay} onChange={(e) => setSkipDay(Number(e.target.value))}>
+          {WEEKDAY_LABELS.map((label, i) => (
+            <option key={i} value={i}>{label}</option>
+          ))}
+        </select>
+        <p style={{ color: 'var(--color-text-muted)', fontSize: '0.8rem', margin: '4px 0 0' }}>
+          Recipes are applied starting tomorrow, skipping this day each time - e.g. a Friday delivery
+          with Sunday-Friday in the rotation should skip Saturday (the default).
+        </p>
+      </div>
+      <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap', marginTop: 4 }}>
+        <button className="btn btn-secondary" onClick={handleSave} disabled={saving || (folderId.trim() === savedFolderId && skipDay === savedSkipDay)}>
+          {saving ? 'Saving…' : 'Save'}
+        </button>
+        {savedFolderId && (
+          <button className="btn btn-secondary" onClick={handleSync} disabled={syncing}>
+            {syncing ? 'Syncing…' : 'Sync Now'}
+          </button>
+        )}
+      </div>
+      {syncError && <p style={{ color: 'var(--color-danger)', fontSize: '0.85rem' }}>⚠️ {syncError}</p>}
+
+      {syncs.length > 0 && (
+        <div style={{ marginTop: 12 }}>
+          <div className="settings-section-title" style={{ marginBottom: 8 }}>Recent Syncs</div>
+          {syncs.map((s) => (
+            <div key={s.id} style={{ marginBottom: 8, fontSize: '0.85rem' }}>
+              <span style={{ color: 'var(--color-text-muted)' }}>
+                {new Date(s.syncedAt).toLocaleString(undefined, { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })}
+              </span>
+              {s.recipeNames.length === 0 ? (
+                <p style={{ margin: '2px 0 0', color: 'var(--color-danger)' }}>⚠️ No recipes found in that photo</p>
+              ) : (
+                <p style={{ margin: '2px 0 0' }}>{s.recipeNames.join(', ')}</p>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

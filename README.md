@@ -175,6 +175,8 @@ shopping list from another device.
   of days to show; editing or swapping a day there still writes to the
   correct week underneath even when two boxes span a week boundary. The
   full page always shows the current Mon-Sun week for planning ahead.
+  Recipes can also be filled in automatically from a photo - see
+  **Meal Plan Photos** below - instead of typing each one in by hand.
 - **Lunch calendar** for one child — a full monthly view (tap a day to toggle
   School/Pack-from-home, mark no-school days, jot the menu item), always
   filling the whole screen instead of stopping at a fixed cell size and
@@ -506,6 +508,35 @@ HEIC photos (the default format on newer iPhones, which most browsers can't
 display) are automatically converted to JPEG at sync time, so they show up
 normally on the screensaver without needing any camera setting changed.
 
+## Meal Plan Photos (auto-fill the Dinner Menu from a screenshot)
+
+**Settings → Meal Plan Photos** reads recipe names off a meal-kit delivery's
+order-slip screenshot (built against Hungryroot's, but not tied to its exact
+wording) and writes them straight onto the upcoming Dinner Menu - no typing.
+Set it up:
+
+1. In Google Drive, create a folder (it can be the same one used for Family
+   Photos, or its own) and share it with whoever takes the screenshot.
+2. When a delivery's order slip shows up (an email, the delivery service's
+   app, etc.), screenshot it and save it into that folder the same way as a
+   Family Photo (share icon → **Save to Drive**).
+3. Copy the folder's link or ID into Settings → Meal Plan Photos → **Save**,
+   pick which day of the week should never get a meal filled in (defaults to
+   Saturday), then **Sync Now** for the first pull (after that it checks the
+   folder on its own every hour, same as Family Photos).
+
+There is **no review step** - whatever the OCR reads off a new photo in the
+folder is applied immediately, starting with tomorrow's slot and skipping the
+configured day each time a recipe's turn comes up, never touching a day
+already in the past. Settings shows the last several photos it processed and
+exactly what it read from each one, so a misread is easy to catch and fix by
+hand on the Dinner Menu page. A photo is only ever processed once (tracked by
+its Drive file, the same way Family Photos avoids re-downloading); saving an
+unrelated photo to the same folder can still land nonsense on the menu if it
+happens to contain enough text, so keep this folder dedicated to order slips.
+Requires the same Google account connected for Calendar sync (Settings →
+Calendar).
+
 ## Spotify / Music (the Pi as a real Connect speaker)
 
 **Settings → Music** connects Spotify and lets the Music page (and its
@@ -691,12 +722,12 @@ other file on the Pi.
   already playing elsewhere) also needs librespot installed and configured
   directly on the Pi - something outside FamilyHub's own Settings page,
   covered in the setup section above instead.
-- No integration with Google Drive/Docs or Life360. Drive/Docs would be
-  buildable (Drive: reuse the flyer OCR pipeline against a shared folder;
-  Docs: one-way append of shopping items) but aren't built yet. Life360 has
-  no public API - the only integrations that exist talk to a
-  reverse-engineered private endpoint using your real login, which isn't
-  something this project takes on.
+- Google Drive is used for two OCR-driven syncs (Family Photos, Meal Plan
+  Photos) but there's no Google Docs integration - a one-way append of
+  shopping items would be buildable but isn't built yet. No integration with
+  Life360 either: it has no public API, and the only integrations that exist
+  talk to a reverse-engineered private endpoint using your real login, which
+  isn't something this project takes on.
 - OCR on flyers is best-effort; always double-check the pre-filled date/time
   before saving.
 - No authentication yet — anyone with network access to the app can view and

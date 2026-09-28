@@ -20,6 +20,7 @@ import whiteboardRouter from './routes/whiteboard.js';
 import settingsRouter from './routes/settings.js';
 import smartDevicesRouter from './routes/smartDevices.js';
 import familyPhotosRouter from './routes/familyPhotos.js';
+import mealPlanPhotosRouter from './routes/mealPlanPhotos.js';
 import spotifyRouter from './routes/spotify.js';
 import updateRouter from './routes/update.js';
 import {
@@ -29,6 +30,7 @@ import {
 import { uploadsDir } from './lib/paths.js';
 import { startShoppingSheetScheduler } from './lib/shoppingSheetScheduler.js';
 import { startFamilyPhotoScheduler } from './lib/familyPhotoScheduler.js';
+import { startMealPlanPhotoScheduler } from './lib/mealPlanPhotoScheduler.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
@@ -74,6 +76,7 @@ app.use('/api/whiteboard', whiteboardRouter);
 app.use('/api/settings', settingsRouter);
 app.use('/api/smart-devices', smartDevicesRouter);
 app.use('/api/family-photos', familyPhotosRouter);
+app.use('/api/meal-plan-photos', mealPlanPhotosRouter);
 app.use('/api/spotify', spotifyRouter);
 app.use('/api/update', updateRouter);
 
@@ -93,3 +96,4 @@ app.listen(PORT, () => {
 
 startShoppingSheetScheduler();
 startFamilyPhotoScheduler();
+startMealPlanPhotoScheduler();
