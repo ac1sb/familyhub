@@ -36,6 +36,16 @@
   --radius: 14px;
   --sidebar-width: 128px;
   font-size: 16px;
+  /* Without this, every browser-drawn control that isn't covered by a CSS
+     rule above (a checkbox's box/check, a select's dropdown popup, the
+     calendar-picker icon on a datetime input, scrollbars) keeps rendering
+     with its native LIGHT chrome even in dark mode, since those are drawn
+     by the browser itself rather than styled CSS. This tells the browser
+     which palette its own widgets should match; accent-color further makes
+     checkboxes/radios use the theme's own green instead of browser-default
+     blue, in both themes. */
+  color-scheme: light;
+  accent-color: var(--color-primary);
 }
 
 /* Night mode, applied via App.jsx setting data-theme based on the schedule
@@ -67,6 +77,7 @@
   --ink-on-member-2: var(--color-bg);
   --ink-on-member-3: var(--color-bg);
   --color-header-glow: rgba(0, 0, 0, 0.75);
+  color-scheme: dark;
 }
 
 * { box-sizing: border-box; }
