@@ -25,7 +25,7 @@ import spotifyRouter from './routes/spotify.js';
 import updateRouter from './routes/update.js';
 import {
   getMemberNames, getWeatherZip, getThemeSettings, getIcalFeeds, getGoogleCalendarId,
-  getGoogleEventsMember,
+  getGoogleEventsMember, getGoogleMemberCalendars,
 } from './lib/appConfig.js';
 import { uploadsDir } from './lib/paths.js';
 import { startShoppingSheetScheduler } from './lib/shoppingSheetScheduler.js';
@@ -58,6 +58,7 @@ app.get('/api/config', (req, res) => {
     ical_feeds: getIcalFeeds(),
     google_calendar_id: getGoogleCalendarId(),
     google_events_member: getGoogleEventsMember(),
+    google_member_calendars: getGoogleMemberCalendars(),
   });
 });
 

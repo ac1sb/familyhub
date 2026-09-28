@@ -12,6 +12,8 @@ import {
   setGoogleCalendarId,
   getGoogleEventsMember,
   setGoogleEventsMember,
+  getGoogleMemberCalendars,
+  setGoogleMemberCalendars,
 } from '../lib/appConfig.js';
 
 const router = Router();
@@ -25,6 +27,7 @@ function fullSettings() {
     ical_feeds: getIcalFeeds(),
     google_calendar_id: getGoogleCalendarId(),
     google_events_member: getGoogleEventsMember(),
+    google_member_calendars: getGoogleMemberCalendars(),
   };
 }
 
@@ -35,7 +38,7 @@ router.get('/', (req, res) => {
 router.put('/', (req, res) => {
   const {
     member_1, member_2, member_3, weather_zip, theme_mode, dark_start, dark_end,
-    ical_feeds, google_calendar_id, google_events_member,
+    ical_feeds, google_calendar_id, google_events_member, google_member_calendars,
   } = req.body;
 
   const trimmedOrUndefined = (v) => (typeof v === 'string' && v.trim() ? v.trim() : undefined);
@@ -73,6 +76,14 @@ router.put('/', (req, res) => {
       return res.status(400).json({ error: 'google_events_member must be family, member_1, member_2, or member_3' });
     }
     setGoogleEventsMember(google_events_member);
+  }
+
+  if (google_member_calendars !== undefined) {
+    const trimOrBlank = (v) => (typeof v === 'string' ? v.trim() : undefined);
+    setGoogleMemberCalendars({
+      member_1: trimOrBlank(google_member_calendars.member_1),
+      member_2: trimOrBlank(google_member_calendars.member_2),
+    });
   }
 
   if (ical_feeds !== undefined) {

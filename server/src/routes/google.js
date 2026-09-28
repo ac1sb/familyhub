@@ -6,6 +6,7 @@ import {
   getGoogleEventsMember,
   getGoogleServiceAccountKey,
   setGoogleServiceAccountKey,
+  getGoogleMemberCalendars,
 } from '../lib/appConfig.js';
 
 const router = Router();
@@ -191,6 +192,76 @@ export async function deleteGoogleEvent(googleEventId) {
   } catch (err) {
     // Already gone on Google's side (someone deleted it there too) - fine.
     if (err.code !== 410 && err.code !== 404) throw err;
+  }
+}
+
+// Which of the two parents' personal calendars (Settings -> Calendar) an
+// event assigned to this member should be mirrored onto. member_1/member_2
+// each go only to their own calendar; member_3 (assumed to be a child with
+// no Google account of their own) goes to both parents' calendars instead of
+// needing one of its own. A member with no calendar ID configured yet is
+// simply skipped. Returns [] for 'family', which still uses the single
+// shared calendar above instead.
+export function getMemberCalendarIds(member) {
+  const { member_1, member_2 } = getGoogleMemberCalendars();
+  if (member === 'member_1') return member_1 ? [member_1] : [];
+  if (member === 'member_2') return member_2 ? [member_2] : [];
+  if (member === 'member_3') return [member_1, member_2].filter(Boolean);
+  return [];
+}
+
+// Mirrors a locally-created event onto one or more of a specific member's
+// personal Google Calendars (see getMemberCalendarIds) - the member_3 "both
+// parents" case is why this can produce more than one link. Each successful
+// insert is returned as { calendarId, googleEventId } for the caller to
+// store in event_google_links; a calendar that fails to accept it is
+// skipped (logged, not thrown) so one bad calendar ID doesn't also block the
+// other parent's copy.
+export async function pushEventToMemberCalendars(event, calendarIds) {
+  const client = getOAuthClient();
+  if (!client || !getJSON('google_tokens', null) || calendarIds.length === 0) return [];
+  const calendar = google.calendar({ version: 'v3', auth: client });
+  const resource = toGoogleEventResource(event);
+  const links = [];
+  for (const calendarId of calendarIds) {
+    try {
+      const result = await calendar.events.insert({ calendarId, requestBody: resource });
+      links.push({ calendarId, googleEventId: result.data.id });
+    } catch (err) {
+      console.error(`Failed to push event to calendar ${calendarId}:`, err.message);
+    }
+  }
+  return links;
+}
+
+// Updates every existing per-member link of an event in place (same
+// calendars it was already pushed to - a member reassignment that changes
+// which calendars an event belongs on is instead handled by the caller as a
+// delete-then-push, since which calendars should hold it is what changed).
+export async function updateMemberCalendarEvents(links, event) {
+  const client = getOAuthClient();
+  if (!client || !getJSON('google_tokens', null)) return;
+  const calendar = google.calendar({ version: 'v3', auth: client });
+  const resource = toGoogleEventResource(event);
+  for (const link of links) {
+    try {
+      await calendar.events.update({ calendarId: link.calendar_id, eventId: link.google_event_id, requestBody: resource });
+    } catch (err) {
+      console.error(`Failed to update event on calendar ${link.calendar_id}:`, err.message);
+    }
+  }
+}
+
+export async function deleteMemberCalendarEvents(links) {
+  const client = getOAuthClient();
+  if (!client || !getJSON('google_tokens', null)) return;
+  const calendar = google.calendar({ version: 'v3', auth: client });
+  for (const link of links) {
+    try {
+      await calendar.events.delete({ calendarId: link.calendar_id, eventId: link.google_event_id });
+    } catch (err) {
+      if (err.code !== 410 && err.code !== 404) console.error(`Failed to delete event on calendar ${link.calendar_id}:`, err.message);
+    }
   }
 }
 

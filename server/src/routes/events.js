@@ -2,7 +2,17 @@ import { Router } from 'express';
 import db from '../db.js';
 import { expandOccurrences } from '../lib/recurrence.js';
 import { addDays, startOfWeek } from '../lib/week.js';
-import { fetchGoogleEvents, isGoogleWriteEnabled, pushEventToGoogle, updateGoogleEvent, deleteGoogleEvent } from './google.js';
+import {
+  fetchGoogleEvents,
+  isGoogleWriteEnabled,
+  pushEventToGoogle,
+  updateGoogleEvent,
+  deleteGoogleEvent,
+  getMemberCalendarIds,
+  pushEventToMemberCalendars,
+  updateMemberCalendarEvents,
+  deleteMemberCalendarEvents,
+} from './google.js';
 import { fetchIcalEvents } from '../lib/icalFeed.js';
 import { getIcalFeeds } from '../lib/appConfig.js';
 
@@ -18,6 +28,41 @@ function rowToEvent(row) {
     is_reminder: !!row.is_reminder,
     recurrence_days: JSON.parse(row.recurrence_days || '[]'),
   };
+}
+
+function getEventGoogleLinks(eventId) {
+  return db.prepare('SELECT * FROM event_google_links WHERE event_id = ?').all(eventId);
+}
+
+// Pushes an event onto whichever Google Calendar(s) its member maps to - the
+// single shared calendar for 'family', or the per-member calendar(s) from
+// Settings -> Calendar otherwise (member_3 fans out to both parents). Used
+// both for a brand new event and, on reassignment, for re-pushing one that
+// changed which member it belongs to.
+async function pushEventToGoogleTargets(row) {
+  if (row.member === 'family') {
+    const googleEventId = await pushEventToGoogle(rowToEvent(row));
+    if (googleEventId) db.prepare('UPDATE events SET google_event_id = ? WHERE id = ?').run(googleEventId, row.id);
+    return;
+  }
+  const calendarIds = getMemberCalendarIds(row.member);
+  const links = await pushEventToMemberCalendars(rowToEvent(row), calendarIds);
+  const insert = db.prepare('INSERT INTO event_google_links (event_id, calendar_id, google_event_id) VALUES (?, ?, ?)');
+  for (const link of links) insert.run(row.id, link.calendarId, link.googleEventId);
+}
+
+// Removes whatever Google copies an event currently has, regardless of
+// whether it was a 'family' event (single google_event_id) or a per-member
+// one (event_google_links rows) - used both for a real delete and, on
+// reassignment, to clear out the old target(s) before pushing to the new one(s).
+async function deleteEventFromGoogleTargets(existingRow) {
+  if (existingRow.member === 'family') {
+    if (existingRow.google_event_id) await deleteGoogleEvent(existingRow.google_event_id);
+    return;
+  }
+  const links = getEventGoogleLinks(existingRow.id);
+  if (links.length > 0) await deleteMemberCalendarEvents(links);
+  db.prepare('DELETE FROM event_google_links WHERE event_id = ?').run(existingRow.id);
 }
 
 // GET /api/events?week=YYYY-MM-DD          -> agenda for that Mon-Sun week, local + google merged
@@ -120,11 +165,8 @@ router.post('/', async (req, res) => {
   // up twice on the agenda instead of being deduped.
   if (isGoogleWriteEnabled() && !row.recurring) {
     try {
-      const googleEventId = await pushEventToGoogle(rowToEvent(row));
-      if (googleEventId) {
-        db.prepare('UPDATE events SET google_event_id = ? WHERE id = ?').run(googleEventId, row.id);
-        row = db.prepare('SELECT * FROM events WHERE id = ?').get(row.id);
-      }
+      await pushEventToGoogleTargets(row);
+      row = db.prepare('SELECT * FROM events WHERE id = ?').get(row.id);
     } catch (err) {
       console.error('Failed to push new event to Google Calendar:', err.message);
     }
@@ -133,7 +175,7 @@ router.post('/', async (req, res) => {
   res.status(201).json(rowToEvent(row));
 });
 
-router.put('/:id', (req, res) => {
+router.put('/:id', async (req, res) => {
   const existing = db.prepare('SELECT * FROM events WHERE id = ?').get(req.params.id);
   if (!existing) return res.status(404).json({ error: 'not found' });
 
@@ -158,12 +200,29 @@ router.put('/:id', (req, res) => {
     WHERE id=@id
   `).run({ ...merged, id: req.params.id });
 
-  const row = db.prepare('SELECT * FROM events WHERE id = ?').get(req.params.id);
+  let row = db.prepare('SELECT * FROM events WHERE id = ?').get(req.params.id);
 
-  if (existing.google_event_id && isGoogleWriteEnabled()) {
-    updateGoogleEvent(existing.google_event_id, rowToEvent(row)).catch((err) => {
-      console.error('Failed to update event on Google Calendar:', err.message);
-    });
+  if (isGoogleWriteEnabled()) {
+    try {
+      if (existing.member !== row.member) {
+        // Which calendar(s) this event belongs on changed (e.g. reassigned
+        // from one person's column to another's) - move it by removing the
+        // old copy/copies and pushing a fresh one to the new target(s),
+        // rather than trying to patch across calendars.
+        await deleteEventFromGoogleTargets(existing);
+        if (!row.recurring) {
+          await pushEventToGoogleTargets(row);
+          row = db.prepare('SELECT * FROM events WHERE id = ?').get(req.params.id);
+        }
+      } else if (row.member === 'family') {
+        if (existing.google_event_id) await updateGoogleEvent(existing.google_event_id, rowToEvent(row));
+      } else {
+        const links = getEventGoogleLinks(row.id);
+        if (links.length > 0) await updateMemberCalendarEvents(links, rowToEvent(row));
+      }
+    } catch (err) {
+      console.error('Failed to sync updated event to Google Calendar:', err.message);
+    }
   }
 
   res.json(rowToEvent(row));
@@ -171,11 +230,19 @@ router.put('/:id', (req, res) => {
 
 router.delete('/:id', async (req, res) => {
   const existing = db.prepare('SELECT * FROM events WHERE id = ?').get(req.params.id);
+  // Read any per-member links before the delete below, since removing the
+  // event row cascades and takes them with it.
+  const links = existing && existing.member !== 'family' ? getEventGoogleLinks(existing.id) : [];
+
   db.prepare('DELETE FROM events WHERE id = ?').run(req.params.id);
 
-  if (existing?.google_event_id && isGoogleWriteEnabled()) {
+  if (existing && isGoogleWriteEnabled()) {
     try {
-      await deleteGoogleEvent(existing.google_event_id);
+      if (existing.member === 'family') {
+        if (existing.google_event_id) await deleteGoogleEvent(existing.google_event_id);
+      } else if (links.length > 0) {
+        await deleteMemberCalendarEvents(links);
+      }
     } catch (err) {
       console.error('Failed to delete event on Google Calendar:', err.message);
     }

@@ -98,6 +98,25 @@ export function setGoogleCalendarId(id) {
   setSetting('google_calendar_id', id);
 }
 
+// Per-parent calendar IDs for member_1/member_2 - lets an event assigned to
+// that person push onto their own personal Google Calendar (shared with the
+// OAuth account as an editor) instead of the single shared calendar above.
+// Only the two adult member slots get their own field; a member_3 event
+// (assumed to be the child, who has no Google account) pushes onto BOTH of
+// these calendars instead of needing one of its own. Left blank, a member's
+// events simply don't push anywhere until their calendar ID is set here.
+export function getGoogleMemberCalendars() {
+  return {
+    member_1: getSetting('google_calendar_id_member_1') || '',
+    member_2: getSetting('google_calendar_id_member_2') || '',
+  };
+}
+
+export function setGoogleMemberCalendars({ member_1, member_2 }) {
+  if (member_1 !== undefined) setSetting('google_calendar_id_member_1', member_1);
+  if (member_2 !== undefined) setSetting('google_calendar_id_member_2', member_2);
+}
+
 // The Google Sheet the shopping list syncs with (the "Sync with Sheet"
 // button on the full page) - just the spreadsheet ID/URL, same
 // DB-wins-over-.env pattern as the lunch menu import URL. The sync itself

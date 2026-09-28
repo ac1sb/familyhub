@@ -40,6 +40,19 @@ CREATE TABLE IF NOT EXISTS events (
   updated_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
 
+-- One event assigned to a specific member (not "family") can be mirrored
+-- onto more than one Google Calendar - e.g. a child's event goes onto both
+-- parents' calendars, since the child has no Google account of their own.
+-- events.google_event_id above still covers the single-calendar "family"
+-- case unchanged; this table only holds the per-member fan-out links.
+CREATE TABLE IF NOT EXISTS event_google_links (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  event_id INTEGER NOT NULL REFERENCES events(id) ON DELETE CASCADE,
+  calendar_id TEXT NOT NULL,
+  google_event_id TEXT NOT NULL,
+  UNIQUE(event_id, calendar_id)
+);
+
 CREATE TABLE IF NOT EXISTS chore_templates (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   title TEXT NOT NULL,

@@ -102,6 +102,7 @@ function CalendarSettings({ config, onConfigUpdated }) {
   const [icalFeeds, setIcalFeeds] = useState([{ url: '', member: 'family' }]);
   const [googleCalendarId, setGoogleCalendarId] = useState('');
   const [googleEventsMember, setGoogleEventsMember] = useState('family');
+  const [memberCalendars, setMemberCalendars] = useState({ member_1: '', member_2: '' });
   const [saving, setSaving] = useState(false);
   const [saveMessage, setSaveMessage] = useState(null);
   const [error, setError] = useState(null);
@@ -114,6 +115,7 @@ function CalendarSettings({ config, onConfigUpdated }) {
       setIcalFeeds(config.ical_feeds?.length ? config.ical_feeds : [{ url: '', member: 'family' }]);
       setGoogleCalendarId(config.google_calendar_id || 'primary');
       setGoogleEventsMember(config.google_events_member || 'family');
+      setMemberCalendars(config.google_member_calendars || { member_1: '', member_2: '' });
     }
   }, [config]);
 
@@ -160,6 +162,7 @@ function CalendarSettings({ config, onConfigUpdated }) {
         ical_feeds: icalFeeds,
         google_calendar_id: googleCalendarId,
         google_events_member: googleEventsMember,
+        google_member_calendars: memberCalendars,
       });
       onConfigUpdated?.(updated);
       setSaveMessage('Saved!');
@@ -276,6 +279,40 @@ function CalendarSettings({ config, onConfigUpdated }) {
               If this connection is really one person's calendar rather than a shared household one, pin
               it to their column instead of showing it under all three.
             </p>
+          </div>
+        )}
+        {googleStatus?.connected && (
+          <div className="field" style={{ marginTop: 18 }}>
+            <label>Push each person's events onto their own Google Calendar</label>
+            <p style={{ color: 'var(--color-text-muted)', fontSize: '0.8rem', margin: '0 0 8px' }}>
+              Optional, and separate from the calendar above. Have {names.member_1 || 'Member 1'} and{' '}
+              {names.member_2 || 'Member 2'} each share their personal Google Calendar with the connected
+              account as an editor, then paste each one's Calendar ID here - an event added under that
+              person in FamilyHub is pushed straight onto their own calendar too.{' '}
+              {names.member_3 || 'Member 3'}'s events go onto <strong>both</strong> calendars below (there's
+              no separate field for a third calendar), so both parents see a child's events without the
+              child needing a Google account of their own.
+            </p>
+            <label htmlFor="google-calendar-id-member-1" style={{ fontWeight: 400, fontSize: '0.85rem' }}>
+              {names.member_1 || 'Member 1'}'s Google Calendar ID
+            </label>
+            <input
+              id="google-calendar-id-member-1"
+              type="text"
+              placeholder="e.g. amber@gmail.com"
+              value={memberCalendars.member_1}
+              onChange={(e) => setMemberCalendars((prev) => ({ ...prev, member_1: e.target.value }))}
+            />
+            <label htmlFor="google-calendar-id-member-2" style={{ fontWeight: 400, fontSize: '0.85rem', marginTop: 8 }}>
+              {names.member_2 || 'Member 2'}'s Google Calendar ID
+            </label>
+            <input
+              id="google-calendar-id-member-2"
+              type="text"
+              placeholder="e.g. ben@gmail.com"
+              value={memberCalendars.member_2}
+              onChange={(e) => setMemberCalendars((prev) => ({ ...prev, member_2: e.target.value }))}
+            />
           </div>
         )}
       </div>
