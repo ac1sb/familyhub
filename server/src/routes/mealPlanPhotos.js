@@ -6,7 +6,7 @@ import fs from 'node:fs';
 import crypto from 'node:crypto';
 import { getMealPlanPhotoSettings, setMealPlanPhotoSettings } from '../lib/appConfig.js';
 import { getDriveFolderName, listDriveFolderPhotos, downloadDriveFile, extensionForMimeType } from './google.js';
-import { parseMealPlanRecipes } from '../lib/mealPlanOcr.js';
+import { parseMealPlanRecipes, extractDeliveryDate } from '../lib/mealPlanOcr.js';
 import { startOfWeek, toISODate, addDays } from '../lib/week.js';
 
 const router = Router();
@@ -41,14 +41,16 @@ async function ocrRecipeWords(filePath) {
   return data.words || [];
 }
 
-// Assigns one date per recipe, walking forward from tomorrow (never
-// overwriting today's already-decided dinner) and skipping the configured
-// day of the week - e.g. a Friday sync with Saturday skipped lands its first
-// recipe on Sunday, exactly matching a shipment delivered Friday and eaten
-// starting the day after next.
-function nextTargetDates(count, skipDay) {
+// Assigns one date per recipe, walking forward from the day after delivery
+// and skipping the configured day of the week - e.g. a Friday delivery with
+// Saturday skipped lands its first recipe on Sunday. anchorDate is the
+// delivery date read off the photo when OCR found one there (see
+// extractDeliveryDate); when it can't find one, the caller falls back to
+// today, so a sync that runs the same day a photo is dropped in still starts
+// tomorrow same as before.
+function nextTargetDates(count, skipDay, anchorDate) {
   const dates = [];
-  let cursor = addDays(new Date(), 1);
+  let cursor = addDays(anchorDate, 1);
   while (dates.length < count) {
     const dow = (cursor.getDay() + 6) % 7; // 0=Mon..6=Sun
     if (dow !== skipDay) dates.push(new Date(cursor));
@@ -57,8 +59,8 @@ function nextTargetDates(count, skipDay) {
   return dates;
 }
 
-function applyRecipesToMenu(recipeNames, skipDay) {
-  const dates = nextTargetDates(recipeNames.length, skipDay);
+function applyRecipesToMenu(recipeNames, skipDay, deliveryDate) {
+  const dates = nextTargetDates(recipeNames.length, skipDay, deliveryDate || new Date());
   const upsert = db.prepare(
     'INSERT INTO meals (week_start, day_of_week, name) VALUES (?, ?, ?) ON CONFLICT(week_start, day_of_week) DO UPDATE SET name = excluded.name'
   );
@@ -102,10 +104,11 @@ export async function runMealPlanPhotoSync() {
 
       const words = await ocrRecipeWords(scratchPath);
       const recipes = parseMealPlanRecipes(words);
+      const deliveryDate = extractDeliveryDate(words);
 
       let appliedDates = [];
       if (recipes.length > 0) {
-        appliedDates = applyRecipesToMenu(recipes, skipDay);
+        appliedDates = applyRecipesToMenu(recipes, skipDay, deliveryDate);
         added++;
       }
 

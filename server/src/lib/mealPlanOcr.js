@@ -136,3 +136,30 @@ export function parseMealPlanRecipes(words) {
   // run well past this.
   return recipes.filter((r) => r.length >= 8);
 }
+
+// Three-letter month prefixes - every month's first three letters are
+// distinct, so matching on just the prefix (with any letters after it, via
+// the regex below) recognizes both "Sep" and "September" the same way.
+const MONTH_PREFIXES = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec'];
+// Matches "September 25th, 2026", "Sep 25, 2026", "September 25 2026", etc.
+// anywhere in the photo's text - built to find a delivery/order date printed
+// with a month name (abbreviated or not), not to parse arbitrary date formats.
+const DATE_RE = new RegExp(
+  `\\b(${MONTH_PREFIXES.join('|')})[a-z]*\\.?\\s+(\\d{1,2})(?:st|nd|rd|th)?,?\\s+(\\d{4})\\b`,
+  'i'
+);
+
+// Looks for a "delivered on" style date anywhere in the photo (not just the
+// recipe column - this is metadata that normally sits outside it) so the
+// caller can anchor which days to fill in on the actual delivery date rather
+// than whatever day the sync happens to run. Returns null if none is found,
+// so the caller can fall back to its own default.
+export function extractDeliveryDate(words) {
+  const text = (Array.isArray(words) ? words : []).map((w) => (w.text || '').trim()).join(' ');
+  const match = text.match(DATE_RE);
+  if (!match) return null;
+  const month = MONTH_PREFIXES.indexOf(match[1].toLowerCase());
+  if (month === -1) return null;
+  const date = new Date(Number(match[3]), month, Number(match[2]));
+  return Number.isNaN(date.getTime()) ? null : date;
+}
