@@ -41,19 +41,35 @@ async function ocrRecipeWords(filePath) {
   return data.words || [];
 }
 
+function mealSlot(date) {
+  return { weekStart: toISODate(startOfWeek(date)), dayOfWeek: (date.getDay() + 6) % 7 };
+}
+
+function isSlotEmpty(date) {
+  const { weekStart, dayOfWeek } = mealSlot(date);
+  const row = db.prepare('SELECT name FROM meals WHERE week_start = ? AND day_of_week = ?').get(weekStart, dayOfWeek);
+  return !row || !row.name.trim();
+}
+
+// A safety bound on how far ahead to look for an empty day, so a bug (or
+// some unforeseen state) can never turn this into a true infinite loop.
+const MAX_LOOKAHEAD_DAYS = 120;
+
 // Assigns one date per recipe, walking forward from the day after delivery
-// and skipping the configured day of the week - e.g. a Friday delivery with
-// Saturday skipped lands its first recipe on Sunday. anchorDate is the
-// delivery date read off the photo when OCR found one there (see
+// and skipping both the configured day of the week and any day that already
+// has a meal in it - a manual entry, a previous sync, anything - so this
+// never clobbers something already there and always lands on the next real
+// gap in the menu instead of a day chosen by arithmetic alone. anchorDate is
+// the delivery date read off the photo when OCR found one there (see
 // extractDeliveryDate); when it can't find one, the caller falls back to
 // today, so a sync that runs the same day a photo is dropped in still starts
 // tomorrow same as before.
 function nextTargetDates(count, skipDay, anchorDate) {
   const dates = [];
   let cursor = addDays(anchorDate, 1);
-  while (dates.length < count) {
+  for (let i = 0; dates.length < count && i < MAX_LOOKAHEAD_DAYS; i++) {
     const dow = (cursor.getDay() + 6) % 7; // 0=Mon..6=Sun
-    if (dow !== skipDay) dates.push(new Date(cursor));
+    if (dow !== skipDay && isSlotEmpty(cursor)) dates.push(new Date(cursor));
     cursor = addDays(cursor, 1);
   }
   return dates;
@@ -61,13 +77,16 @@ function nextTargetDates(count, skipDay, anchorDate) {
 
 function applyRecipesToMenu(recipeNames, skipDay, deliveryDate) {
   const dates = nextTargetDates(recipeNames.length, skipDay, deliveryDate || new Date());
+  // A row for this slot usually already exists (empty) - meals.js proactively
+  // creates one for every day of a week as soon as it's viewed - so this
+  // still has to be an upsert, not a plain insert. isSlotEmpty() is what
+  // actually guarantees a real meal never gets overwritten, not this.
   const upsert = db.prepare(
     'INSERT INTO meals (week_start, day_of_week, name) VALUES (?, ?, ?) ON CONFLICT(week_start, day_of_week) DO UPDATE SET name = excluded.name'
   );
   const appliedDates = [];
   dates.forEach((date, i) => {
-    const weekStart = toISODate(startOfWeek(date));
-    const dayOfWeek = (date.getDay() + 6) % 7;
+    const { weekStart, dayOfWeek } = mealSlot(date);
     upsert.run(weekStart, dayOfWeek, recipeNames[i]);
     appliedDates.push(toISODate(date));
   });

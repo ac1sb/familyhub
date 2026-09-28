@@ -464,9 +464,11 @@ function MealPlanPhotoSettings() {
           ))}
         </select>
         <p style={{ color: 'var(--color-text-muted)', fontSize: '0.8rem', margin: '4px 0 0' }}>
-          Recipes start the day after the delivery date printed on the photo, skipping this day each
-          time - e.g. a Friday delivery with Sunday-Friday in the rotation should skip Saturday (the
-          default). Falls back to starting the day after the sync runs if a photo has no readable date.
+          Recipes fill in the next empty days starting the day after the delivery date printed on the
+          photo, skipping this day each time - e.g. a Friday delivery with Sunday-Friday in the rotation
+          should skip Saturday (the default). A day that already has a meal in it, typed in by hand or
+          from an earlier sync, is left alone. Falls back to starting the day after the sync runs if a
+          photo has no readable date.
         </p>
       </div>
       <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap', marginTop: 4 }}>

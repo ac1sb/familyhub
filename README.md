@@ -550,14 +550,17 @@ Set it up:
    folder on its own every hour, same as Family Photos).
 
 There is **no review step** - whatever the OCR reads off a new photo in the
-folder is applied immediately. Recipes start the day after the delivery date
-printed on the photo itself (OCR reads that too, not just the recipe names),
-skipping the configured day each time a recipe's turn comes up - e.g. a
-Friday delivery with Saturday skipped starts on Sunday, however late the
-actual sync happens to run (checking the folder is hourly, so a photo dropped
-in Friday afternoon might not be read until evening). If a photo has no
-readable date on it, it falls back to starting the day after whenever the
-sync runs instead. Settings shows the last several photos it processed and
+folder is applied immediately, one recipe per day, starting the day after the
+delivery date printed on the photo itself (OCR reads that too, not just the
+recipe names) and skipping the configured day each time - e.g. a Friday
+delivery with Saturday skipped starts on Sunday, however late the actual sync
+happens to run (checking the folder is hourly, so a photo dropped in Friday
+afternoon might not be read until evening). If a photo has no readable date
+on it, it falls back to starting the day after whenever the sync runs
+instead. Either way, a day that already has a meal in it - typed in by hand,
+or from an earlier sync - is skipped over rather than overwritten, so this
+only ever fills in a genuine gap, never clobbers something already there.
+Settings shows the last several photos it processed and
 exactly what it read from each one, so a misread is easy to catch and fix by
 hand on the Dinner Menu page. A photo is only ever processed once (tracked by
 its Drive file, the same way Family Photos avoids re-downloading); saving an
