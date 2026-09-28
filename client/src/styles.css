@@ -490,10 +490,21 @@ button {
    is set inline per grid item (Dashboard.jsx) when that widget has a custom
    color from Settings -> Dashboard Widgets; falls back to the normal themed
    card color (and so still follows day/night switching) when it doesn't. */
+/* Not overflow-y: auto - Calendar and Shopping (the only two dashboard
+   widgets that legitimately need to scroll) each have their own dedicated
+   inner scroll region (.agenda-days-scroll, .shopping-items-scroll) rather
+   than relying on the card itself, and every other widget is built to fit
+   whatever height it's given (auto-grow for lists, paging for Squares/
+   Carousel - see SELF_FILLING_MODES in Dashboard.jsx) with nothing left to
+   scroll. Leaving this as auto meant even a small, otherwise-harmless
+   layout overflow (nested flex rounding, a tile's own min-height floor)
+   popped a real scrollbar on the whole card with no way to resize past it,
+   since growing the widget just grows the same proportional gap. hidden
+   clips that invisibly instead. */
 .dashboard-rgl .react-grid-item .widget-card {
   height: 100%;
   max-height: none;
-  overflow-y: auto;
+  overflow: hidden;
   display: flex;
   flex-direction: column;
   margin: 0;
