@@ -1533,12 +1533,12 @@ button {
 .meal-box-lunch {
   display: flex;
   align-items: center;
-  gap: 5px;
+  gap: 7px;
   width: 100%;
   border: none;
   border-bottom: 1px solid var(--color-border);
-  padding: 5px 6px;
-  font-size: 0.72rem;
+  padding: 9px 8px;
+  font-size: 0.92rem;
   font-weight: 600;
   text-align: left;
   color: var(--color-text);
@@ -1547,8 +1547,17 @@ button {
 .meal-box-lunch.status-home { background: rgba(197, 68, 60, 0.28); }
 .meal-box-lunch.status-school { background: rgba(63, 145, 90, 0.28); }
 .meal-box-lunch.no-school { background: var(--color-border); color: var(--color-text-muted); opacity: 0.7; cursor: default; }
-.meal-box-lunch-icon { flex-shrink: 0; }
-.meal-box-lunch-text { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.meal-box-lunch-icon { flex-shrink: 0; font-size: 1.15rem; line-height: 1; }
+.meal-box-lunch-text {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  line-height: 1.2;
+}
 /* Only this wraps the input - the day label above is a separate, static
    element, so dragging a meal to a different day only ever visibly moves
    the input box, never the day tab it sits under. */
