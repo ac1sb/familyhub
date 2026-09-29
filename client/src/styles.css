@@ -377,7 +377,14 @@ button {
   flex: 1;
   overflow-y: auto;
   min-height: 0;
+  /* Still scrolls (touch swipe, trackpad, mouse wheel) - just without the
+     bar itself, which on a wall-mounted touchscreen is a control nobody
+     drags with a pointer anyway and just added visual clutter down the
+     card's edge. */
+  scrollbar-width: none;
+  -ms-overflow-style: none;
 }
+.agenda-days-scroll::-webkit-scrollbar { display: none; }
 
 /* ---------- Calendar page: Agenda/Week/Month/Day + person filter ----------
    Full-page-only (the compact dashboard widget always stays Agenda/All) -
