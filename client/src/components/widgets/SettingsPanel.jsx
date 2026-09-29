@@ -119,7 +119,7 @@ function CalendarIdUrlWarning({ value }) {
 
 function CalendarSettings({ config, onConfigUpdated }) {
   const names = config?.members || { member_1: '', member_2: '', member_3: '' };
-  const [icalFeeds, setIcalFeeds] = useState([{ url: '', member: 'family' }]);
+  const [icalFeeds, setIcalFeeds] = useState([{ url: '', member: 'family', label: '' }]);
   const [googleCalendarId, setGoogleCalendarId] = useState('');
   const [googleEventsMember, setGoogleEventsMember] = useState('family');
   const [memberCalendars, setMemberCalendars] = useState({ member_1: '', member_2: '' });
@@ -132,7 +132,7 @@ function CalendarSettings({ config, onConfigUpdated }) {
 
   useEffect(() => {
     if (config) {
-      setIcalFeeds(config.ical_feeds?.length ? config.ical_feeds : [{ url: '', member: 'family' }]);
+      setIcalFeeds(config.ical_feeds?.length ? config.ical_feeds : [{ url: '', member: 'family', label: '' }]);
       setGoogleCalendarId(config.google_calendar_id || 'primary');
       setGoogleEventsMember(config.google_events_member || 'family');
       setMemberCalendars(config.google_member_calendars || { member_1: '', member_2: '' });
@@ -162,14 +162,14 @@ function CalendarSettings({ config, onConfigUpdated }) {
   }
 
   function addFeedRow() {
-    setIcalFeeds((prev) => [...prev, { url: '', member: 'family' }]);
+    setIcalFeeds((prev) => [...prev, { url: '', member: 'family', label: '' }]);
   }
 
   function removeFeedRow(index) {
     setIcalFeeds((prev) => {
       const next = prev.filter((_, i) => i !== index);
       // Keep at least one (blank) row so there's always something to type into.
-      return next.length ? next : [{ url: '', member: 'family' }];
+      return next.length ? next : [{ url: '', member: 'family', label: '' }];
     });
   }
 
@@ -203,31 +203,41 @@ function CalendarSettings({ config, onConfigUpdated }) {
           Settings &rarr; Integrate calendar) to show its events on the agenda - read-only, and no
           Google sign-in needed. Add one per person to keep each on their own column. This is separate
           from the Google Calendar connection below, which is for two-way sync with your own account's
-          calendar.
+          calendar. The label is just for you - a reminder of whose calendar a cryptic ics link actually
+          is; it's never shown anywhere outside this page.
         </p>
         {icalFeeds.map((feed, i) => (
-          <div className="ical-feed-row" key={i}>
+          <div className="ical-feed-group" key={i}>
             <input
               type="text"
-              placeholder="https://calendar.google.com/calendar/ical/.../basic.ics"
-              value={feed.url}
-              onChange={(e) => updateFeed(i, { url: e.target.value })}
+              className="ical-feed-label"
+              placeholder="Label (e.g. Reed's school calendar)"
+              value={feed.label || ''}
+              onChange={(e) => updateFeed(i, { label: e.target.value })}
             />
-            <select value={feed.member} onChange={(e) => updateFeed(i, { member: e.target.value })}>
-              <option value="family">Family (all columns)</option>
-              <option value="member_1">{names.member_1 || 'Member 1'}</option>
-              <option value="member_2">{names.member_2 || 'Member 2'}</option>
-              <option value="member_3">{names.member_3 || 'Member 3'}</option>
-            </select>
-            <button
-              type="button"
-              className="btn-icon"
-              title="Remove this feed"
-              onClick={() => removeFeedRow(i)}
-              disabled={icalFeeds.length === 1 && !feed.url}
-            >
-              ✕
-            </button>
+            <div className="ical-feed-row">
+              <input
+                type="text"
+                placeholder="https://calendar.google.com/calendar/ical/.../basic.ics"
+                value={feed.url}
+                onChange={(e) => updateFeed(i, { url: e.target.value })}
+              />
+              <select value={feed.member} onChange={(e) => updateFeed(i, { member: e.target.value })}>
+                <option value="family">Family (all columns)</option>
+                <option value="member_1">{names.member_1 || 'Member 1'}</option>
+                <option value="member_2">{names.member_2 || 'Member 2'}</option>
+                <option value="member_3">{names.member_3 || 'Member 3'}</option>
+              </select>
+              <button
+                type="button"
+                className="btn-icon"
+                title="Remove this feed"
+                onClick={() => removeFeedRow(i)}
+                disabled={icalFeeds.length === 1 && !feed.url}
+              >
+                ✕
+              </button>
+            </div>
           </div>
         ))}
         <button type="button" className="btn-link" onClick={addFeedRow} style={{ marginTop: 4 }}>

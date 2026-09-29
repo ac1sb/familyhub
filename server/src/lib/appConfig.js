@@ -73,14 +73,17 @@ export function getIcalFeeds() {
   // later env var change instead of getting stuck on today's value.
   const legacyUrl = getSetting('ical_feed_url') || process.env.ICAL_FEED_URL || '';
   if (!legacyUrl) return [];
-  return [{ url: legacyUrl, member: getSetting('ical_events_member') || 'family' }];
+  return [{ url: legacyUrl, member: getSetting('ical_events_member') || 'family', label: '' }];
 }
 
 export function setIcalFeeds(feeds) {
   // Drop half-filled "add another feed" rows (no URL typed yet) instead of
-  // saving them as phantom entries.
+  // saving them as phantom entries. label is optional, free-text, purely a
+  // reminder for whoever's looking at Settings later ("whose calendar is
+  // this cryptic ics URL again?") - never sent anywhere or shown on the
+  // agenda itself.
   const cleaned = feeds
-    .map((f) => ({ url: (f.url || '').trim(), member: f.member || 'family' }))
+    .map((f) => ({ url: (f.url || '').trim(), member: f.member || 'family', label: (f.label || '').trim() }))
     .filter((f) => f.url);
   setJSON('ical_feeds', cleaned);
 }

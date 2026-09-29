@@ -452,7 +452,11 @@ You can add more than one - "+ Add another feed" adds another URL/column
 pair, so each family member's own calendar can sync to their own column
 instead of everyone sharing one feed. Each feed defaults to showing under
 "Family" (every column); pick a specific person from its dropdown instead if
-that calendar is really just theirs.
+that calendar is really just theirs. The optional label above each feed's
+URL is just a plain-text reminder of whose calendar it is - since the URL
+itself is a meaningless secret string, this is what tells you which feed is
+which when you come back to this page later; it's saved but never shown
+anywhere outside Settings.
 
 ## Connecting Google Calendar (two-way sync)
 
