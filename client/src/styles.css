@@ -1562,6 +1562,11 @@ button {
   overflow: hidden;
   text-align: left;
 }
+/* Same reasoning as .meal-box:has(...) above, one level deeper now that the
+   dinner input sits inside its own tile - without this, a drag toward
+   another day would get clipped the instant it crosses this tile's own
+   (nearer) edge, before it ever reached the day box's edge. */
+.meal-tile-dinner:has(.meal-input-wrap.dragging) { overflow: visible; }
 .meal-tile-label {
   font-size: 0.68rem;
   font-weight: 700;
