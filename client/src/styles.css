@@ -1525,6 +1525,30 @@ button {
 .meal-box-date { font-size: 0.7rem; font-weight: 600; opacity: 0.85; }
 /* Today's day tab stands out from the rest of the week at a glance. */
 .meal-box-day.today { background: var(--color-accent); color: var(--ink-on-accent); }
+/* Lunch folded into the same day box as dinner (dashboard widget only - the
+   full weekly page stays dinner-only) - a tap toggles school/home, same as
+   the old standalone Lunch tile. Fixed (non-theme) colors with alpha so the
+   tint reads as red/green in both light and dark mode, matching the Lunch
+   page's own day cells. */
+.meal-box-lunch {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  width: 100%;
+  border: none;
+  border-bottom: 1px solid var(--color-border);
+  padding: 5px 6px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-align: left;
+  color: var(--color-text);
+  cursor: pointer;
+}
+.meal-box-lunch.status-home { background: rgba(197, 68, 60, 0.28); }
+.meal-box-lunch.status-school { background: rgba(63, 145, 90, 0.28); }
+.meal-box-lunch.no-school { background: var(--color-border); color: var(--color-text-muted); opacity: 0.7; cursor: default; }
+.meal-box-lunch-icon { flex-shrink: 0; }
+.meal-box-lunch-text { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 /* Only this wraps the input - the day label above is a separate, static
    element, so dragging a meal to a different day only ever visibly moves
    the input box, never the day tab it sits under. */
@@ -1748,31 +1772,6 @@ button {
 .lunch-list-status-btn.status-home { background: rgba(197, 68, 60, 0.35); }
 .lunch-list-status-btn.status-school { background: rgba(63, 145, 90, 0.35); }
 
-/* ---------- Lunch today card (dashboard) ---------- */
-.lunch-today-list {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-.lunch-today-row {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  width: 100%;
-  border: 1px solid var(--color-border);
-  border-radius: 10px;
-  padding: 8px 12px;
-  font-size: 0.9rem;
-  text-align: left;
-  color: var(--color-text);
-  transition: background-color 0.15s ease;
-}
-.lunch-today-row.is-today { border-color: var(--color-primary); border-width: 2px; }
-.lunch-today-row.status-home { background: rgba(197, 68, 60, 0.28); }
-.lunch-today-row.status-school { background: rgba(63, 145, 90, 0.28); }
-.lunch-today-row.no-school { background: var(--color-border); color: var(--color-text-muted); opacity: 0.7; }
-.lunch-today-row .ltr-day { font-weight: 700; min-width: 74px; }
-.lunch-today-row .ltr-meal { flex: 1; }
 
 /* ---------- Weather ---------- */
 .weather-current { display: flex; align-items: center; gap: 14px; margin-bottom: 12px; }

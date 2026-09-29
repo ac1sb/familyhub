@@ -4,6 +4,7 @@ import { CSS } from '@dnd-kit/utilities';
 import { usePolling } from '../../hooks/usePolling.js';
 import { api } from '../../api.js';
 import { currentWeekStart, startOfWeek, addDays, toISODate, WEEKDAY_SHORT } from '../../lib/week.js';
+import { stripDailyChoices } from '../../lib/lunchText.js';
 
 function slotId(weekStart, dayOfWeek) {
   return `slot-${weekStart}-${dayOfWeek}`;
@@ -14,13 +15,41 @@ function parseSlotId(id) {
   return { weekStart: m[1], dayOfWeek: Number(m[2]) };
 }
 
+function lunchStatusIcon(lunch) {
+  if (lunch?.noSchool) return '🚫';
+  return lunch?.status === 'school' ? '🏫' : '🥪';
+}
+
+// The dashboard widget's lunch glance for one day - a tap toggles school/
+// home, same as the old standalone Lunch tile did, just folded into this
+// combined day box instead of its own separate widget.
+function LunchRow({ lunch, onToggle }) {
+  if (!lunch) return null;
+  const statusClass = lunch.noSchool ? 'no-school' : `status-${lunch.status}`;
+  const text = lunch.noSchool ? 'No School' : stripDailyChoices(lunch.menuItem) || 'No menu yet';
+  return (
+    <button
+      type="button"
+      className={`meal-box-lunch ${statusClass}`}
+      onClick={onToggle}
+      disabled={lunch.noSchool}
+      title={text}
+    >
+      <span className="meal-box-lunch-icon">{lunchStatusIcon(lunch)}</span>
+      <span className="meal-box-lunch-text">{text}</span>
+    </button>
+  );
+}
+
 // Each day is a fixed drop target - unlike a reorderable list, a day's box
 // never moves in the grid. Dragging a meal onto another day's box just
 // swaps the two typed names; the day tabs above them stay exactly where
 // they are the whole time. A slot carries its own week_start (not just a
 // day index) so this still works when two boxes belong to different weeks
-// - the dashboard's rolling view can span a week boundary.
-function DaySlot({ slot, onChange, onCommit }) {
+// - the dashboard's rolling view can span a week boundary. `lunch` is only
+// ever set on the dashboard's compact slots (see below) - the full weekly
+// page stays dinner-only.
+function DaySlot({ slot, onChange, onCommit, onToggleLunch }) {
   const { setNodeRef, isOver } = useDroppable({ id: slot.id });
   return (
     <div ref={setNodeRef} className={`meal-box${isOver ? ' drop-target' : ''}`}>
@@ -28,6 +57,7 @@ function DaySlot({ slot, onChange, onCommit }) {
         {slot.label}
         <span className="meal-box-date">{slot.dateLabel}</span>
       </div>
+      <LunchRow lunch={slot.lunch} onToggle={() => onToggleLunch(slot)} />
       <DraggableMealInput slot={slot} onChange={onChange} onCommit={onCommit} />
     </div>
   );
@@ -54,7 +84,7 @@ function DraggableMealInput({ slot, onChange, onCommit }) {
   );
 }
 
-export default function MealPlanner({ compact = false, onExpand }) {
+export default function MealPlanner({ compact = false, onExpand, onExpandLunch, childName }) {
   const weekStart = currentWeekStart();
   // The dashboard widget rolls forward from today (like the calendar's
   // "next N days"), which can spill into next week's row - e.g. viewed on a
@@ -70,6 +100,19 @@ export default function MealPlanner({ compact = false, onExpand }) {
     [nextWeekStart, compact],
     15000
   );
+
+  // Lunch, folded into this same widget - same 5-day window as the compact
+  // dinner slots below, fetched only in compact mode since the full weekly
+  // page stays dinner-only (Lunch still has its own full month page).
+  const todayKey = toISODate(new Date());
+  const lunchRangeEnd = toISODate(addDays(new Date(), 4));
+  const { data: lunchData, setData: setLunchData, refresh: refreshLunch } = usePolling(
+    () => (compact ? api.lunchRange(todayKey, lunchRangeEnd) : Promise.resolve(null)),
+    [todayKey, lunchRangeEnd, compact],
+    30000
+  );
+  const lunchByDate = {};
+  for (const d of lunchData?.days || []) lunchByDate[d.date] = d;
 
   const [namesByKey, setNamesByKey] = useState({});
 
@@ -101,6 +144,9 @@ export default function MealPlanner({ compact = false, onExpand }) {
         const ws = toISODate(startOfWeek(date));
         const dow = (date.getDay() + 6) % 7;
         const id = slotId(ws, dow);
+        const dateISO = toISODate(date);
+        const lunchDay = lunchByDate[dateISO];
+        const noSchool = !!lunchDay?.no_school;
         return {
           id,
           weekStart: ws,
@@ -109,6 +155,13 @@ export default function MealPlanner({ compact = false, onExpand }) {
           dateLabel: date.getDate(),
           isToday: i === 0,
           name: namesByKey[id] || '',
+          dateISO,
+          lunch: {
+            date: dateISO,
+            status: lunchDay?.status || 'home',
+            noSchool,
+            menuItem: lunchDay?.menu_item,
+          },
         };
       })
     : Array.from({ length: 7 }, (_, dow) => {
@@ -132,6 +185,23 @@ export default function MealPlanner({ compact = false, onExpand }) {
 
   function handleNameChange(slot, value) {
     setNamesByKey((prev) => ({ ...prev, [slot.id]: value }));
+  }
+
+  async function toggleLunch(slot) {
+    const lunch = slot.lunch;
+    if (!lunch || lunch.noSchool) return;
+    const nextStatus = lunch.status === 'school' ? 'home' : 'school';
+    setLunchData((prev) => {
+      const days = prev?.days || [];
+      const exists = days.some((d) => d.date === lunch.date);
+      return {
+        days: exists
+          ? days.map((d) => (d.date === lunch.date ? { ...d, status: nextStatus } : d))
+          : [...days, { date: lunch.date, status: nextStatus, no_school: false }],
+      };
+    });
+    await api.setLunchDay(lunch.date, { status: nextStatus });
+    refreshLunch();
   }
 
   function refreshForWeek(ws) {
@@ -163,8 +233,13 @@ export default function MealPlanner({ compact = false, onExpand }) {
   return (
     <section className={`widget-card${compact ? ' compact' : ''}`}>
       <div className="widget-header">
-        <h2>Weekly Dinner Menu</h2>
-        {compact && onExpand && <button className="see-all" onClick={onExpand}>See all &rarr;</button>}
+        <h2>{compact ? `Dinner & Lunch${childName ? ` — ${childName}` : ''}` : 'Weekly Dinner Menu'}</h2>
+        {compact && (
+          <div className="widget-header-actions">
+            {onExpandLunch && <button className="see-all" onClick={onExpandLunch}>Lunch &rarr;</button>}
+            {onExpand && <button className="see-all" onClick={onExpand}>Dinner &rarr;</button>}
+          </div>
+        )}
       </div>
       {!compact && (
         <p style={{ color: 'var(--color-text-muted)', fontSize: '0.85rem', marginTop: 0 }}>
@@ -178,7 +253,7 @@ export default function MealPlanner({ compact = false, onExpand }) {
           style={compact ? { gridTemplateColumns: `repeat(${slots.length}, minmax(0, 1fr))` } : undefined}
         >
           {slots.map((slot) => (
-            <DaySlot key={slot.id} slot={slot} onChange={handleNameChange} onCommit={commitName} />
+            <DaySlot key={slot.id} slot={slot} onChange={handleNameChange} onCommit={commitName} onToggleLunch={toggleLunch} />
           ))}
         </div>
       </DndContext>

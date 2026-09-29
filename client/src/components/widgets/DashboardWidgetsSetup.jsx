@@ -23,7 +23,6 @@ const PICKER_DEFAULT = '#ffffff';
 const DISPLAY_MODE_WIDGETS = [
   { id: 'chores', label: 'Chores' },
   { id: 'daily', label: 'Daily Checklist' },
-  { id: 'lunch', label: 'Lunch' },
 ];
 
 export default function DashboardWidgetsSetup() {
@@ -226,9 +225,8 @@ export default function DashboardWidgetsSetup() {
           row, not the whole box) - like List, it only ever shows the top 4; the rest are a tap away on
           "See all," so the widget stays the same size no matter how many items pile up. Carousel shows
           one big tile at a time - swipe it left/right (or use the arrow
-          buttons) to move through the items. Tapping a tile/bar itself always toggles it (done for
-          Chores/Daily Checklist, School/Home for Lunch), in any style. Set independently for each,
-          per-device, like everything else on this page.
+          buttons) to move through the items. Tapping a tile/bar itself always toggles it done, in any
+          style. Set independently for each, per-device, like everything else on this page.
         </p>
       </div>
 

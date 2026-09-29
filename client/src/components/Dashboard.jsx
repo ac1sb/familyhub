@@ -11,7 +11,6 @@ import WhiteboardPreview from './widgets/WhiteboardPreview.jsx';
 import SmartHomeWidget from './widgets/SmartHomeWidget.jsx';
 import MusicWidget from './widgets/MusicWidget.jsx';
 import TodayWeatherCard from './widgets/TodayWeatherCard.jsx';
-import LunchTodayCard from './widgets/LunchTodayCard.jsx';
 import ReminderBanner from './ReminderBanner.jsx';
 import {
   WIDGET_CATALOG,
@@ -171,10 +170,16 @@ export default function Dashboard({ members, zip, onNavigate }) {
   const widgetContent = {
     calendar: <CalendarAgenda members={members} compact fillHeight onExpand={() => onNavigate('calendar')} />,
     weather: <TodayWeatherCard zip={zip} />,
-    lunch: <LunchTodayCard childName={members.member_3} onExpand={() => onNavigate('lunch')} />,
     chores: <ChoreList compact onExpand={() => onNavigate('chores')} />,
     daily: <DailyChecklist compact onExpand={() => onNavigate('daily')} />,
-    meals: <MealPlanner compact onExpand={() => onNavigate('meals')} />,
+    meals: (
+      <MealPlanner
+        compact
+        childName={members.member_3}
+        onExpand={() => onNavigate('meals')}
+        onExpandLunch={() => onNavigate('lunch')}
+      />
+    ),
     shopping: <ShoppingList compact onExpand={() => onNavigate('shopping')} />,
     whiteboard: <WhiteboardPreview onExpand={() => onNavigate('whiteboard')} />,
     smarthome: <SmartHomeWidget compact onExpand={() => onNavigate('smarthome')} />,

@@ -52,7 +52,7 @@ shopping list from another device.
   account's downloaded JSON key (after sharing the sheet with that
   account's email as an editor) and it's used instead of the OAuth
   connection.
-  Chores, Daily Checklist, and Lunch can each
+  Chores and Daily Checklist can each
   independently pick one of three widget styles in Settings → Dashboard
   Widgets (e.g. Chores as Squares, Daily Checklist as a Carousel) -
   **List** (the classic stacked full-width bars); **Squares** (a 2x2 tile
@@ -63,21 +63,16 @@ shopping list from another device.
   taller than the 2x2 grid; each tile leads with a large icon - guessed from
   the task's title against a
   ~130-icon library (`client/src/lib/taskIcons.js`) organized into 14
-  categories for Chores/Daily Checklist (Personal Care, School, Pets,
-  Kitchen, Cleaning, and so on; anything unrecognized falls back to a plain
-  notepad icon), or picked by hand per recurring chore/daily item in
-  Settings → Chore Setup / Daily Checklist Setup - tap the icon next to its
-  name to browse the same categorized library and override the guess (or
-  pick "Auto-guess from name" to go back to it); Lunch's tiles use a fixed
-  status icon instead (🏫 school lunch day, 🥪 packed from home, 🚫 no
-  school) with the day and the actual menu item as the tile's text (e.g.
-  "Today: Turkey Sandwich"), so what's actually being served is readable at
-  a glance instead of needing a tap to find out. A long title/menu item
-  clamps to 2 lines with an ellipsis instead of overflowing the tile, full
-  text via hover or "See all"); or **Carousel**
-  (one big tile at a time - swipe it left/right, use the arrow buttons, or
-  tap a dot to jump to a specific item). Tapping a tile/bar itself always
-  toggles it (done for Chores/Daily Checklist, School/Home for Lunch), in
+  categories (Personal Care, School, Pets, Kitchen, Cleaning, and so on;
+  anything unrecognized falls back to a plain notepad icon), or picked by
+  hand per recurring chore/daily item in Settings → Chore Setup / Daily
+  Checklist Setup - tap the icon next to its name to browse the same
+  categorized library and override the guess (or pick "Auto-guess from
+  name" to go back to it); a long title clamps to 2 lines with an ellipsis
+  instead of overflowing the tile, full text via hover or "See all"); or
+  **Carousel** (one big tile at a time - swipe it left/right, use the arrow
+  buttons, or tap a dot to jump to a specific item). Tapping a tile/bar
+  itself always toggles it done, in
   any style - these are just different skins on the same list, not separate
   features, so switching back and forth never loses anything. Every widget
   can be dragged and resized to your own layout, which is saved per-device
@@ -170,10 +165,11 @@ shopping list from another device.
   week's schedule is still visible, but checking one off early or fixing a
   past day after the fact isn't allowed). A one-off chore with no day
   attached stays tappable any time, same as before.
-- **Weekly dinner menu** — a row of day boxes (day tab on top, meal name
-  below), with today's day tab highlighted so it stands out from the rest
-  of the week. The day tabs are fixed - drag a meal box by its ⠿ handle
-  onto a different day to swap the two, and only the meal box itself
+- **Weekly dinner menu, combined with lunch on the dashboard** — a row of
+  day boxes (day tab on top, a lunch row, then the dinner meal name below),
+  with today's day tab highlighted so it stands out from the rest of the
+  week. The day tabs are fixed - drag a meal box by its ⠿ handle onto a
+  different day to swap the two dinners, and only the meal box itself
   visibly moves; the day tabs never do. On the dashboard the boxes always
   stay in one row and shrink or grow to exactly fill however wide you
   resize the widget, rather than wrapping into extra rows or overflowing
@@ -182,9 +178,15 @@ shopping list from another device.
   days" view (like the calendar's), not a fixed Mon-Sun week - so on a
   Saturday or Sunday it rolls into next week's menu instead of running out
   of days to show; editing or swapping a day there still writes to the
-  correct week underneath even when two boxes span a week boundary. The
-  full page always shows the current Mon-Sun week for planning ahead.
-  Recipes can also be filled in automatically from a photo - see
+  correct week underneath even when two boxes span a week boundary. Each of
+  those same 5 days also carries a small lunch row (🏫 school lunch day, 🥪
+  packed from home, 🚫 no school, plus the actual menu item) - tap it to
+  toggle School/Pack-from-home, same as the full Lunch calendar's own day
+  cells. The widget header has separate "Dinner →" and "Lunch →" links to
+  each one's full page. The full dinner page always shows the current
+  Mon-Sun week for planning ahead, and stays dinner-only (no lunch row) -
+  Lunch's own full month view is the **Lunch calendar** below. Dinner
+  recipes can also be filled in automatically from a photo - see
   **Meal Plan Photos** below - instead of typing each one in by hand.
 - **Lunch calendar** for one child — a full monthly view (tap a day to toggle
   School/Pack-from-home, mark no-school days, jot the menu item), always
@@ -197,9 +199,9 @@ shopping list from another device.
   long entree name that a small grid cell would cramp. Both layouts extend
   into the tail end of the adjacent month to complete a week that spans a
   month boundary - shown dimmed but fully editable - instead of cutting off
-  mid-week right when the month changes over. Plus a
-  dashboard card that shows *today's* status until 3pm and then flips to
-  *tomorrow's*, so packing a lunch is never a last-minute scramble. Can
+  mid-week right when the month changes over. The combined Dinner & Lunch
+  dashboard widget above shows 5 days of this same status at a glance, so
+  packing a lunch is never a last-minute scramble. Can
   auto-sync the entrée for each day from a school lunch menu site (including
   JS-rendered sites, via a headless-browser fallback) instead of typing it
   in by hand. Set `LUNCH_MENU_URL` in `server/.env` to pre-fill that sync
