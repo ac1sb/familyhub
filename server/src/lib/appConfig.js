@@ -18,6 +18,38 @@ export function setMemberNames({ member_1, member_2, member_3 }) {
   if (member_3 !== undefined) setSetting('member_3_name', member_3);
 }
 
+// One avatar per member: a color (always set, used behind the initial letter
+// when there's no photo) and an optional uploaded photo, which takes over
+// from the initial once set. Defaults match the member badge colors used
+// elsewhere (Calendar, Meal Planner) so a fresh avatar isn't a jarring
+// mismatch with colors already associated with that person, though the two
+// are otherwise independent - changing one doesn't touch the other.
+const DEFAULT_AVATAR_COLORS = { member_1: '#c04d76', member_2: '#4678ac', member_3: '#d9a441' };
+const AVATAR_MEMBERS = ['member_1', 'member_2', 'member_3'];
+
+export function getMemberAvatars() {
+  const stored = getJSON('member_avatars', null);
+  const result = {};
+  for (const member of AVATAR_MEMBERS) {
+    result[member] = {
+      color: stored?.[member]?.color || DEFAULT_AVATAR_COLORS[member],
+      photo: stored?.[member]?.photo || null,
+    };
+  }
+  return result;
+}
+
+// Merges a partial update ({ color } and/or { photo }) into one member's
+// avatar, leaving the other member's avatars and this one's other field
+// untouched - so a color change never has to also resend the photo path (or
+// vice versa).
+export function setMemberAvatar(member, patch) {
+  const current = getMemberAvatars();
+  current[member] = { ...current[member], ...patch };
+  setJSON('member_avatars', current);
+  return current;
+}
+
 export function getWeatherZip() {
   return getSetting('weather_zip') || process.env.WEATHER_ZIP || '05255';
 }

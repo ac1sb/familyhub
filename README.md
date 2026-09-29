@@ -430,6 +430,24 @@ values in `server/.env` are only the *first-run defaults*; once anything is
 saved from Settings, the database value takes over and the `.env` value is
 ignored from then on.
 
+### Avatars
+
+Right below the member names in Settings → General is an **Avatars**
+section - one row per person, each with a live preview, a color picker, and
+an **Upload photo** button. By default an avatar is a colored circle with
+that person's name's first initial (e.g. "Amber" → a pink circle with "A");
+uploading a photo replaces the initial entirely, and a small ✕ button
+appears to remove it and go back to the colored initial. Every change here
+saves immediately, no "Save Changes" click needed.
+
+To actually see an avatar, turn on that person's **Avatar** widget in
+Settings → Dashboard Widgets, alongside the other widget toggles (a fresh
+install shows every widget by default; if you've already customized which
+widgets are on, these three new ones need checking by hand, the same as any
+newly-added widget would). Each is its own small, independently draggable
+and resizable dashboard tile, so you can place all three side by side or
+scatter them anywhere in the layout.
+
 ## Recurring chores
 
 Chores you add from the Chores widget's "Add a one-time chore" field are

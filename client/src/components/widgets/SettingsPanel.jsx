@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { api } from '../../api.js';
 import { WEEKDAY_LABELS } from '../../lib/week.js';
 import ChoreSetup from './ChoreSetup.jsx';
@@ -9,6 +9,91 @@ import FamilyPhotosSetup from './FamilyPhotosSetup.jsx';
 import MusicSetup from './MusicSetup.jsx';
 import DashboardWidgetsSetup from './DashboardWidgetsSetup.jsx';
 import UpdatePanel from './UpdatePanel.jsx';
+
+// One family member's avatar row in Settings - a live preview (photo or
+// colored initial, matching what the actual dashboard widget shows) plus a
+// color picker and upload/remove controls. Saves each change immediately
+// (no "Save Changes" needed) since there's nothing here that benefits from
+// batching, unlike the member name fields above it.
+function AvatarEditor({ member, name }) {
+  const [avatar, setAvatar] = useState(null);
+  const [uploading, setUploading] = useState(false);
+  const [error, setError] = useState(null);
+  const fileInputRef = useRef(null);
+
+  useEffect(() => {
+    api.avatars().then((all) => setAvatar(all[member])).catch((err) => setError(err.message));
+  }, [member]);
+
+  async function handleColorChange(e) {
+    const color = e.target.value;
+    setAvatar((prev) => ({ ...prev, color }));
+    try {
+      const updated = await api.setAvatarColor(member, color);
+      setAvatar(updated[member]);
+    } catch (err) {
+      setError(err.message);
+    }
+  }
+
+  async function handleFileChange(e) {
+    const file = e.target.files?.[0];
+    e.target.value = '';
+    if (!file) return;
+    setUploading(true);
+    setError(null);
+    try {
+      const updated = await api.uploadAvatarPhoto(member, file);
+      setAvatar(updated[member]);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setUploading(false);
+    }
+  }
+
+  async function handleRemovePhoto() {
+    try {
+      const updated = await api.removeAvatarPhoto(member);
+      setAvatar(updated[member]);
+    } catch (err) {
+      setError(err.message);
+    }
+  }
+
+  if (!avatar) return null;
+  const initial = (name || '?').trim().charAt(0).toUpperCase() || '?';
+
+  return (
+    <div className="avatar-editor-row">
+      <div className="avatar-circle avatar-circle-small" style={!avatar.photo ? { background: avatar.color } : undefined}>
+        {avatar.photo ? (
+          <img src={avatar.photo} alt={name} className="avatar-photo" />
+        ) : (
+          <span className="avatar-initial">{initial}</span>
+        )}
+      </div>
+      <span className="avatar-editor-name">{name || 'Unnamed'}</span>
+      <input
+        type="color"
+        value={avatar.color}
+        onChange={handleColorChange}
+        className="widget-color-swatch"
+        aria-label={`${name}'s avatar color`}
+      />
+      <button type="button" className="btn btn-secondary" onClick={() => fileInputRef.current?.click()} disabled={uploading}>
+        {uploading ? 'Uploading…' : 'Upload photo'}
+      </button>
+      {avatar.photo && (
+        <button type="button" className="btn-icon" title="Remove photo" onClick={handleRemovePhoto}>
+          ✕
+        </button>
+      )}
+      <input ref={fileInputRef} type="file" accept="image/*" onChange={handleFileChange} style={{ display: 'none' }} />
+      {error && <p style={{ color: 'var(--color-danger)', fontSize: '0.8rem', margin: '0 0 0 8px' }}>{error}</p>}
+    </div>
+  );
+}
 
 function GeneralSettings({ config, onConfigUpdated }) {
   const [names, setNames] = useState({ member_1: '', member_2: '', member_3: '' });
@@ -87,6 +172,18 @@ function GeneralSettings({ config, onConfigUpdated }) {
         <button className="btn btn-primary" onClick={handleSave} disabled={saving}>
           {saving ? 'Saving…' : 'Save Changes'}
         </button>
+      </div>
+
+      <div className="settings-section">
+        <div className="settings-section-title">Avatars</div>
+        <p className="settings-section-intro">
+          Shown on each person's Avatar dashboard widget (turn those on in Settings &rarr; Dashboard
+          Widgets). Pick a color for the circle behind their initial, or upload a photo to replace the
+          initial entirely - saves immediately, no "Save Changes" needed.
+        </p>
+        <AvatarEditor member="member_1" name={names.member_1} />
+        <AvatarEditor member="member_2" name={names.member_2} />
+        <AvatarEditor member="member_3" name={names.member_3} />
       </div>
 
       <ShoppingSheetSettings />

@@ -113,6 +113,15 @@ export const api = {
   settings: () => request('/settings'),
   updateSettings: (data) => request('/settings', { method: 'PUT', body: JSON.stringify(data) }),
 
+  avatars: () => request('/avatars'),
+  setAvatarColor: (member, color) => request(`/avatars/${member}/color`, { method: 'PUT', body: JSON.stringify({ color }) }),
+  uploadAvatarPhoto: (member, file) => {
+    const form = new FormData();
+    form.append('photo', file);
+    return request(`/avatars/${member}/photo`, { method: 'POST', body: form });
+  },
+  removeAvatarPhoto: (member) => request(`/avatars/${member}/photo`, { method: 'DELETE' }),
+
   googleStatus: () => request('/google/status'),
   googleAuthUrl: () => request('/google/auth-url'),
   googleDisconnect: () => request('/google/disconnect', { method: 'POST' }),

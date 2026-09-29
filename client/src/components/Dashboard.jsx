@@ -11,6 +11,7 @@ import WhiteboardPreview from './widgets/WhiteboardPreview.jsx';
 import SmartHomeWidget from './widgets/SmartHomeWidget.jsx';
 import MusicWidget from './widgets/MusicWidget.jsx';
 import TodayWeatherCard from './widgets/TodayWeatherCard.jsx';
+import AvatarWidget from './widgets/AvatarWidget.jsx';
 import ReminderBanner from './ReminderBanner.jsx';
 import {
   WIDGET_CATALOG,
@@ -184,6 +185,9 @@ export default function Dashboard({ members, zip, onNavigate }) {
     whiteboard: <WhiteboardPreview onExpand={() => onNavigate('whiteboard')} />,
     smarthome: <SmartHomeWidget compact onExpand={() => onNavigate('smarthome')} />,
     music: <MusicWidget compact onExpand={() => onNavigate('music')} />,
+    avatar_member_1: <AvatarWidget member="member_1" name={members.member_1} />,
+    avatar_member_2: <AvatarWidget member="member_2" name={members.member_2} />,
+    avatar_member_3: <AvatarWidget member="member_3" name={members.member_3} />,
   };
 
   const visibleLayout = layout.filter((item) => enabledWidgets.has(item.i));

@@ -16,6 +16,9 @@ export const WIDGET_CATALOG = [
   { id: 'whiteboard', label: 'Whiteboard' },
   { id: 'smarthome', label: 'Smart Home' },
   { id: 'music', label: 'Music' },
+  { id: 'avatar_member_1', label: 'Member 1 Avatar' },
+  { id: 'avatar_member_2', label: 'Member 2 Avatar' },
+  { id: 'avatar_member_3', label: 'Member 3 Avatar' },
 ];
 
 // x/y/w/h are in grid units (12 columns wide). Sized for the "daily
@@ -36,6 +39,11 @@ export const DEFAULT_LAYOUT = [
   { i: 'whiteboard', x: 8, y: 34, w: 4, h: 8, minW: 2, minH: 4 },
   { i: 'smarthome', x: 8, y: 42, w: 4, h: 7, minW: 2, minH: 3 },
   { i: 'music', x: 8, y: 49, w: 4, h: 6, minW: 2, minH: 3 },
+  // Small enough to tuck into a corner or a narrow column - just a name and
+  // a circle, no content that needs real width or height to be useful.
+  { i: 'avatar_member_1', x: 0, y: 15, w: 3, h: 6, minW: 2, minH: 4 },
+  { i: 'avatar_member_2', x: 3, y: 15, w: 3, h: 6, minW: 2, minH: 4 },
+  { i: 'avatar_member_3', x: 6, y: 15, w: 3, h: 6, minW: 2, minH: 4 },
 ];
 
 export function getDashboardLayout() {
