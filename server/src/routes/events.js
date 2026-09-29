@@ -257,13 +257,18 @@ router.put('/:id', async (req, res) => {
 
 router.delete('/:id', async (req, res) => {
   const existing = db.prepare('SELECT * FROM events WHERE id = ?').get(req.params.id);
+  // A Google-synced or iCal-feed-sourced occurrence (id like "google-..." or
+  // "0-ical-...") has no local row to begin with - surface that clearly
+  // instead of silently returning success and having the item reappear on
+  // the client's next refresh, straight from whichever feed it came from.
+  if (!existing) return res.status(404).json({ error: 'not found' });
   // Read any per-member links before the delete below, since removing the
   // event row cascades and takes them with it.
-  const links = existing && existing.member !== 'family' ? getEventGoogleLinks(existing.id) : [];
+  const links = existing.member !== 'family' ? getEventGoogleLinks(existing.id) : [];
 
   db.prepare('DELETE FROM events WHERE id = ?').run(req.params.id);
 
-  if (existing && isGoogleWriteEnabled()) {
+  if (isGoogleWriteEnabled()) {
     try {
       if (existing.member === 'family') {
         if (existing.google_event_id) await deleteGoogleEvent(existing.google_event_id);

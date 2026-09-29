@@ -5,7 +5,12 @@ import { formatTime } from '../../lib/week.js';
 
 export default function EventDetailModal({ event, members, onClose, onChanged }) {
   const [editing, setEditing] = useState(false);
-  const isGoogle = event.source === 'google';
+  // Both Google-synced events and events pulled in from a read-only iCal feed
+  // subscription have no local database row to edit/delete - only the family
+  // member push path and directly-created events do. Treating an 'ical' item
+  // as editable would silently no-op (nothing local to delete) and the item
+  // would just reappear on the next poll, straight from the feed.
+  const isExternal = event.source === 'google' || event.source === 'ical';
 
   if (editing) {
     return (
@@ -72,15 +77,17 @@ export default function EventDetailModal({ event, members, onClose, onChanged })
           </div>
         )}
 
-        {isGoogle && (
+        {isExternal && (
           <p style={{ color: 'var(--color-text-muted)', fontSize: '0.85rem' }}>
-            Synced from Google Calendar — edit or delete it there.
+            {event.source === 'google'
+              ? 'Synced from Google Calendar — edit or delete it there.'
+              : 'Synced from a subscribed calendar feed — edit or delete it there.'}
           </p>
         )}
 
         <div className="modal-actions">
           <button className="btn btn-secondary" onClick={onClose}>Close</button>
-          {!isGoogle && (
+          {!isExternal && (
             <button className="btn btn-primary" onClick={() => setEditing(true)}>Edit</button>
           )}
         </div>
