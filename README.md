@@ -384,6 +384,17 @@ a different OS than the one installing now (this repo gets worked on across
 Linux/Mac/Windows machines). Fix: delete `client/node_modules` and
 `client/package-lock.json`, then run `npm run update` again to reinstall clean.
 
+If it instead fails with an `ERESOLVE`/`peer dependency` error mentioning `vite`
+and `@vitejs/plugin-react` - especially if the "Found" version of `vite` looks
+newer than `^5.4.6` - that's not a project bug either: it means `client/package.json`
+(and/or `client/package-lock.json`) has a local edit that no longer matches the
+checked-in one (commonly from having run `npm install vite@latest` by hand at
+some point to chase down an unrelated warning). Check with `git status`; if
+those files show as modified, run `git checkout -- client/package.json
+client/package-lock.json` to drop the local edit, then do the same clean
+reinstall as above (delete `client/node_modules` and `client/package-lock.json`,
+then `npm run update` again).
+
 #### Updating from inside the app
 
 Settings → General → Software Update has a **Check for updates** /
