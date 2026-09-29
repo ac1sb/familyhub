@@ -145,6 +145,10 @@ export default function MealPlanner({ compact = false, onExpand, onExpandLunch, 
         const dow = (date.getDay() + 6) % 7;
         const id = slotId(ws, dow);
         const dateISO = toISODate(date);
+        // No school lunch on the weekend, so this row just isn't shown for
+        // those two days rather than showing a "No School" placeholder -
+        // dow 5/6 are Sat/Sun (0=Mon..6=Sun, see above).
+        const isWeekend = dow >= 5;
         const lunchDay = lunchByDate[dateISO];
         const noSchool = !!lunchDay?.no_school;
         return {
@@ -156,12 +160,14 @@ export default function MealPlanner({ compact = false, onExpand, onExpandLunch, 
           isToday: i === 0,
           name: namesByKey[id] || '',
           dateISO,
-          lunch: {
-            date: dateISO,
-            status: lunchDay?.status || 'home',
-            noSchool,
-            menuItem: lunchDay?.menu_item,
-          },
+          lunch: isWeekend
+            ? null
+            : {
+                date: dateISO,
+                status: lunchDay?.status || 'home',
+                noSchool,
+                menuItem: lunchDay?.menu_item,
+              },
         };
       })
     : Array.from({ length: 7 }, (_, dow) => {
