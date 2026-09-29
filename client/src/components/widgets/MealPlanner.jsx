@@ -254,10 +254,7 @@ export default function MealPlanner({ compact = false, onExpand, onExpandLunch, 
         </p>
       )}
       <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-        <div
-          className={compact ? 'meal-box-row meal-box-row-compact' : 'meal-box-row'}
-          style={compact ? { gridTemplateColumns: `repeat(${slots.length}, minmax(0, 1fr))` } : undefined}
-        >
+        <div className={compact ? 'meal-box-col-compact' : 'meal-box-row'}>
           {slots.map((slot) => (
             <DaySlot key={slot.id} slot={slot} onChange={handleNameChange} onCommit={commitName} onToggleLunch={toggleLunch} />
           ))}

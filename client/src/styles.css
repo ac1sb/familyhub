@@ -1488,14 +1488,24 @@ button {
   flex-wrap: wrap;
   gap: 10px;
 }
-/* On the dashboard, the visible days always share one row - MealPlanner.jsx
-   sets an explicit column count (repeat(visibleCount, minmax(0, 1fr))) so
-   the boxes shrink or grow to fill however wide the widget is resized to,
-   rather than wrapping into extra rows or overflowing past its edge. */
-.meal-box-row-compact {
-  display: grid;
-  gap: 10px;
+/* The dashboard widget stacks its 5 day boxes top to bottom instead of
+   side by side - each one gets the widget's full width this way (better
+   for a widget resized narrow/tall) rather than a fifth of it, which was
+   cramping both the lunch text and the dinner name down to a sliver. */
+.meal-box-col-compact {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
+/* The day header reads better as a left/right title bar than centered
+   stacked lines once the box spans the widget's full width. */
+.meal-box-col-compact .meal-box-day {
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: 8px 12px;
+}
+.meal-box-col-compact .meal-box-date { font-size: 0.85rem; }
 .meal-box {
   background: var(--color-bg);
   border: 1px solid var(--color-border);

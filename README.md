@@ -170,23 +170,25 @@ shopping list from another device.
   with today's day tab highlighted so it stands out from the rest of the
   week. The day tabs are fixed - drag a meal box by its ⠿ handle onto a
   different day to swap the two dinners, and only the meal box itself
-  visibly moves; the day tabs never do. On the dashboard the boxes always
-  stay in one row and shrink or grow to exactly fill however wide you
-  resize the widget, rather than wrapping into extra rows or overflowing
-  past its edge - meal names ellipsize (…) if a box gets too narrow to show
-  the whole thing. The dashboard widget specifically is a rolling "next 5
-  days" view (like the calendar's), not a fixed Mon-Sun week - so on a
+  visibly moves; the day tabs never do. On the dashboard the day boxes stack
+  top to bottom instead of side by side, each one full-width - a deliberate
+  difference from the full page's side-by-side row, since the dashboard
+  widget is more often resized narrow and tall than wide and short, and
+  cramming 5 days into a sliver each was crowding out both the meal name and
+  the lunch text below. The dashboard widget specifically is a rolling "next
+  5 days" view (like the calendar's), not a fixed Mon-Sun week - so on a
   Saturday or Sunday it rolls into next week's menu instead of running out
   of days to show; editing or swapping a day there still writes to the
   correct week underneath even when two boxes span a week boundary. Each of
-  those same 5 days also carries a small lunch row (🏫 school lunch day, 🥪
-  packed from home, 🚫 no school, plus the actual menu item) - tap it to
-  toggle School/Pack-from-home, same as the full Lunch calendar's own day
-  cells. The widget header has separate "Dinner →" and "Lunch →" links to
-  each one's full page. The full dinner page always shows the current
-  Mon-Sun week for planning ahead, and stays dinner-only (no lunch row) -
-  Lunch's own full month view is the **Lunch calendar** below. Dinner
-  recipes can also be filled in automatically from a photo - see
+  those same 5 weekdays (Sat/Sun are skipped - no school lunch to pack) also
+  carries a small lunch row (🏫 school lunch day, 🥪 packed from home, plus
+  the actual menu item) - tap it to toggle School/Pack-from-home, same as
+  the full Lunch calendar's own day cells. The widget header has separate
+  "Dinner →" and "Lunch →" links to each one's full page. The full dinner
+  page always shows the current Mon-Sun week, side by side, for planning
+  ahead, and stays dinner-only (no lunch row) - Lunch's own full month view
+  is the **Lunch calendar** below. Dinner recipes can also be filled in
+  automatically from a photo - see
   **Meal Plan Photos** below - instead of typing each one in by hand.
 - **Lunch calendar** for one child — a full monthly view (tap a day to toggle
   School/Pack-from-home, mark no-school days, jot the menu item), always
