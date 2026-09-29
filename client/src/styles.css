@@ -262,8 +262,8 @@ button {
 .header-info-chip {
   display: flex;
   align-items: center;
-  gap: 7px;
-  font-size: 0.95rem;
+  gap: 8px;
+  font-size: 1.15rem;
   font-weight: 600;
   color: var(--color-text-muted);
 }
