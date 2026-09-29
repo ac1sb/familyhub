@@ -97,6 +97,26 @@ function GeneralSettings({ config, onConfigUpdated }) {
   );
 }
 
+// A Calendar ID is never a URL (it's "primary", an email address, or a
+// xxxx@group.calendar.google.com string) - if someone pastes a link here,
+// it's almost always the "Secret address in iCal format" meant for the
+// read-only Shared calendar feeds section above instead, and would
+// otherwise just fail silently against the Calendar API.
+function looksLikeCalendarUrl(value) {
+  return /^https?:\/\//i.test(value.trim());
+}
+
+function CalendarIdUrlWarning({ value }) {
+  if (!looksLikeCalendarUrl(value)) return null;
+  return (
+    <p style={{ color: 'var(--color-danger)', fontSize: '0.8rem', margin: '4px 0 0' }}>
+      That looks like a calendar link (the "Secret address in iCal format"), not a Calendar ID - this
+      field needs just the ID itself, e.g. "primary" or an email address like name@gmail.com. A link
+      like this belongs in the read-only "Shared calendar feeds" section above instead.
+    </p>
+  );
+}
+
 function CalendarSettings({ config, onConfigUpdated }) {
   const names = config?.members || { member_1: '', member_2: '', member_3: '' };
   const [icalFeeds, setIcalFeeds] = useState([{ url: '', member: 'family' }]);
@@ -255,6 +275,7 @@ function CalendarSettings({ config, onConfigUpdated }) {
               value={googleCalendarId}
               onChange={(e) => setGoogleCalendarId(e.target.value)}
             />
+            <CalendarIdUrlWarning value={googleCalendarId} />
             <p style={{ color: 'var(--color-text-muted)', fontSize: '0.8rem', margin: 0 }}>
               Leave as "primary" to use the signed-in account's own calendar. To sync to a shared family
               calendar instead, share it with that account as an editor in Google Calendar, then paste its
@@ -303,6 +324,7 @@ function CalendarSettings({ config, onConfigUpdated }) {
               value={memberCalendars.member_1}
               onChange={(e) => setMemberCalendars((prev) => ({ ...prev, member_1: e.target.value }))}
             />
+            <CalendarIdUrlWarning value={memberCalendars.member_1} />
             <label htmlFor="google-calendar-id-member-2" style={{ fontWeight: 400, fontSize: '0.85rem', marginTop: 8 }}>
               {names.member_2 || 'Member 2'}'s Google Calendar ID
             </label>
@@ -313,6 +335,7 @@ function CalendarSettings({ config, onConfigUpdated }) {
               value={memberCalendars.member_2}
               onChange={(e) => setMemberCalendars((prev) => ({ ...prev, member_2: e.target.value }))}
             />
+            <CalendarIdUrlWarning value={memberCalendars.member_2} />
           </div>
         )}
       </div>
