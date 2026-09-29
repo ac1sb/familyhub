@@ -22,7 +22,10 @@ function lunchStatusIcon(lunch) {
 
 // The dashboard widget's lunch glance for one day - a tap toggles school/
 // home, same as the old standalone Lunch tile did, just folded into this
-// combined day box instead of its own separate widget.
+// combined day box instead of its own separate widget. Rendered as its own
+// framed tile (see .meal-tile) rather than a plain bar, so it reads as a
+// clearly separate thing from the dinner tile next to it instead of two
+// halves of one blended box.
 function LunchRow({ lunch, onToggle }) {
   if (!lunch) return null;
   const statusClass = lunch.noSchool ? 'no-school' : `status-${lunch.status}`;
@@ -30,13 +33,16 @@ function LunchRow({ lunch, onToggle }) {
   return (
     <button
       type="button"
-      className={`meal-box-lunch ${statusClass}`}
+      className={`meal-tile meal-tile-lunch ${statusClass}`}
       onClick={onToggle}
       disabled={lunch.noSchool}
       title={text}
     >
-      <span className="meal-box-lunch-icon">{lunchStatusIcon(lunch)}</span>
-      <span className="meal-box-lunch-text">{text}</span>
+      <span className="meal-tile-label">Lunch</span>
+      <span className="meal-tile-lunch-body">
+        <span className="meal-box-lunch-icon">{lunchStatusIcon(lunch)}</span>
+        <span className="meal-box-lunch-text">{text}</span>
+      </span>
     </button>
   );
 }
@@ -46,10 +52,13 @@ function LunchRow({ lunch, onToggle }) {
 // swaps the two typed names; the day tabs above them stay exactly where
 // they are the whole time. A slot carries its own week_start (not just a
 // day index) so this still works when two boxes belong to different weeks
-// - the dashboard's rolling view can span a week boundary. `lunch` is only
-// ever set on the dashboard's compact slots (see below) - the full weekly
-// page stays dinner-only.
-function DaySlot({ slot, onChange, onCommit, onToggleLunch }) {
+// - the dashboard's rolling view can span a week boundary. `compact` frames
+// the dinner box as its own labeled tile (and adds the lunch tile beside it
+// when the day has one) so the two read as clearly separate things instead
+// of one blended box; the full weekly page (compact=false) is dinner-only
+// and keeps its original plain look, with nothing to visually separate it
+// from.
+function DaySlot({ slot, compact, onChange, onCommit, onToggleLunch }) {
   const { setNodeRef, isOver } = useDroppable({ id: slot.id });
   return (
     <div ref={setNodeRef} className={`meal-box${isOver ? ' drop-target' : ''}`}>
@@ -57,8 +66,17 @@ function DaySlot({ slot, onChange, onCommit, onToggleLunch }) {
         {slot.label}
         <span className="meal-box-date">{slot.dateLabel}</span>
       </div>
-      <LunchRow lunch={slot.lunch} onToggle={() => onToggleLunch(slot)} />
-      <DraggableMealInput slot={slot} onChange={onChange} onCommit={onCommit} />
+      {compact ? (
+        <div className="meal-tiles-row">
+          <LunchRow lunch={slot.lunch} onToggle={() => onToggleLunch(slot)} />
+          <div className="meal-tile meal-tile-dinner">
+            <span className="meal-tile-label">Dinner</span>
+            <DraggableMealInput slot={slot} onChange={onChange} onCommit={onCommit} />
+          </div>
+        </div>
+      ) : (
+        <DraggableMealInput slot={slot} onChange={onChange} onCommit={onCommit} />
+      )}
     </div>
   );
 }
@@ -256,7 +274,14 @@ export default function MealPlanner({ compact = false, onExpand, onExpandLunch, 
       <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
         <div className={compact ? 'meal-box-col-compact' : 'meal-box-row'}>
           {slots.map((slot) => (
-            <DaySlot key={slot.id} slot={slot} onChange={handleNameChange} onCommit={commitName} onToggleLunch={toggleLunch} />
+            <DaySlot
+              key={slot.id}
+              slot={slot}
+              compact={compact}
+              onChange={handleNameChange}
+              onCommit={commitName}
+              onToggleLunch={toggleLunch}
+            />
           ))}
         </div>
       </DndContext>
