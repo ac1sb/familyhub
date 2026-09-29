@@ -65,10 +65,6 @@ export default function DailyChecklist({ compact = false, onExpand }) {
           </div>
         </div>
 
-        {data && tasks.length > 0 && doneCount === tasks.length && (
-          <p style={{ color: 'var(--color-text-muted)' }}>All done for today! 🎉</p>
-        )}
-
         {displayMode === 'carousel' && (
           <TileCarousel
             items={visible}
