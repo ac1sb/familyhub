@@ -31,7 +31,9 @@ CREATE TABLE IF NOT EXISTS events (
   end_datetime TEXT,
   all_day INTEGER NOT NULL DEFAULT 0,
   recurring INTEGER NOT NULL DEFAULT 0,
-  recurrence_days TEXT DEFAULT '[]', -- JSON array of 0-6 (Mon=0)
+  recurrence_days TEXT DEFAULT '[]', -- JSON array of 0-6 (Mon=0); only meaningful for recurrence_type='weekly'
+  recurrence_type TEXT NOT NULL DEFAULT 'weekly', -- 'weekly' (recurrence_days, every recurrence_interval weeks) | 'monthly' (same day-of-month as start_datetime, every recurrence_interval months)
+  recurrence_interval INTEGER NOT NULL DEFAULT 1, -- every Nth week/month, e.g. 2 for "every other week"
   is_reminder INTEGER NOT NULL DEFAULT 0, -- show as a big banner on the dashboard the day it's due
   source TEXT NOT NULL DEFAULT 'local', -- local | google
   google_event_id TEXT,
@@ -221,6 +223,16 @@ try {
 }
 try {
   db.exec('ALTER TABLE events ADD COLUMN is_reminder INTEGER NOT NULL DEFAULT 0');
+} catch {
+  // column already exists
+}
+try {
+  db.exec("ALTER TABLE events ADD COLUMN recurrence_type TEXT NOT NULL DEFAULT 'weekly'");
+} catch {
+  // column already exists
+}
+try {
+  db.exec('ALTER TABLE events ADD COLUMN recurrence_interval INTEGER NOT NULL DEFAULT 1');
 } catch {
   // column already exists
 }

@@ -9,6 +9,13 @@ function toLocalInputValue(date) {
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
 }
 
+function ordinal(n) {
+  if (n % 10 === 1 && n % 100 !== 11) return `${n}st`;
+  if (n % 10 === 2 && n % 100 !== 12) return `${n}nd`;
+  if (n % 10 === 3 && n % 100 !== 13) return `${n}rd`;
+  return `${n}th`;
+}
+
 export default function AddEventModal({ members, defaultMember, defaultDate, existingEvent, onClose, onSaved }) {
   const isEditing = !!existingEvent;
   const [title, setTitle] = useState(existingEvent?.title || '');
@@ -27,8 +34,11 @@ export default function AddEventModal({ members, defaultMember, defaultDate, exi
     }
     return toLocalInputValue(new Date());
   });
+  const [end, setEnd] = useState(() => (existingEvent?.end_datetime ? toLocalInputValue(existingEvent.end_datetime) : ''));
   const [recurring, setRecurring] = useState(existingEvent?.recurring || false);
   const [recurrenceDays, setRecurrenceDays] = useState(existingEvent?.recurrence_days || []);
+  const [recurrenceType, setRecurrenceType] = useState(existingEvent?.recurrence_type || 'weekly');
+  const [recurrenceInterval, setRecurrenceInterval] = useState(existingEvent?.recurrence_interval || 1);
   const [isReminder, setIsReminder] = useState(existingEvent?.is_reminder || false);
   const [photoPath, setPhotoPath] = useState(existingEvent?.photo_path || null);
   const [scanning, setScanning] = useState(false);
@@ -37,7 +47,33 @@ export default function AddEventModal({ members, defaultMember, defaultDate, exi
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [error, setError] = useState(null);
+  const [copyDate, setCopyDate] = useState('');
+  const [copying, setCopying] = useState(false);
+  const [copyMessage, setCopyMessage] = useState(null);
   const titleInputRef = useRef(null);
+
+  // Drives the single "repeats" dropdown from the three underlying fields the
+  // server actually stores, so "every other week" and "monthly" are just two
+  // more options next to the original weekly one instead of separate controls.
+  const recurrencePattern = !recurring ? 'none' : recurrenceType === 'monthly' ? 'monthly' : recurrenceInterval >= 2 ? 'biweekly' : 'weekly';
+
+  function handlePatternChange(value) {
+    if (value === 'none') {
+      setRecurring(false);
+      return;
+    }
+    setRecurring(true);
+    if (value === 'monthly') {
+      setRecurrenceType('monthly');
+      setRecurrenceInterval(1);
+    } else if (value === 'biweekly') {
+      setRecurrenceType('weekly');
+      setRecurrenceInterval(2);
+    } else {
+      setRecurrenceType('weekly');
+      setRecurrenceInterval(1);
+    }
+  }
 
   useEffect(() => {
     if (!isEditing) setMember(defaultMember || 'family');
@@ -83,6 +119,10 @@ export default function AddEventModal({ members, defaultMember, defaultDate, exi
       titleInputRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
       return;
     }
+    if (end && new Date(end) <= new Date(start)) {
+      setError('End time must be after the start time');
+      return;
+    }
     setSaving(true);
     setError(null);
     const payload = {
@@ -91,8 +131,11 @@ export default function AddEventModal({ members, defaultMember, defaultDate, exi
       location,
       member,
       start_datetime: new Date(start).toISOString(),
+      end_datetime: end ? new Date(end).toISOString() : null,
       recurring,
-      recurrence_days: recurring ? recurrenceDays : [],
+      recurrence_days: recurring && recurrenceType === 'weekly' ? recurrenceDays : [],
+      recurrence_type: recurrenceType,
+      recurrence_interval: recurrenceInterval,
       photo_path: photoPath,
       is_reminder: isReminder,
     };
@@ -104,6 +147,44 @@ export default function AddEventModal({ members, defaultMember, defaultDate, exi
       setError(err.message);
     } finally {
       setSaving(false);
+    }
+  }
+
+  async function handleCopy() {
+    if (!copyDate) return;
+    setCopying(true);
+    setError(null);
+    setCopyMessage(null);
+    try {
+      const origStart = new Date(start);
+      const [year, month, day] = copyDate.split('-').map(Number);
+      const newStart = new Date(origStart);
+      newStart.setFullYear(year, month - 1, day);
+      let newEndIso = null;
+      if (end) {
+        const durationMs = new Date(end) - origStart;
+        newEndIso = new Date(newStart.getTime() + durationMs).toISOString();
+      }
+      await api.createEvent({
+        title: title.trim() || 'Untitled event',
+        description,
+        location,
+        member,
+        start_datetime: newStart.toISOString(),
+        end_datetime: newEndIso,
+        recurring: false,
+        recurrence_days: [],
+        recurrence_type: 'weekly',
+        recurrence_interval: 1,
+        photo_path: photoPath,
+        is_reminder: isReminder,
+      });
+      setCopyMessage(`Copied to ${copyDate}.`);
+      setCopyDate('');
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setCopying(false);
     }
   }
 
@@ -176,8 +257,13 @@ export default function AddEventModal({ members, defaultMember, defaultDate, exi
         </div>
 
         <div className="field">
-          <label htmlFor="ev-start">Date &amp; time</label>
+          <label htmlFor="ev-start">Starts</label>
           <input id="ev-start" type="datetime-local" value={start} onChange={(e) => setStart(e.target.value)} />
+        </div>
+
+        <div className="field">
+          <label htmlFor="ev-end">Ends (optional)</label>
+          <input id="ev-end" type="datetime-local" value={end} onChange={(e) => setEnd(e.target.value)} min={start} />
         </div>
 
         <div className="field">
@@ -191,18 +277,14 @@ export default function AddEventModal({ members, defaultMember, defaultDate, exi
         </div>
 
         <div className="field">
-          <div className="checkbox-row">
-            <input
-              id="ev-recurring"
-              type="checkbox"
-              checked={recurring}
-              onChange={(e) => setRecurring(e.target.checked)}
-            />
-            <label htmlFor="ev-recurring" style={{ margin: 0 }}>
-              Repeats weekly (multiple times a week, or the same day every week)
-            </label>
-          </div>
-          {recurring && (
+          <label htmlFor="ev-repeats">Repeats</label>
+          <select id="ev-repeats" value={recurrencePattern} onChange={(e) => handlePatternChange(e.target.value)}>
+            <option value="none">Does not repeat</option>
+            <option value="weekly">Weekly (pick one or more days below)</option>
+            <option value="biweekly">Every other week</option>
+            <option value="monthly">Monthly, same date</option>
+          </select>
+          {recurring && recurrenceType === 'weekly' && (
             <div className="weekday-chips" style={{ marginTop: 10 }}>
               {WEEKDAY_SHORT.map((label, idx) => (
                 <button
@@ -215,6 +297,11 @@ export default function AddEventModal({ members, defaultMember, defaultDate, exi
                 </button>
               ))}
             </div>
+          )}
+          {recurring && recurrenceType === 'monthly' && (
+            <p style={{ marginTop: 10, marginBottom: 0, color: 'var(--color-text-muted)' }}>
+              Repeats on the {ordinal(new Date(start).getDate())} of every month.
+            </p>
           )}
         </div>
 
@@ -231,6 +318,27 @@ export default function AddEventModal({ members, defaultMember, defaultDate, exi
             </label>
           </div>
         </div>
+
+        {isEditing && (
+          <div className="field">
+            <label htmlFor="ev-copy-date">Copy this event to another day</label>
+            <div className="checkbox-row" style={{ gap: 8 }}>
+              <input
+                id="ev-copy-date"
+                type="date"
+                value={copyDate}
+                onChange={(e) => {
+                  setCopyDate(e.target.value);
+                  setCopyMessage(null);
+                }}
+              />
+              <button type="button" className="btn btn-secondary" onClick={handleCopy} disabled={!copyDate || copying}>
+                {copying ? 'Copying…' : 'Copy'}
+              </button>
+            </div>
+            {copyMessage && <p style={{ color: 'var(--color-accent)', margin: '6px 0 0' }}>{copyMessage}</p>}
+          </div>
+        )}
 
         {error && <p style={{ color: 'var(--color-danger)' }}>{error}</p>}
 

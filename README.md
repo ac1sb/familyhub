@@ -142,8 +142,17 @@ shopping list from another device.
   read-only merge with no sign-in needed, or connect a Google account via
   OAuth for two-way sync (its events show up here, and one-off events
   created in FamilyHub are pushed back to it).
-- **Recurring events** — a "Repeats weekly" checkbox plus day-of-week chips,
-  for anything that happens multiple times a week or the same day every week.
+- **End times** — the Add/Edit Event form has an optional "Ends" field
+  alongside "Starts", so an event can show a duration instead of just a
+  start time.
+- **Copy an event to another day** — while editing an existing event, pick a
+  date and tap Copy to create a one-off duplicate on that day (same title,
+  time-of-day, duration, location, etc.), without disturbing the original.
+  Repeat as many times as needed - the modal stays open after each copy.
+- **Recurring events** — a "Repeats" dropdown on the Add/Edit Event form:
+  "Weekly" (with day-of-week chips, for anything that happens multiple times
+  a week or the same day every week), "Every other week", or "Monthly, same
+  date" (e.g. the 15th of every month).
 - **Big reminder banners** — flag any event as an "important reminder" and
   it shows as a large, hard-to-miss banner on the dashboard the day it's due
   (e.g. "Band Practice — bring your instrument!").
@@ -493,11 +502,11 @@ anywhere outside Settings.
 
 This syncs both ways: that calendar's events show up in the agenda, and
 one-off events created *in* FamilyHub are pushed to it too (so they show up
-on your phone's Google Calendar app, for instance). Recurring events
-("Repeats weekly") are the one exception - they stay FamilyHub-only for now,
-since our weekly-recurrence model doesn't map cleanly onto how Google
-expands a recurring series, and pushing them would risk showing every
-occurrence twice.
+on your phone's Google Calendar app, for instance). Recurring events (any
+"Repeats" option - weekly, every other week, or monthly) are the one
+exception - they stay FamilyHub-only for now, since our recurrence model
+doesn't map cleanly onto how Google expands a recurring series, and pushing
+them would risk showing every occurrence twice.
 
 By default this syncs to the signed-in account's own ("primary") calendar.
 To sync to a *shared* family calendar instead, share that calendar with the
@@ -809,8 +818,8 @@ other file on the Pi.
   else added to Home Assistant later) instead of one bespoke integration
   per brand.
 - Google Calendar sync is two-way for one-off events, but recurring
-  ("Repeats weekly") events are never pushed to Google - they stay
-  FamilyHub-only. The shared iCal feeds are always read-only, by design.
+  ("Repeats") events are never pushed to Google - they stay FamilyHub-only.
+  The shared iCal feeds are always read-only, by design.
 - Family Photos syncs from Google Drive, not Google Photos - Google's Photos
   API no longer allows an app like FamilyHub ongoing read access to a shared
   album (a 2025 change; the only remaining option is an interactive

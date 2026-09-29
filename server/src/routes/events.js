@@ -134,6 +134,8 @@ router.post('/', async (req, res) => {
     all_day = false,
     recurring = false,
     recurrence_days = [],
+    recurrence_type = 'weekly',
+    recurrence_interval = 1,
     photo_path = null,
     is_reminder = false,
   } = req.body;
@@ -144,10 +146,13 @@ router.post('/', async (req, res) => {
   if (!MEMBERS.includes(member)) {
     return res.status(400).json({ error: 'invalid member' });
   }
+  if (!['weekly', 'monthly'].includes(recurrence_type)) {
+    return res.status(400).json({ error: 'recurrence_type must be weekly or monthly' });
+  }
 
   const stmt = db.prepare(`
-    INSERT INTO events (title, description, location, member, start_datetime, end_datetime, all_day, recurring, recurrence_days, photo_path, is_reminder)
-    VALUES (@title, @description, @location, @member, @start_datetime, @end_datetime, @all_day, @recurring, @recurrence_days, @photo_path, @is_reminder)
+    INSERT INTO events (title, description, location, member, start_datetime, end_datetime, all_day, recurring, recurrence_days, recurrence_type, recurrence_interval, photo_path, is_reminder)
+    VALUES (@title, @description, @location, @member, @start_datetime, @end_datetime, @all_day, @recurring, @recurrence_days, @recurrence_type, @recurrence_interval, @photo_path, @is_reminder)
   `);
   const info = stmt.run({
     title,
@@ -159,6 +164,8 @@ router.post('/', async (req, res) => {
     all_day: all_day ? 1 : 0,
     recurring: recurring ? 1 : 0,
     recurrence_days: JSON.stringify(recurrence_days),
+    recurrence_type,
+    recurrence_interval: Math.max(1, Number(recurrence_interval) || 1),
     photo_path,
     is_reminder: is_reminder ? 1 : 0,
   });
@@ -189,6 +196,10 @@ router.put('/:id', async (req, res) => {
   const existing = db.prepare('SELECT * FROM events WHERE id = ?').get(req.params.id);
   if (!existing) return res.status(404).json({ error: 'not found' });
 
+  if (req.body.recurrence_type !== undefined && !['weekly', 'monthly'].includes(req.body.recurrence_type)) {
+    return res.status(400).json({ error: 'recurrence_type must be weekly or monthly' });
+  }
+
   const merged = {
     title: req.body.title ?? existing.title,
     description: req.body.description ?? existing.description,
@@ -199,6 +210,11 @@ router.put('/:id', async (req, res) => {
     all_day: req.body.all_day !== undefined ? (req.body.all_day ? 1 : 0) : existing.all_day,
     recurring: req.body.recurring !== undefined ? (req.body.recurring ? 1 : 0) : existing.recurring,
     recurrence_days: req.body.recurrence_days ? JSON.stringify(req.body.recurrence_days) : existing.recurrence_days,
+    recurrence_type: req.body.recurrence_type ?? existing.recurrence_type,
+    recurrence_interval:
+      req.body.recurrence_interval !== undefined
+        ? Math.max(1, Number(req.body.recurrence_interval) || 1)
+        : existing.recurrence_interval,
     photo_path: req.body.photo_path ?? existing.photo_path,
     is_reminder: req.body.is_reminder !== undefined ? (req.body.is_reminder ? 1 : 0) : existing.is_reminder,
   };
@@ -206,7 +222,8 @@ router.put('/:id', async (req, res) => {
   db.prepare(`
     UPDATE events SET title=@title, description=@description, location=@location, member=@member,
       start_datetime=@start_datetime, end_datetime=@end_datetime, all_day=@all_day, recurring=@recurring,
-      recurrence_days=@recurrence_days, photo_path=@photo_path, is_reminder=@is_reminder, updated_at=datetime('now')
+      recurrence_days=@recurrence_days, recurrence_type=@recurrence_type, recurrence_interval=@recurrence_interval,
+      photo_path=@photo_path, is_reminder=@is_reminder, updated_at=datetime('now')
     WHERE id=@id
   `).run({ ...merged, id: req.params.id });
 
