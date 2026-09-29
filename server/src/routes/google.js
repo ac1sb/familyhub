@@ -139,6 +139,62 @@ export async function fetchGoogleEvents(rangeStart, rangeEnd) {
   }));
 }
 
+// Read-side mirror of pushEventToMemberCalendars: pulls events straight from
+// each parent's own personal Google Calendar (Settings -> "Push each
+// person's events onto their own Google Calendar") and tags them with that
+// specific member, rather than lumping everything from the connected
+// account under one single "Show its events under" choice. This also means
+// an event that started life as a FamilyHub event pushed onto that same
+// calendar comes back through here too - routes/events.js dedupes those
+// against pushedGoogleIds the same way it already does for fetchGoogleEvents.
+export async function fetchMemberCalendarEvents(rangeStart, rangeEnd) {
+  const client = getOAuthClient();
+  if (!client || !getJSON('google_tokens', null)) return [];
+
+  const { member_1, member_2 } = getGoogleMemberCalendars();
+  const targets = [
+    { member: 'member_1', calendarId: member_1 },
+    { member: 'member_2', calendarId: member_2 },
+  ].filter((t) => t.calendarId);
+  if (targets.length === 0) return [];
+
+  const calendar = google.calendar({ version: 'v3', auth: client });
+  const results = [];
+  for (const { member, calendarId } of targets) {
+    try {
+      const result = await calendar.events.list({
+        calendarId,
+        timeMin: rangeStart.toISOString(),
+        timeMax: rangeEnd.toISOString(),
+        singleEvents: true,
+        orderBy: 'startTime',
+        maxResults: 100,
+      });
+      for (const ev of result.data.items || []) {
+        results.push({
+          id: `google-${calendarId}-${ev.id}`,
+          title: ev.summary || '(untitled)',
+          description: ev.description || '',
+          location: ev.location || '',
+          member,
+          source: 'google',
+          google_event_id: ev.id,
+          all_day: !ev.start?.dateTime,
+          recurring: false,
+          recurrence_days: [],
+          occurrence_start: ev.start?.dateTime || `${ev.start?.date}T00:00:00`,
+          occurrence_end: ev.end?.dateTime || (ev.end?.date ? `${ev.end.date}T00:00:00` : null),
+        });
+      }
+    } catch (err) {
+      // One parent's calendar being unreachable/misconfigured shouldn't
+      // block the other's, or the rest of the agenda.
+      console.error(`Failed to read events from ${member}'s calendar (${calendarId}):`, err.message);
+    }
+  }
+  return results;
+}
+
 export function isGoogleWriteEnabled() {
   return !!(getOAuthClient() && getJSON('google_tokens', null));
 }

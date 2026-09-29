@@ -4,6 +4,7 @@ import { expandOccurrences } from '../lib/recurrence.js';
 import { addDays, startOfWeek, parseDateOnly } from '../lib/week.js';
 import {
   fetchGoogleEvents,
+  fetchMemberCalendarEvents,
   isGoogleWriteEnabled,
   pushEventToGoogle,
   updateGoogleEvent,
@@ -99,9 +100,27 @@ router.get('/', async (req, res) => {
     ...linkedGoogleIds,
   ]);
 
+  // Read each parent's own personal calendar (if configured) first, so an
+  // event that lives there is correctly attributed to that specific member
+  // rather than whatever single "Show its events under" choice the connected
+  // account's primary-calendar sync below uses. Google can surface the same
+  // event under both a personal calendar and the connected account's primary
+  // calendar at once (e.g. it's an invite the connected account is also a
+  // guest on) - the specific, per-member attribution wins in that case.
+  let memberGoogleEvents = [];
+  try {
+    memberGoogleEvents = await fetchMemberCalendarEvents(rangeStart, rangeEnd);
+    occurrences = occurrences.concat(memberGoogleEvents.filter((ev) => !pushedGoogleIds.has(ev.google_event_id)));
+  } catch (err) {
+    // One or more member calendars unreachable/misconfigured - agenda still works with everything else
+  }
+  const memberEventIds = new Set(memberGoogleEvents.map((ev) => ev.google_event_id));
+
   try {
     const googleEvents = await fetchGoogleEvents(rangeStart, rangeEnd);
-    occurrences = occurrences.concat(googleEvents.filter((ev) => !pushedGoogleIds.has(ev.google_event_id)));
+    occurrences = occurrences.concat(
+      googleEvents.filter((ev) => !pushedGoogleIds.has(ev.google_event_id) && !memberEventIds.has(ev.google_event_id))
+    );
   } catch (err) {
     // Google not connected or failed - agenda still works with local events only
   }

@@ -411,12 +411,14 @@ function CalendarSettings({ config, onConfigUpdated }) {
         )}
         {googleStatus?.connected && (
           <div className="field" style={{ marginTop: 18 }}>
-            <label>Push each person's events onto their own Google Calendar</label>
+            <label>Sync each person's events with their own Google Calendar</label>
             <p style={{ color: 'var(--color-text-muted)', fontSize: '0.8rem', margin: '0 0 8px' }}>
               Optional, and separate from the calendar above. Have {names.member_1 || 'Member 1'} and{' '}
               {names.member_2 || 'Member 2'} each share their personal Google Calendar with the connected
-              account as an editor, then paste each one's Calendar ID here - an event added under that
-              person in FamilyHub is pushed straight onto their own calendar too.{' '}
+              account as an editor, then paste each one's Calendar ID here. This goes both ways: an event
+              added under that person in FamilyHub is pushed straight onto their own calendar too, and
+              anything already on that calendar shows up in FamilyHub attributed to them (view/edit it in
+              Google Calendar itself - FamilyHub can't edit those).{' '}
               {names.member_3 || 'Member 3'}'s events go onto <strong>both</strong> calendars below (there's
               no separate field for a third calendar), so both parents see a child's events without the
               child needing a Google account of their own.

@@ -523,29 +523,42 @@ column) - the "Show its events under" dropdown next to the Calendar ID field
 pins them to one member's column instead, for when the connected calendar is
 really just that person's own schedule.
 
-### Pushing each person's events onto their own Google Calendar
+### Syncing each person's events with their own Google Calendar
 
 The single Calendar ID above is one shared destination for every event,
 regardless of which column it's under. Settings -> Calendar also has a
-separate, optional **"Push each person's events onto their own Google
+separate, optional **"Sync each person's events with their own Google
 Calendar"** section that routes events per-person instead, using that same
-one OAuth connection - nobody else needs their own API/OAuth setup:
+one OAuth connection - nobody else needs their own API/OAuth setup. This one
+goes both ways:
 
 1. Have each of the two adult members share their personal Google Calendar
    with the connected account as an editor (**⋮ → Settings and sharing →
    Share with specific people → add that account → "Make changes to
-   events"**).
+   events"**). The calendar can be that person's own default calendar, or any
+   other calendar (including a shared one, like a joint calendar covering
+   both parents) they've given the connected account edit access to.
 2. Paste each one's Calendar ID into their field in that Settings section.
 
-An event assigned to one of those two members' columns is then pushed onto
-that person's own calendar. A third member's events (assumed to be a child
-without their own Google account) are pushed onto **both** configured
+**Push:** an event assigned to one of those two members' columns is pushed
+onto that person's own calendar. A third member's events (assumed to be a
+child without their own Google account) are pushed onto **both** configured
 calendars instead, so both parents see it without a third calendar field.
 Reassigning an event to a different person later moves it: it's removed from
 whichever calendar(s) it was on and pushed fresh to the new one(s) (a new
 event on Google's side, since there's no cross-calendar "move" for this).
 Recurring events are skipped here for the same reason as the shared calendar
 above.
+
+**Pull:** anything already sitting on one of those two calendars - created
+directly in Google Calendar, not through FamilyHub - shows up in the agenda
+attributed to that specific person, the same read-only way the single shared
+calendar above does (tap it and it says to edit/delete it in Google Calendar,
+since FamilyHub has no local copy of it to change). If the same event happens
+to also appear on the connected account's own primary calendar (e.g. it's a
+shared/joint calendar the connected account is itself invited to), the
+specific per-person attribution takes priority over the generic one so it
+doesn't show twice under two different people.
 
 ## Flyer / poster photo scanning
 
