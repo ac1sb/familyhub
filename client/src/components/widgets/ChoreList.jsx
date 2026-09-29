@@ -113,10 +113,6 @@ export default function ChoreList({ compact = false, onExpand }) {
           </div>
         </div>
 
-        {data && todayChores.length > 0 && doneToday === todayChores.length && (
-          <p style={{ color: 'var(--color-text-muted)' }}>All done for today! 🎉</p>
-        )}
-
         {displayMode === 'carousel' && (
           <TileCarousel
             items={visible}
