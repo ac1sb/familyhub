@@ -92,9 +92,6 @@ export default function DailyChecklist({ compact = false, onExpand }) {
                 title={task.title}
                 onClick={() => toggleDone(task)}
               >
-                {task.template_id && (
-                  <span className="tile-repeat-badge" title="Repeats on selected days">🔁</span>
-                )}
                 <span className="tile-icon">{task.icon || getTaskIcon(task.title)}</span>
                 <span className="tile-title">{task.title}</span>
                 {task.done && <span className="tile-check">✓</span>}

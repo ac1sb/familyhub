@@ -1195,12 +1195,6 @@ button {
   height: 20px;
   font-size: 0.7rem;
 }
-.tile-square .tile-repeat-badge {
-  position: absolute;
-  top: 6px;
-  left: 6px;
-  font-size: 0.75rem;
-}
 
 /* ---------- Tile carousel (Settings -> Dashboard Widgets: Carousel mode) ----------
    One big tile at a time instead of a stacked list - swipe it (touch drag,
