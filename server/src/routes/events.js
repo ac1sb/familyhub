@@ -84,10 +84,20 @@ router.get('/', async (req, res) => {
   const rows = db.prepare('SELECT * FROM events').all().map(rowToEvent);
   let occurrences = rows.flatMap((row) => expandOccurrences(row, rangeStart, rangeEnd));
 
-  // A local event that's already been pushed to Google (google_event_id set)
-  // would otherwise show up twice - once as the local row, once again as
-  // Google's own copy of the same event when we fetch that calendar below.
-  const pushedGoogleIds = new Set(rows.filter((r) => r.google_event_id).map((r) => r.google_event_id));
+  // A local event that's already been pushed to Google would otherwise show
+  // up twice - once as the local row, once again as Google's own copy of the
+  // same event when we fetch that calendar below. events.google_event_id
+  // covers the single "family" calendar; event_google_links covers the
+  // per-member push (Settings -> Calendar -> "Push each person's events onto
+  // their own Google Calendar") - fetchGoogleEvents below only ever reads the
+  // connected account's own "primary" calendar, but that's exactly the
+  // calendar a per-member push commonly targets too (the connected account
+  // IS one of the two parents), so both id sources need checking here.
+  const linkedGoogleIds = db.prepare('SELECT google_event_id FROM event_google_links').all().map((r) => r.google_event_id);
+  const pushedGoogleIds = new Set([
+    ...rows.filter((r) => r.google_event_id).map((r) => r.google_event_id),
+    ...linkedGoogleIds,
+  ]);
 
   try {
     const googleEvents = await fetchGoogleEvents(rangeStart, rangeEnd);
