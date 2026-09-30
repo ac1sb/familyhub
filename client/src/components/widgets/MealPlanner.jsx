@@ -85,11 +85,21 @@ function DraggableMealInput({ slot, onChange, onCommit }) {
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({ id: slot.id });
   const style = transform ? { transform: CSS.Translate.toString(transform) } : undefined;
 
+  // The whole box is the drag target now (there's nothing else to interact
+  // with here besides typing into it or dragging it onto another day) -
+  // dnd-kit's activation constraints (a few px of movement for mouse, a
+  // short hold for touch - see the sensors below) already tell a plain tap
+  // to place the cursor apart from an actual drag, so a dedicated handle
+  // grabbing its own row was just spending space for no real benefit.
   return (
-    <div ref={setNodeRef} style={style} className={`meal-input-wrap${isDragging ? ' dragging' : ''}`}>
-      <div className="meal-input-handle" {...attributes} {...listeners} title="Drag onto another day to swap">
-        ⠿
-      </div>
+    <div
+      ref={setNodeRef}
+      style={style}
+      className={`meal-input-wrap${isDragging ? ' dragging' : ''}`}
+      {...attributes}
+      {...listeners}
+      title="Drag onto another day to swap"
+    >
       <input
         type="text"
         className="meal-box-input"
@@ -269,8 +279,8 @@ export default function MealPlanner({ compact = false, onExpand, onExpandLunch, 
       </div>
       {!compact && (
         <p style={{ color: 'var(--color-text-muted)', fontSize: '0.85rem', marginTop: 0 }}>
-          Type a meal name for each day, then drag a box by its ⠿ handle onto another day to swap them - the
-          day tabs themselves never move.
+          Type a meal name for each day, then drag a box onto another day to swap them - the day tabs
+          themselves never move.
         </p>
       )}
       <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>

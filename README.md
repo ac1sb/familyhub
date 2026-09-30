@@ -203,9 +203,11 @@ shopping list from another device.
 - **Weekly dinner menu, combined with lunch on the dashboard** — a row of
   day boxes (day tab on top, a lunch row, then the dinner meal name below),
   with today's day tab highlighted so it stands out from the rest of the
-  week. The day tabs are fixed - drag a meal box by its ⠿ handle onto a
-  different day to swap the two dinners, and only the meal box itself
-  visibly moves; the day tabs never do. On the dashboard the day boxes stack
+  week. The day tabs are fixed - drag a meal box itself (there's no separate
+  handle - the whole box is the drag target, since dragging is the only
+  thing to do with it besides typing) onto a different day to swap the two
+  dinners; only the meal box visibly moves, the day tabs never do. On the
+  dashboard the day boxes stack
   top to bottom instead of side by side, each one full-width - a deliberate
   difference from the full page's side-by-side row, since the dashboard
   widget is more often resized narrow and tall than wide and short, and

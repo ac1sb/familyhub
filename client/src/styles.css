@@ -1861,29 +1861,23 @@ button {
 /* Only this wraps the input - the day label above is a separate, static
    element, so dragging a meal to a different day only ever visibly moves
    the input box, never the day tab it sits under. */
+/* The whole wrap is the drag target now (see DraggableMealInput) - grab
+   cursor and disabling the browser's own touch scroll/pan gestures here
+   used to only matter on the small handle row; now it's the box itself. */
+.meal-input-wrap { cursor: grab; touch-action: none; }
 .meal-input-wrap.dragging { box-shadow: 0 6px 16px rgba(0,0,0,0.15); z-index: 2; position: relative; }
-.meal-input-handle {
-  text-align: center;
-  padding: 3px 0;
-  font-size: 0.85rem;
-  line-height: 1;
-  color: var(--color-text-muted);
-  background: var(--color-surface);
-  border-top: 1px solid var(--color-border);
-  cursor: grab;
-  touch-action: none;
-}
 .meal-box-input {
   width: 100%;
   min-width: 0;
   border: none;
-  padding: 8px 4px;
+  padding: 12px 4px;
   text-align: center;
-  font-size: 0.85rem;
-  min-height: 40px;
+  font-size: 0.95rem;
+  min-height: 44px;
   background: var(--color-surface);
   color: var(--color-text);
   text-overflow: ellipsis;
+  cursor: text;
 }
 
 /* ---------- Lunch calendar (full month view) ---------- */
