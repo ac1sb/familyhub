@@ -19,6 +19,12 @@ export async function fetchIcalEvents(url, rangeStart, rangeEnd, member = 'famil
       location: item.location || '',
       member,
       source: 'ical',
+      // Google's own iCal exports format a UID as "<calendar-API-event-id>@
+      // google.com" - exposing the raw UID lets routes/events.js recognize a
+      // FamilyHub-pushed event coming back through a subscribed feed as the
+      // same event, not a second one, the same way it already does for the
+      // OAuth-based reads.
+      ical_uid: item.uid || null,
       all_day: !!(item.start && item.start.dateOnly),
       recurring: false,
       recurrence_days: [],

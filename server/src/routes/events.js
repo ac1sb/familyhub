@@ -139,10 +139,23 @@ router.get('/', async (req, res) => {
   // sink the others or the rest of the agenda. Results are namespaced with
   // the feed's index so two different feeds can never collide on id even if
   // they happen to share a UID (a copy-pasted .ics template, say).
+  const GOOGLE_ICAL_UID_SUFFIX = '@google.com';
   for (const [i, feed] of getIcalFeeds().entries()) {
     try {
       const feedEvents = await fetchIcalEvents(feed.url, rangeStart, rangeEnd, feed.member);
-      occurrences = occurrences.concat(feedEvents.map((ev) => ({ ...ev, id: `${i}-${ev.id}` })));
+      const freshEvents = feedEvents.filter((ev) => {
+        // A feed subscribed to (or covering) a calendar FamilyHub also pushes
+        // to - e.g. someone's own calendar export happens to include a
+        // shared calendar's events too - would otherwise show the same event
+        // a second time, generically, alongside the actual local one. Google
+        // formats an exported event's UID as "<calendar-API-event-id>@
+        // google.com", so stripping that suffix recovers the same id
+        // pushedGoogleIds already tracks.
+        if (!ev.ical_uid || !ev.ical_uid.endsWith(GOOGLE_ICAL_UID_SUFFIX)) return true;
+        const derivedGoogleId = ev.ical_uid.slice(0, -GOOGLE_ICAL_UID_SUFFIX.length);
+        return !pushedGoogleIds.has(derivedGoogleId);
+      });
+      occurrences = occurrences.concat(freshEvents.map((ev) => ({ ...ev, id: `${i}-${ev.id}` })));
     } catch (err) {
       // Feed unreachable/misconfigured - agenda still works with everything else
     }
