@@ -1807,6 +1807,9 @@ button {
   letter-spacing: 0.03em;
   color: var(--color-text-muted);
   padding: 5px 8px 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 /* A single tappable button toggling school/home, same as the old standalone
    Lunch tile. Fixed (non-theme) colors with alpha so the tint reads as
@@ -1836,10 +1839,25 @@ button {
   -webkit-box-orient: vertical;
   line-height: 1.2;
 }
-/* The dinner tile's own surface color (distinct from the day box's
-   background behind it) reinforces that it's a separate card, the same way
-   the lunch tile's status tint does. */
-.meal-tile-dinner { background: var(--color-surface); }
+/* The dinner tile used to be just a flat, unadorned surface color sitting
+   next to lunch's bold status-tinted tile and reading as an afterthought
+   next to it. Gives it the same kind of "alive" state-based look lunch has:
+   a dashed border and muted label while empty (reads as an invitation to
+   fill it in, distinct from lunch's solid-bordered tile), a warm accent
+   tint plus a solid border and a colored label once a meal's actually
+   planned - so at a glance the tile itself says whether dinner is sorted
+   for that day, not just the text inside it. */
+.meal-tile-dinner {
+  background: var(--color-surface);
+  border-style: dashed;
+}
+.meal-tile-dinner.has-meal {
+  background: color-mix(in srgb, var(--color-accent) 16%, var(--color-surface));
+  border-color: var(--color-accent);
+  border-style: solid;
+}
+.meal-tile-dinner .meal-tile-label { transition: color 0.15s ease; }
+.meal-tile-dinner.has-meal .meal-tile-label { color: var(--color-accent); opacity: 1; }
 /* Only this wraps the input - the day label above is a separate, static
    element, so dragging a meal to a different day only ever visibly moves
    the input box, never the day tab it sits under. */

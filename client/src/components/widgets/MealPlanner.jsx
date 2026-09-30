@@ -69,8 +69,8 @@ function DaySlot({ slot, compact, onChange, onCommit, onToggleLunch }) {
       {compact ? (
         <div className="meal-tiles-row">
           <LunchRow lunch={slot.lunch} onToggle={() => onToggleLunch(slot)} />
-          <div className="meal-tile meal-tile-dinner">
-            <span className="meal-tile-label">Dinner</span>
+          <div className={`meal-tile meal-tile-dinner${slot.name?.trim() ? ' has-meal' : ''}`}>
+            <span className="meal-tile-label">🍽️ Dinner</span>
             <DraggableMealInput slot={slot} onChange={onChange} onCommit={onCommit} />
           </div>
         </div>
