@@ -85,52 +85,68 @@ router.get('/', async (req, res) => {
   const rows = db.prepare('SELECT * FROM events').all().map(rowToEvent);
   let occurrences = rows.flatMap((row) => expandOccurrences(row, rangeStart, rangeEnd));
 
-  // A local event that's already been pushed to Google would otherwise show
-  // up twice - once as the local row, once again as Google's own copy of the
-  // same event when we fetch that calendar below. events.google_event_id
-  // covers the single "family" calendar; event_google_links covers the
-  // per-member push (Settings -> Calendar -> "Push each person's events onto
-  // their own Google Calendar") - fetchGoogleEvents below only ever reads the
-  // connected account's own "primary" calendar, but that's exactly the
-  // calendar a per-member push commonly targets too (the connected account
-  // IS one of the two parents), so both id sources need checking here.
+  // Every external source below (the connected account's own calendar, each
+  // parent's personal calendar, any subscribed iCal feed) can overlap with
+  // any other - the same event can be visible through more than one of them
+  // at once (a shared calendar the connected account also belongs to, a feed
+  // that happens to export a calendar already read another way, etc). Rather
+  // than special-casing each pair, every source is checked against, and adds
+  // to, one running "already showing" set as it's processed - first source
+  // to report an event wins, everything after it is skipped.
+  //
+  // events.google_event_id covers a locally-created "family" event pushed to
+  // the single shared calendar; event_google_links covers the per-member
+  // sync (Settings -> Calendar -> "Sync each person's events with their own
+  // Google Calendar") - both seed the set before any external source is
+  // fetched, so a FamilyHub-authored event always wins over any read-only
+  // copy of itself, regardless of which source that copy comes back through.
   const linkedGoogleIds = db.prepare('SELECT google_event_id FROM event_google_links').all().map((r) => r.google_event_id);
-  const pushedGoogleIds = new Set([
+  const seenGoogleIds = new Set([
     ...rows.filter((r) => r.google_event_id).map((r) => r.google_event_id),
     ...linkedGoogleIds,
   ]);
+  // Google gives the same logical event a different `id` on every calendar
+  // it's visible on - `id` is only unique within one calendar. iCalUID is
+  // the field Google keeps identical everywhere that event appears,
+  // including across a plain iCal export of the same calendar, so it's what
+  // catches an overlap `id` alone would miss.
+  const seenICalUids = new Set();
+  const GOOGLE_ICAL_UID_SUFFIX = '@google.com';
 
-  // Read each parent's own personal calendar (if configured) first, so an
-  // event that lives there is correctly attributed to that specific member
-  // rather than whatever single "Show its events under" choice the connected
-  // account's primary-calendar sync below uses. Google can surface the same
-  // event under both a personal calendar and the connected account's primary
-  // calendar at once (e.g. it's an invite the connected account is also a
-  // guest on) - the specific, per-member attribution wins in that case.
-  let memberGoogleEvents = [];
+  function isFresh(ev) {
+    if (seenGoogleIds.has(ev.google_event_id)) return false;
+    if (!ev.ical_uid) return true;
+    if (seenICalUids.has(ev.ical_uid)) return false;
+    if (ev.ical_uid.endsWith(GOOGLE_ICAL_UID_SUFFIX)) {
+      const derivedId = ev.ical_uid.slice(0, -GOOGLE_ICAL_UID_SUFFIX.length);
+      if (seenGoogleIds.has(derivedId)) return false;
+    }
+    return true;
+  }
+
+  function remember(ev) {
+    if (ev.google_event_id) seenGoogleIds.add(ev.google_event_id);
+    if (ev.ical_uid) seenICalUids.add(ev.ical_uid);
+  }
+
+  // Read each parent's own personal calendar first (if configured), so an
+  // event that lives there is attributed to that specific member rather than
+  // whatever single "Show its events under" choice the connected account's
+  // own primary-calendar sync below uses.
   try {
-    memberGoogleEvents = await fetchMemberCalendarEvents(rangeStart, rangeEnd);
-    occurrences = occurrences.concat(memberGoogleEvents.filter((ev) => !pushedGoogleIds.has(ev.google_event_id)));
+    const memberGoogleEvents = await fetchMemberCalendarEvents(rangeStart, rangeEnd);
+    const fresh = memberGoogleEvents.filter(isFresh);
+    fresh.forEach(remember);
+    occurrences = occurrences.concat(fresh);
   } catch (err) {
     // One or more member calendars unreachable/misconfigured - agenda still works with everything else
   }
-  const memberEventIds = new Set(memberGoogleEvents.map((ev) => ev.google_event_id));
-  // The SAME logical event gets a different `id` on each calendar it's on
-  // (the connected account's own primary vs. a shared calendar it's also a
-  // participant on) - iCalUID is the one field Google keeps identical across
-  // all of them, so a same-`id` check alone misses this case entirely.
-  const memberICalUids = new Set(memberGoogleEvents.filter((ev) => ev.ical_uid).map((ev) => ev.ical_uid));
 
   try {
     const googleEvents = await fetchGoogleEvents(rangeStart, rangeEnd);
-    occurrences = occurrences.concat(
-      googleEvents.filter(
-        (ev) =>
-          !pushedGoogleIds.has(ev.google_event_id) &&
-          !memberEventIds.has(ev.google_event_id) &&
-          !(ev.ical_uid && memberICalUids.has(ev.ical_uid))
-      )
-    );
+    const fresh = googleEvents.filter(isFresh);
+    fresh.forEach(remember);
+    occurrences = occurrences.concat(fresh);
   } catch (err) {
     // Google not connected or failed - agenda still works with local events only
   }
@@ -139,23 +155,12 @@ router.get('/', async (req, res) => {
   // sink the others or the rest of the agenda. Results are namespaced with
   // the feed's index so two different feeds can never collide on id even if
   // they happen to share a UID (a copy-pasted .ics template, say).
-  const GOOGLE_ICAL_UID_SUFFIX = '@google.com';
   for (const [i, feed] of getIcalFeeds().entries()) {
     try {
       const feedEvents = await fetchIcalEvents(feed.url, rangeStart, rangeEnd, feed.member);
-      const freshEvents = feedEvents.filter((ev) => {
-        // A feed subscribed to (or covering) a calendar FamilyHub also pushes
-        // to - e.g. someone's own calendar export happens to include a
-        // shared calendar's events too - would otherwise show the same event
-        // a second time, generically, alongside the actual local one. Google
-        // formats an exported event's UID as "<calendar-API-event-id>@
-        // google.com", so stripping that suffix recovers the same id
-        // pushedGoogleIds already tracks.
-        if (!ev.ical_uid || !ev.ical_uid.endsWith(GOOGLE_ICAL_UID_SUFFIX)) return true;
-        const derivedGoogleId = ev.ical_uid.slice(0, -GOOGLE_ICAL_UID_SUFFIX.length);
-        return !pushedGoogleIds.has(derivedGoogleId);
-      });
-      occurrences = occurrences.concat(freshEvents.map((ev) => ({ ...ev, id: `${i}-${ev.id}` })));
+      const fresh = feedEvents.filter(isFresh);
+      fresh.forEach(remember);
+      occurrences = occurrences.concat(fresh.map((ev) => ({ ...ev, id: `${i}-${ev.id}` })));
     } catch (err) {
       // Feed unreachable/misconfigured - agenda still works with everything else
     }
