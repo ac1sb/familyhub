@@ -71,10 +71,7 @@ export default function DailyChecklist({ compact = false, onExpand }) {
             onToggle={toggleDone}
             renderTile={(task) => (
               <>
-                <span className="tile-title">
-                  {task.template_id && <span title="Repeats on selected days">🔁 </span>}
-                  {task.title}
-                </span>
+                <span className="tile-title">{task.title}</span>
                 {task.done && <span className="tile-check">✓</span>}
               </>
             )}
@@ -108,10 +105,7 @@ export default function DailyChecklist({ compact = false, onExpand }) {
             aria-pressed={task.done}
             onClick={() => toggleDone(task)}
           >
-            <span className="tile-title">
-              {task.template_id && <span title="Repeats on selected days">🔁 </span>}
-              {task.title}
-            </span>
+            <span className="tile-title">{task.title}</span>
             {task.done && <span className="tile-check">✓</span>}
           </button>
         ))}
@@ -137,10 +131,7 @@ export default function DailyChecklist({ compact = false, onExpand }) {
           aria-pressed={task.done}
           onClick={() => toggleDone(task)}
         >
-          <span className="tile-title">
-            {task.template_id && <span title="Repeats on selected days">🔁 </span>}
-            {task.title}
-          </span>
+          <span className="tile-title">{task.title}</span>
           {task.done && <span className="tile-check">✓</span>}
         </button>
       ))}
