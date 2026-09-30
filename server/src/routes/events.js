@@ -115,11 +115,21 @@ router.get('/', async (req, res) => {
     // One or more member calendars unreachable/misconfigured - agenda still works with everything else
   }
   const memberEventIds = new Set(memberGoogleEvents.map((ev) => ev.google_event_id));
+  // The SAME logical event gets a different `id` on each calendar it's on
+  // (the connected account's own primary vs. a shared calendar it's also a
+  // participant on) - iCalUID is the one field Google keeps identical across
+  // all of them, so a same-`id` check alone misses this case entirely.
+  const memberICalUids = new Set(memberGoogleEvents.filter((ev) => ev.ical_uid).map((ev) => ev.ical_uid));
 
   try {
     const googleEvents = await fetchGoogleEvents(rangeStart, rangeEnd);
     occurrences = occurrences.concat(
-      googleEvents.filter((ev) => !pushedGoogleIds.has(ev.google_event_id) && !memberEventIds.has(ev.google_event_id))
+      googleEvents.filter(
+        (ev) =>
+          !pushedGoogleIds.has(ev.google_event_id) &&
+          !memberEventIds.has(ev.google_event_id) &&
+          !(ev.ical_uid && memberICalUids.has(ev.ical_uid))
+      )
     );
   } catch (err) {
     // Google not connected or failed - agenda still works with local events only

@@ -131,6 +131,12 @@ export async function fetchGoogleEvents(rangeStart, rangeEnd) {
     member,
     source: 'google',
     google_event_id: ev.id,
+    // Google gives the same logical event a different `id` on each calendar
+    // it touches (e.g. the connected account's own primary vs. a shared
+    // calendar it's also a participant on) - iCalUID is the one identifier
+    // that stays the same across all of them, so it's what cross-calendar
+    // dedup (routes/events.js) has to compare instead of `id`.
+    ical_uid: ev.iCalUID || null,
     all_day: !ev.start?.dateTime,
     recurring: false,
     recurrence_days: [],
@@ -179,6 +185,7 @@ export async function fetchMemberCalendarEvents(rangeStart, rangeEnd) {
           member,
           source: 'google',
           google_event_id: ev.id,
+          ical_uid: ev.iCalUID || null,
           all_day: !ev.start?.dateTime,
           recurring: false,
           recurrence_days: [],
