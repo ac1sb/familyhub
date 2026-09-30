@@ -898,9 +898,22 @@ button {
   padding: 20px;
 }
 
-.modal-panel.wide { max-width: 900px; }
+/* Add/Edit Event's own larger "pop out" size - a real dialog instead of a
+   cramped narrow sheet, with room for fields to sit side by side. Still just
+   width:100% (capped by max-width) below that, so it shrinks back down to a
+   phone-width sheet same as any other modal. */
+.modal-panel-lg { max-width: 760px; padding: 28px; }
+
+@media (max-width: 640px) {
+  .modal-panel-lg { padding: 20px; }
+}
 
 .modal-title { font-size: 1.1rem; font-weight: 700; margin: 0 0 14px; }
+
+/* Puts two fields side by side (Starts/Ends, say) in a wider modal instead
+   of always stacking full-width - wraps back to stacked on a narrow screen. */
+.field-row { display: flex; gap: 14px; flex-wrap: wrap; }
+.field-row .field { flex: 1; min-width: 180px; margin-bottom: 0; }
 
 .field { margin-bottom: 14px; display: flex; flex-direction: column; gap: 6px; }
 .field label { font-size: 0.85rem; font-weight: 600; color: var(--color-text-muted); }
@@ -1187,7 +1200,19 @@ button {
 .member-choice.member_2 { background: var(--color-member-2); color: var(--ink-on-member-2); }
 .member-choice.member_3 { background: var(--color-member-3); color: var(--ink-on-member-3); }
 .member-choice.family { background: var(--color-primary); color: var(--ink-on-primary); }
-.member-choice.selected { border-color: var(--color-text); }
+/* Every option here already has its own bold color fill, so a subtle border
+   alone doesn't read as "selected" at a glance - e.g. picking someone from
+   the agenda view's "+ Name" button pre-selects them here already, but that
+   wasn't obvious enough to trust without tapping it again. A checkmark plus
+   a strong ring makes the selected one unmistakable, and dimming its
+   siblings (only once something IS selected) makes it pop by contrast too. */
+.member-choice.selected {
+  border-color: var(--color-text);
+  box-shadow: 0 0 0 3px var(--color-surface), 0 0 0 6px var(--color-text);
+  transform: scale(1.04);
+}
+.member-choice.selected::before { content: '✓ '; }
+.member-choice-row:has(.selected) .member-choice:not(.selected) { opacity: 0.5; }
 
 /* A small pill-style segmented control (Settings -> Dashboard Widgets:
    List/Carousel choice) - unlike .member-choice above, the inactive option

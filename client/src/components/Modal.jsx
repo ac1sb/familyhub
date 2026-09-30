@@ -8,10 +8,10 @@ import { createPortal } from 'react-dom';
 // widget could render partly behind/under other widgets instead of
 // centered over the whole screen. Opening it from the full-page views never
 // hit this, since those aren't inside a transformed grid item.
-export default function Modal({ onClose, children }) {
+export default function Modal({ onClose, size, children }) {
   return createPortal(
     <div className="modal-backdrop" onClick={onClose}>
-      <div className="modal-panel" onClick={(e) => e.stopPropagation()}>
+      <div className={`modal-panel${size ? ` modal-panel-${size}` : ''}`} onClick={(e) => e.stopPropagation()}>
         {children}
       </div>
     </div>,

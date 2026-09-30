@@ -206,20 +206,8 @@ export default function AddEventModal({ members, defaultMember, defaultDate, exi
   }
 
   return (
-    <Modal onClose={onClose}>
+    <Modal onClose={onClose} size="lg">
         <h3 className="modal-title">{isEditing ? 'Edit Calendar Event' : 'Add Calendar Event'}</h3>
-
-        <div className="field">
-          <label>Scan a flyer, poster, or paper calendar</label>
-          <div className="flyer-dropzone">
-            {photoPath && <img className="flyer-preview" src={photoPath} alt="Scanned flyer" />}
-            <input type="file" accept="image/*" capture="environment" onChange={handleFlyerUpload} />
-            {scanning && <p>Reading photo&hellip; extracting date, time &amp; location.</p>}
-            {scanError && <p style={{ color: 'var(--color-danger)' }}>⚠️ {scanError}</p>}
-            {!scanError && scanWarning && <p style={{ color: 'var(--color-accent)' }}>ℹ️ {scanWarning}</p>}
-            {!scanning && !photoPath && <p>Take a picture and we'll fill in the details below for you to check.</p>}
-          </div>
-        </div>
 
         <div className="field">
           <label>Who is this for?</label>
@@ -256,14 +244,16 @@ export default function AddEventModal({ members, defaultMember, defaultDate, exi
           />
         </div>
 
-        <div className="field">
-          <label htmlFor="ev-start">Starts</label>
-          <input id="ev-start" type="datetime-local" value={start} onChange={(e) => setStart(e.target.value)} />
-        </div>
+        <div className="field-row">
+          <div className="field">
+            <label htmlFor="ev-start">Starts</label>
+            <input id="ev-start" type="datetime-local" value={start} onChange={(e) => setStart(e.target.value)} />
+          </div>
 
-        <div className="field">
-          <label htmlFor="ev-end">Ends (optional)</label>
-          <input id="ev-end" type="datetime-local" value={end} onChange={(e) => setEnd(e.target.value)} min={start} />
+          <div className="field">
+            <label htmlFor="ev-end">Ends (optional)</label>
+            <input id="ev-end" type="datetime-local" value={end} onChange={(e) => setEnd(e.target.value)} min={start} />
+          </div>
         </div>
 
         <div className="field">
@@ -274,6 +264,18 @@ export default function AddEventModal({ members, defaultMember, defaultDate, exi
         <div className="field">
           <label htmlFor="ev-desc">Notes</label>
           <textarea id="ev-desc" value={description} onChange={(e) => setDescription(e.target.value)} />
+        </div>
+
+        <div className="field">
+          <label>Scan a flyer, poster, or paper calendar</label>
+          <div className="flyer-dropzone">
+            {photoPath && <img className="flyer-preview" src={photoPath} alt="Scanned flyer" />}
+            <input type="file" accept="image/*" capture="environment" onChange={handleFlyerUpload} />
+            {scanning && <p>Reading photo&hellip; extracting date, time &amp; location.</p>}
+            {scanError && <p style={{ color: 'var(--color-danger)' }}>⚠️ {scanError}</p>}
+            {!scanError && scanWarning && <p style={{ color: 'var(--color-accent)' }}>ℹ️ {scanWarning}</p>}
+            {!scanning && !photoPath && <p>Take a picture and we'll fill in the details above for you to check.</p>}
+          </div>
         </div>
 
         <div className="field">

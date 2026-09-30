@@ -148,8 +148,14 @@ shopping list from another device.
   a blank part of a day opens Add Event pre-filled for that date; tapping
   an event opens its usual detail view. Whichever layout, tapping a
   member's name (Agenda/Week/Day) opens **Add Event** preselected for that
-  person, and tapping an existing event opens its full details (including
-  its saved flyer photo, if it has one), with Edit and Delete right there.
+  person - the "Who is this for?" section at the top shows it clearly
+  selected (a bold ring, a checkmark, and the other options dimmed) rather
+  than needing a second tap to confirm it took. Add/Edit Event is also a
+  larger "pop out" dialog now (760px, versus the old narrow 480px sheet),
+  with Starts/Ends sitting side by side instead of always stacked - it still
+  shrinks back down to a full-width sheet on a phone. Tapping an existing
+  event opens its full details (including its saved flyer photo, if it has
+  one), with Edit and Delete right there.
   The compact widget on Home always stays a rolling Agenda view showing
   everyone (no view/person controls there - it's a small glance widget), at
   a much smaller scale (1-10 days): it always shows exactly as many days as
