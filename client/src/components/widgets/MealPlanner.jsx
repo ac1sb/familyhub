@@ -119,11 +119,13 @@ export default function MealPlanner({ compact = false, onExpand, onExpandLunch, 
     15000
   );
 
-  // Lunch, folded into this same widget - same 5-day window as the compact
-  // dinner slots below, fetched only in compact mode since the full weekly
-  // page stays dinner-only (Lunch still has its own full month page).
+  // Lunch, folded into this same widget - same 6-day window (today + 5) as
+  // the compact dinner slots below, fetched only in compact mode since the
+  // full weekly page stays dinner-only (Lunch still has its own full month
+  // page). /api/lunch's `end` is exclusive, so it needs to be one day past
+  // the last slot's date to actually include it.
   const todayKey = toISODate(new Date());
-  const lunchRangeEnd = toISODate(addDays(new Date(), 4));
+  const lunchRangeEnd = toISODate(addDays(new Date(), 6));
   const { data: lunchData, setData: setLunchData, refresh: refreshLunch } = usePolling(
     () => (compact ? api.lunchRange(todayKey, lunchRangeEnd) : Promise.resolve(null)),
     [todayKey, lunchRangeEnd, compact],
@@ -151,13 +153,13 @@ export default function MealPlanner({ compact = false, onExpand, onExpandLunch, 
   const weekStartDate = startOfWeek(new Date());
 
   // Full page: the current week, Mon through Sun, same as always. Dashboard
-  // widget: today through the next 4 real calendar days, wherever that
-  // falls relative to the Mon-Sun grid. Every slot carries the actual
+  // widget: today through the next 5 real calendar days (6 total), wherever
+  // that falls relative to the Mon-Sun grid. Every slot carries the actual
   // calendar date (not just a weekday name) - "Sun" alone doesn't say which
   // Sunday, which matters once meals are planned against a specific
   // shipment/delivery date instead of just "whatever day this is".
   const slots = compact
-    ? Array.from({ length: 5 }, (_, i) => {
+    ? Array.from({ length: 6 }, (_, i) => {
         const date = addDays(new Date(), i);
         const ws = toISODate(startOfWeek(date));
         const dow = (date.getDay() + 6) % 7;

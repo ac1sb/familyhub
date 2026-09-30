@@ -203,13 +203,13 @@ shopping list from another device.
   top to bottom instead of side by side, each one full-width - a deliberate
   difference from the full page's side-by-side row, since the dashboard
   widget is more often resized narrow and tall than wide and short, and
-  cramming 5 days into a sliver each was crowding out both the meal name and
-  the lunch text below. The dashboard widget specifically is a rolling "next
-  5 days" view (like the calendar's), not a fixed Mon-Sun week - so on a
-  Saturday or Sunday it rolls into next week's menu instead of running out
-  of days to show; editing or swapping a day there still writes to the
-  correct week underneath even when two boxes span a week boundary. Each of
-  those same 5 weekdays (Sat/Sun are skipped - no school lunch to pack) also
+  cramming 6 days into a sliver each was crowding out both the meal name and
+  the lunch text below. The dashboard widget specifically is a rolling
+  "today + the next 5 days" view (like the calendar's), not a fixed Mon-Sun
+  week - so on a Saturday or Sunday it rolls into next week's menu instead of
+  running out of days to show; editing or swapping a day there still writes
+  to the correct week underneath even when two boxes span a week boundary.
+  Each of those same 6 days (Sat/Sun are skipped - no school lunch to pack) also
   carries a small lunch row (🏫 school lunch day, 🥪 packed from home, plus
   the actual menu item) - tap it to toggle School/Pack-from-home, same as
   the full Lunch calendar's own day cells. The widget header has separate
@@ -231,7 +231,7 @@ shopping list from another device.
   into the tail end of the adjacent month to complete a week that spans a
   month boundary - shown dimmed but fully editable - instead of cutting off
   mid-week right when the month changes over. The combined Dinner & Lunch
-  dashboard widget above shows 5 days of this same status at a glance, so
+  dashboard widget above shows 6 days of this same status at a glance, so
   packing a lunch is never a last-minute scramble. Can
   auto-sync the entrée for each day from a school lunch menu site (including
   JS-rendered sites, via a headless-browser fallback) instead of typing it
