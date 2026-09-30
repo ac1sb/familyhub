@@ -276,6 +276,20 @@ for (const column of ['album_url', 'album_label']) {
     // column already exists
   }
 }
+for (const column of ['thinq_last_state', 'thinq_finished_at']) {
+  try {
+    // An LG ThinQ washer/dryer's status is fetched live on every request,
+    // never cached - but the header chip needs to know when a cycle
+    // actually finished so it can keep showing it for an hour afterward,
+    // which means remembering that moment somewhere durable. thinq_last_state
+    // is the last humanized state seen (so a Running -> not-Running
+    // transition can be detected on the next poll); thinq_finished_at is
+    // the timestamp that transition happened. See routes/smartDevices.js.
+    db.exec(`ALTER TABLE smart_devices ADD COLUMN ${column} TEXT`);
+  } catch {
+    // column already exists
+  }
+}
 
 // Seed a handful of example smart-home devices once, so the header quick-
 // toggle strip and the Smart Home widget have something to show out of the

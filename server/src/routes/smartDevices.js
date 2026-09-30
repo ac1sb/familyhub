@@ -23,13 +23,35 @@ function serialize(row) {
   };
 }
 
+// The header chip (see HeaderSmartHomeToggles.jsx) only shows a washer/dryer
+// while it's actually running, and for an hour after it finishes - but the
+// live status fetched below is never cached, so "when did it finish" has to
+// be tracked somewhere durable rather than recomputed from a state that's
+// already moved past Running by the time we look. Detect the Running ->
+// not-Running transition here and stamp it once, so the hour-long visibility
+// window survives every later poll (and a page reload) instead of resetting.
+function updateThinqTransition(row, state) {
+  let finishedAt = row.thinq_finished_at;
+  if (state === 'Running') {
+    finishedAt = null;
+  } else if (row.thinq_last_state === 'Running' && state !== 'Running') {
+    finishedAt = new Date().toISOString();
+  }
+  if (state !== row.thinq_last_state || finishedAt !== row.thinq_finished_at) {
+    db.prepare('UPDATE smart_devices SET thinq_last_state = ?, thinq_finished_at = ? WHERE id = ?').run(state, finishedAt, row.id);
+  }
+  return finishedAt;
+}
+
 async function withThinqStatus(row) {
   if (row.platform !== 'lg_thinq' || !row.external_id) return row;
   const settings = getLgThinqSettings();
   if (!settings.pat) return { ...row, thinq_error: 'Not connected' };
   try {
     const status = await getThinqDeviceStatus(settings, row.external_id);
-    return { ...row, ...humanizeThinqStatus(status) };
+    const { state, remainMinutes } = humanizeThinqStatus(status);
+    const thinq_finished_at = updateThinqTransition(row, state);
+    return { ...row, state, remainMinutes, thinq_finished_at };
   } catch (err) {
     return { ...row, thinq_error: err.message };
   }

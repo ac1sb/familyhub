@@ -292,9 +292,13 @@ shopping list from another device.
   actually running (client-side, between polls) - hidden once it's done or
   idle, since a leftover remaining time on a finished cycle isn't meaningful.
   The header's quick-access strip shows it too, as a read-only status chip
-  (not a toggle) - unlike the Smart Home page's tile, this one never hides
-  itself, so a glance at the header answers "is it done yet" (Running with a
-  countdown, or Done) without opening the full page.
+  (not a toggle) - but only while it's actually running and for an hour after
+  the cycle finishes, so the strip isn't left showing a stale "Done" chip all
+  day; the server stamps the moment a Running → not-Running transition
+  happens (durable across polls and page reloads) so that hour is measured
+  from when the cycle actually ended, not recomputed from a state that's
+  already moved past it. Appearing and disappearing chips slide/fade in and
+  out rather than popping, and the row closes the gap left behind.
 - **Weather** — a row of quick-glance chips in the header on every page,
   opposite the smart-home toggles with a prominent date/time between them
   (current temp, high/low, and precipitation chance - deliberately just

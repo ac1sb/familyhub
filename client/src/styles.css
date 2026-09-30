@@ -307,9 +307,30 @@ button {
   color: var(--color-text);
 }
 .header-toggle.on .header-toggle-dot { background: var(--color-primary); }
-.header-toggle.thinq-status { cursor: default; }
+.header-toggle.thinq-status {
+  cursor: default;
+  overflow: hidden;
+  white-space: nowrap;
+  max-width: 320px;
+  transform: none;
+  transition: max-width 320ms ease, opacity 260ms ease, padding 320ms ease, margin 320ms ease, transform 260ms ease;
+}
 .header-thinq-state { color: var(--color-text-muted); font-size: 0.88rem; }
 .header-toggle.thinq-status.on .header-thinq-state { color: inherit; }
+/* Collapsed while sliding in (just started) or out (finished an hour ago) -
+   shrinking max-width rather than just fading lets the flex row reflow the
+   other chips into the reclaimed space as it happens, instead of them
+   snapping over the instant this one unmounts. */
+.header-toggle.thinq-status.chip-collapsed {
+  max-width: 0;
+  opacity: 0;
+  padding-left: 0;
+  padding-right: 0;
+  margin-left: -4px;
+  margin-right: -4px;
+  transform: scale(0.9);
+  pointer-events: none;
+}
 
 .header-toggle-popover {
   position: absolute;

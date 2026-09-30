@@ -54,15 +54,16 @@ function HeaderToggle({ device, onToggle, onSetBrightness }) {
 // A washer/dryer's header chip is read-only status, not a toggle - the
 // point is a glance at "still running" vs "done" without opening the Smart
 // Home page, with a live ticking countdown (not just whatever number the
-// last poll happened to report) while it's actually running. The state
-// label itself (not just the countdown) is what answers "is it done yet" -
-// so unlike the toggle chips, this never hides itself.
-function HeaderThinqChip({ device }) {
+// last poll happened to report) while it's actually running.
+function HeaderThinqChip({ device, collapsed }) {
   const isRunning = device.state === 'Running';
   const msLeft = useCountdown(isRunning ? device.remainMinutes : null);
 
   return (
-    <div className={`header-toggle thinq-status${isRunning ? ' on' : ''}`} title={device.name}>
+    <div
+      className={`header-toggle thinq-status${isRunning ? ' on' : ''}${collapsed ? ' chip-collapsed' : ''}`}
+      title={device.name}
+    >
       <span className="header-toggle-name">🧺 {device.name}</span>
       <span className="header-thinq-state">
         {device.thinq_error ? '⚠️' : device.state || 'Unknown'}
@@ -70,6 +71,112 @@ function HeaderThinqChip({ device }) {
       </span>
     </div>
   );
+}
+
+// How long a finished washer/dryer's chip stays up after its cycle ends,
+// and how long the collapse/expand transition takes - kept in sync with the
+// .chip-collapsed transition durations in styles.css.
+const THINQ_DONE_VISIBLE_MS = 60 * 60 * 1000;
+const THINQ_CHIP_TRANSITION_MS = 320;
+
+function shouldShowThinqChip(device) {
+  if (device.state === 'Running') return true;
+  if (!device.thinq_finished_at) return false;
+  const finishedMs = Date.parse(device.thinq_finished_at);
+  if (Number.isNaN(finishedMs)) return false;
+  return Date.now() - finishedMs < THINQ_DONE_VISIBLE_MS;
+}
+
+// Tracks which lg_thinq devices should currently render a header chip, and
+// gives each one a brief 'entering'/'leaving' phase around that change so it
+// can slide/fade in or out instead of just popping - the flex row it sits in
+// naturally closes the gap left behind once a leaving chip is actually
+// removed. Keyed by device id rather than holding the device objects
+// themselves, so the caller can keep rendering off the live `devices` array
+// (which always includes every device, shown or not) in its original order.
+function useThinqChipTransitions(devices) {
+  // The map lives in a ref, mutated in place, with a counter just to force a
+  // re-render when it changes - not React state directly, because the
+  // bookkeeping below (starting/cancelling timers, remembering which ids
+  // were already known) is side-effecting, and a setState *updater*
+  // function doing that breaks under React 18 Strict Mode, which invokes
+  // updater functions twice and discards the first result: the ref mutation
+  // from that discarded first call was still visible to the second call,
+  // silently corrupting the real update.
+  const mapRef = useRef(new Map());
+  const knownRef = useRef(new Set());
+  const timersRef = useRef(new Map());
+  const [, setTick] = useState(0);
+  const rerender = () => setTick((n) => n + 1);
+
+  useEffect(() => () => {
+    for (const t of timersRef.current.values()) clearTimeout(t);
+  }, []);
+
+  useEffect(() => {
+    const wantedIds = new Set(
+      devices.filter((d) => d.platform === 'lg_thinq' && shouldShowThinqChip(d)).map((d) => d.id)
+    );
+    const map = mapRef.current;
+    let changed = false;
+
+    for (const id of wantedIds) {
+      if (!knownRef.current.has(id)) {
+        map.set(id, 'entering');
+        changed = true;
+      } else if (map.get(id) === 'leaving') {
+        // Started running again before its hour was up - cancel the exit.
+        const t = timersRef.current.get(id);
+        if (t) clearTimeout(t);
+        timersRef.current.delete(id);
+        map.delete(id);
+        changed = true;
+      }
+    }
+
+    for (const id of knownRef.current) {
+      if (!wantedIds.has(id) && map.get(id) !== 'leaving') {
+        map.set(id, 'leaving');
+        changed = true;
+        const timer = setTimeout(() => {
+          mapRef.current.delete(id);
+          timersRef.current.delete(id);
+          rerender();
+        }, THINQ_CHIP_TRANSITION_MS);
+        timersRef.current.set(id, timer);
+      }
+    }
+
+    knownRef.current = new Set([...wantedIds, ...map.keys()]);
+    if (changed) rerender();
+  }, [devices]);
+
+  // Freshly-added chips start collapsed (see render below); flip them to
+  // full size on the next frame so there's something for the CSS transition
+  // to animate from. Runs after every render (cheap, and guarded below) since
+  // it needs to react to entries this same hook just mutated into the map.
+  useEffect(() => {
+    if (![...mapRef.current.values()].includes('entering')) return;
+    let raf2;
+    const raf1 = requestAnimationFrame(() => {
+      raf2 = requestAnimationFrame(() => {
+        let flipped = false;
+        for (const [id, status] of mapRef.current) {
+          if (status === 'entering') {
+            mapRef.current.set(id, 'present');
+            flipped = true;
+          }
+        }
+        if (flipped) rerender();
+      });
+    });
+    return () => {
+      cancelAnimationFrame(raf1);
+      if (raf2) cancelAnimationFrame(raf2);
+    };
+  });
+
+  return mapRef.current;
 }
 
 // A quick-access strip of smart-home toggles, always visible right below
@@ -81,6 +188,7 @@ function HeaderThinqChip({ device }) {
 export default function HeaderSmartHomeToggles() {
   const { data, setData, refresh } = usePolling(() => api.smartDevices(), [], 15000);
   const devices = data?.devices || [];
+  const thinqTransitions = useThinqChipTransitions(devices);
 
   function patchLocal(id, patch) {
     setData((prev) => ({ devices: prev.devices.map((d) => (d.id === id ? { ...d, ...patch } : d)) }));
@@ -106,17 +214,19 @@ export default function HeaderSmartHomeToggles() {
     return applyChange(device, { brightness });
   }
 
-  if (devices.length === 0) return null;
+  const hasVisibleToggle = devices.some((d) => d.platform !== 'lg_thinq');
+  if (!hasVisibleToggle && thinqTransitions.size === 0) return null;
 
   return (
     <div className="topbar-smarthome-group">
-      {devices.map((device) =>
-        device.platform === 'lg_thinq' ? (
-          <HeaderThinqChip key={device.id} device={device} />
-        ) : (
-          <HeaderToggle key={device.id} device={device} onToggle={toggle} onSetBrightness={setBrightness} />
-        )
-      )}
+      {devices.map((device) => {
+        if (device.platform !== 'lg_thinq') {
+          return <HeaderToggle key={device.id} device={device} onToggle={toggle} onSetBrightness={setBrightness} />;
+        }
+        const status = thinqTransitions.get(device.id);
+        if (!status) return null;
+        return <HeaderThinqChip key={device.id} device={device} collapsed={status !== 'present'} />;
+      })}
     </div>
   );
 }
