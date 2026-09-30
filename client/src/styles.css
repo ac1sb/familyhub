@@ -110,9 +110,17 @@ input[type=text], input[type=datetime-local], input[type=time], input[type=numbe
   color: var(--color-text);
 }
 
+/* Browsers don't inherit `color` into a <button> by default - it uses its
+   own native "buttontext" (a fixed, near-black color) unless told otherwise,
+   regardless of the page's theme. That's invisible on any dark surface (dark
+   mode, or a dark dashboard theme) for a button whose own class doesn't set
+   an explicit color, like .tile-square's title/icon. `inherit` picks up
+   whatever themed color the button actually sits on instead; a more specific
+   rule (.btn-primary, .see-all, etc.) still wins where one exists. */
 button {
   cursor: pointer;
   touch-action: manipulation;
+  color: inherit;
 }
 
 .app-shell {
@@ -642,6 +650,12 @@ button {
   --color-text-muted: #aab4cc;
   --color-primary: #86a4ff;
   --color-header-glow: rgba(8, 11, 22, 0.85);
+  /* Independent of the site-wide day/night schedule - a dark dashboard theme
+     needs native browser-drawn chrome (checkboxes, scrollbars, date-picker
+     popups) to render dark too, even if it's still "daytime" by the
+     schedule. Without this, those controls use whichever color-scheme the
+     day/night mode set, which can mismatch a theme that's dark right now. */
+  color-scheme: dark;
   background-image: radial-gradient(circle at 15% 8%, rgba(134, 164, 255, 0.28), transparent 45%),
     linear-gradient(160deg, #0c1220 0%, #1a1f3d 45%, #241a3d 100%);
   background-size: cover;
@@ -657,6 +671,7 @@ button {
   --color-text-muted: #e4beb2;
   --color-primary: #ffa06e;
   --color-header-glow: rgba(38, 19, 31, 0.85);
+  color-scheme: dark;
   background-image: radial-gradient(circle at 82% 4%, rgba(255, 187, 120, 0.4), transparent 50%),
     linear-gradient(155deg, #ffbb78 0%, #ff7f7f 35%, #a3476f 68%, #3a2050 100%);
   background-size: cover;
@@ -672,6 +687,7 @@ button {
   --color-text-muted: #a7ccd6;
   --color-primary: #4fdad2;
   --color-header-glow: rgba(6, 22, 30, 0.85);
+  color-scheme: dark;
   background-image: radial-gradient(circle at 18% 88%, rgba(79, 218, 210, 0.32), transparent 50%),
     linear-gradient(160deg, #06202b 0%, #0d3b4d 45%, #146a72 100%);
   background-size: cover;
