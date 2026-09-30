@@ -8,10 +8,13 @@ import {
   resetDashboardLayout,
   getDashboardLocked,
   setDashboardLocked,
+  getWidgetPage,
+  setWidgetPage,
 } from '../../lib/dashboardLayout.js';
 import { getWidgetDisplayMode, setWidgetDisplayMode } from '../../lib/widgetDisplayMode.js';
 import { getDashboardBackgroundSettings, setDashboardBackgroundSettings } from '../../lib/dashboardBackgroundSettings.js';
 import { THEMES } from '../../lib/photoLibrary.js';
+import { DASHBOARD_THEMES, getDashboardTheme, setDashboardTheme } from '../../lib/dashboardTheme.js';
 
 // Just a neutral starting point for the color picker itself when a widget
 // has no custom color yet - picking a color and saving is what actually
@@ -33,6 +36,20 @@ export default function DashboardWidgetsSetup() {
   );
   const [background, setBackground] = useState(() => getDashboardBackgroundSettings());
   const [locked, setLocked] = useState(() => getDashboardLocked());
+  const [theme, setTheme] = useState(() => getDashboardTheme());
+  const [pages, setPages] = useState(() =>
+    Object.fromEntries(WIDGET_CATALOG.map((w) => [w.id, getWidgetPage(w.id)]))
+  );
+
+  function chooseTheme(id) {
+    setTheme(id);
+    setDashboardTheme(id);
+  }
+
+  function chooseWidgetPage(id, page) {
+    setWidgetPage(id, page);
+    setPages((prev) => ({ ...prev, [id]: page }));
+  }
 
   function toggleLocked() {
     setLocked((prev) => {
@@ -92,6 +109,7 @@ export default function DashboardWidgetsSetup() {
   function handleReset() {
     setEnabled(resetDashboardLayout());
     setColors({});
+    setPages(Object.fromEntries(WIDGET_CATALOG.map((w) => [w.id, 0])));
   }
 
   return (
@@ -107,6 +125,30 @@ export default function DashboardWidgetsSetup() {
           widget - custom color or not - goes frosted/translucent instead of a flat fill, so the photo
           shows through the whole dashboard instead of just the gaps between widgets.
         </p>
+      </div>
+
+      <div className="settings-section">
+        <div className="settings-section-title">Dashboard Theme</div>
+        <p className="settings-section-intro">
+          A color palette, background, and widget style bundled together - separate from, and layered
+          under, the background photo below (turning a photo on shows it in place of a theme's own
+          background, but the theme's colors and glass/glossy widgets stay). Home dashboard only -
+          Calendar, Settings, and everything else keep the normal light/dark theme.
+        </p>
+        <div className="dashboard-theme-row">
+          {DASHBOARD_THEMES.map((t) => (
+            <button
+              key={t.id}
+              type="button"
+              className={`dashboard-theme-choice dashboard-theme-swatch-${t.id}${theme === t.id ? ' selected' : ''}`}
+              onClick={() => chooseTheme(t.id)}
+            >
+              <span className="dashboard-theme-swatch" />
+              <span className="dashboard-theme-label">{t.label}</span>
+              <span className="dashboard-theme-desc">{t.description}</span>
+            </button>
+          ))}
+        </div>
       </div>
 
       <div className="settings-section">
@@ -252,7 +294,12 @@ export default function DashboardWidgetsSetup() {
       </div>
 
       <div className="settings-section">
-        <div className="settings-section-title">Show/Hide &amp; Colors</div>
+        <div className="settings-section-title">Show/Hide, Page &amp; Colors</div>
+        <p className="settings-section-intro">
+          Home has two swipeable pages, side by side - swipe left/right on the dashboard (or tap the
+          dots at the bottom) to move between them. Every widget starts on Page 1; move one to Page 2
+          here to spread more widgets across both instead of cramming them onto one.
+        </p>
         {WIDGET_CATALOG.map((widget) => (
           <div className="field" key={widget.id}>
             <div className="checkbox-row">
@@ -263,6 +310,22 @@ export default function DashboardWidgetsSetup() {
                 onChange={() => toggle(widget.id)}
               />
               <label htmlFor={`widget-${widget.id}`} style={{ margin: 0, flex: 1 }}>{widget.label}</label>
+              <div className="mode-toggle-row">
+                <button
+                  type="button"
+                  className={`mode-toggle-btn${(pages[widget.id] || 0) === 0 ? ' active' : ''}`}
+                  onClick={() => chooseWidgetPage(widget.id, 0)}
+                >
+                  Page 1
+                </button>
+                <button
+                  type="button"
+                  className={`mode-toggle-btn${(pages[widget.id] || 0) === 1 ? ' active' : ''}`}
+                  onClick={() => chooseWidgetPage(widget.id, 1)}
+                >
+                  Page 2
+                </button>
+              </div>
               <input
                 type="color"
                 aria-label={`${widget.label} background color`}

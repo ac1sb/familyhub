@@ -486,8 +486,64 @@ button {
   flex-direction: column;
   flex: 1;
   min-height: 0;
+  position: relative;
+  /* The pager below clips its own off-screen page horizontally; each page
+     scrolls itself vertically (see .dashboard-page), so this container no
+     longer scrolls - it just holds the fixed-size viewport the pages slide
+     within, which is also what lets a background photo/gradient here cover
+     exactly the visible area instead of stretching with tall content. */
+  overflow: hidden;
+}
+
+/* One flex row, twice as wide as the visible viewport (see PAGE_COUNT in
+   Dashboard.jsx - hardcoded to 2 pages here to match), slid left/right by a
+   JS-set transform to bring the target page fully into view. Each page is
+   exactly one viewport-width slice of it. */
+.dashboard-pager {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  width: 200%;
+  transition: transform 0.3s ease;
+  touch-action: pan-y;
+}
+.dashboard-page {
+  flex: 0 0 50%;
+  min-width: 0;
+  min-height: 0;
   overflow-y: auto;
 }
+
+/* Small tappable dots, one per page, overlaid bottom-center - both a visual
+   "there's more here" hint and a fallback for switching pages without
+   swiping (a mouse, or a swipe that got eaten by a widget underneath it). */
+.dashboard-page-dots {
+  position: absolute;
+  left: 50%;
+  bottom: 10px;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 8px;
+  z-index: 5;
+  padding: 5px 10px;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.25);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+.dashboard-page-dot {
+  width: 9px;
+  height: 9px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.5);
+  cursor: pointer;
+}
+.dashboard-page-dot.active {
+  background: #fff;
+}
+
 /* Settings -> Dashboard Widgets: Static/Rotating background. Every widget
    goes frosted/translucent while this is active (see the has-background-photo
    rule below) so the photo actually reads through the whole dashboard, not
@@ -565,6 +621,103 @@ button {
   background: var(--color-primary);
   opacity: 0.2;
   border-radius: var(--radius);
+}
+
+/* ---------- Dashboard themes (Settings -> Dashboard Widgets -> Theme) ----------
+   Each theme bundles a color palette, a background (a layered CSS gradient -
+   no photo/network fetch needed, so it's instant and works offline), and a
+   glass/glossy widget-card treatment, all scoped to [data-dashboard-theme] on
+   .dashboard-wrap so nothing outside the Home dashboard changes. 'classic' is
+   the original look and intentionally has no rules here at all - it's what a
+   device that's never picked a theme keeps seeing. A background PHOTO
+   (Settings -> Dashboard Background) still overrides a theme's own gradient
+   image specifically (inline style beats a CSS background-image) while the
+   theme's colors and glass/gloss stay - so a theme's card style still applies
+   with a live photo behind it, just without that theme's own gradient. */
+.dashboard-wrap[data-dashboard-theme="midnight"] {
+  --color-surface: #1c2333;
+  --color-bg: #0c1220;
+  --color-border: rgba(255, 255, 255, 0.16);
+  --color-text: #eef1f8;
+  --color-text-muted: #aab4cc;
+  --color-primary: #86a4ff;
+  --color-header-glow: rgba(8, 11, 22, 0.85);
+  background-image: radial-gradient(circle at 15% 8%, rgba(134, 164, 255, 0.28), transparent 45%),
+    linear-gradient(160deg, #0c1220 0%, #1a1f3d 45%, #241a3d 100%);
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+.dashboard-wrap[data-dashboard-theme="sunset"] {
+  --color-surface: #3d2138;
+  --color-bg: #26131f;
+  --color-border: rgba(255, 255, 255, 0.18);
+  --color-text: #fff4ec;
+  --color-text-muted: #e4beb2;
+  --color-primary: #ffa06e;
+  --color-header-glow: rgba(38, 19, 31, 0.85);
+  background-image: radial-gradient(circle at 82% 4%, rgba(255, 187, 120, 0.4), transparent 50%),
+    linear-gradient(155deg, #ffbb78 0%, #ff7f7f 35%, #a3476f 68%, #3a2050 100%);
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+.dashboard-wrap[data-dashboard-theme="aqua"] {
+  --color-surface: #123545;
+  --color-bg: #071c26;
+  --color-border: rgba(255, 255, 255, 0.16);
+  --color-text: #eaf7fb;
+  --color-text-muted: #a7ccd6;
+  --color-primary: #4fdad2;
+  --color-header-glow: rgba(6, 22, 30, 0.85);
+  background-image: radial-gradient(circle at 18% 88%, rgba(79, 218, 210, 0.32), transparent 50%),
+    linear-gradient(160deg, #06202b 0%, #0d3b4d 45%, #146a72 100%);
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+/* Glass + glossy widget cards - the same frosted mechanism the background-
+   photo feature uses (color-mix + backdrop-filter), so every widget reads
+   the gradient (or photo, if one's also on) through it instead of sitting on
+   a flat card. Declared after the has-background-photo rule above so a
+   theme's own glass level wins when both a theme and a photo are active. */
+.dashboard-wrap[data-dashboard-theme="midnight"] .dashboard-rgl .react-grid-item .widget-card,
+.dashboard-wrap[data-dashboard-theme="sunset"] .dashboard-rgl .react-grid-item .widget-card,
+.dashboard-wrap[data-dashboard-theme="aqua"] .dashboard-rgl .react-grid-item .widget-card {
+  position: relative;
+  background: color-mix(in srgb, var(--widget-bg, var(--color-surface)) 62%, transparent);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border-color: rgba(255, 255, 255, 0.18);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.28);
+}
+
+/* The glossy sheen: a soft diagonal highlight across the top-left of each
+   widget, like light catching glass - purely decorative and click-through. */
+.dashboard-wrap[data-dashboard-theme="midnight"] .dashboard-rgl .react-grid-item .widget-card::before,
+.dashboard-wrap[data-dashboard-theme="sunset"] .dashboard-rgl .react-grid-item .widget-card::before,
+.dashboard-wrap[data-dashboard-theme="aqua"] .dashboard-rgl .react-grid-item .widget-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.22) 0%, rgba(255, 255, 255, 0.05) 30%, transparent 55%);
+  pointer-events: none;
+}
+
+/* Same header-glow treatment the background-photo feature uses, so widget
+   titles/status text stay readable over whichever part of the gradient (or
+   photo) happens to be behind them. */
+.dashboard-wrap[data-dashboard-theme="midnight"] .widget-header h2,
+.dashboard-wrap[data-dashboard-theme="midnight"] .widget-status,
+.dashboard-wrap[data-dashboard-theme="sunset"] .widget-header h2,
+.dashboard-wrap[data-dashboard-theme="sunset"] .widget-status,
+.dashboard-wrap[data-dashboard-theme="aqua"] .widget-header h2,
+.dashboard-wrap[data-dashboard-theme="aqua"] .widget-status {
+  color: var(--color-text);
+  text-shadow: 0 0 4px var(--color-header-glow), 0 0 4px var(--color-header-glow);
 }
 
 /* Bigger than the library default so it's easy to grab with a finger. */
@@ -953,6 +1106,45 @@ button {
 .checkbox-row { display: flex; align-items: center; gap: 10px; }
 .checkbox-row input[type=checkbox] { width: 22px; height: 22px; }
 .widget-color-swatch { width: 32px; height: 32px; padding: 0; border: 1px solid var(--color-border); border-radius: 8px; cursor: pointer; flex-shrink: 0; }
+
+/* Settings -> Dashboard Widgets -> Dashboard Theme: one card per theme, a
+   small preview swatch of its actual gradient on top so the choice is
+   visual, not just a name. */
+.dashboard-theme-row { display: flex; gap: 12px; flex-wrap: wrap; }
+.dashboard-theme-choice {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  width: 160px;
+  padding: 10px;
+  border: 2px solid var(--color-border);
+  border-radius: 12px;
+  background: var(--color-surface);
+  cursor: pointer;
+  text-align: left;
+}
+.dashboard-theme-choice.selected { border-color: var(--color-primary); }
+.dashboard-theme-swatch {
+  width: 100%;
+  height: 44px;
+  border-radius: 8px;
+  border: 1px solid var(--color-border);
+}
+.dashboard-theme-swatch-classic .dashboard-theme-swatch { background: var(--color-bg); }
+.dashboard-theme-swatch-midnight .dashboard-theme-swatch {
+  background: radial-gradient(circle at 15% 8%, rgba(134, 164, 255, 0.5), transparent 45%),
+    linear-gradient(160deg, #0c1220 0%, #1a1f3d 45%, #241a3d 100%);
+}
+.dashboard-theme-swatch-sunset .dashboard-theme-swatch {
+  background: linear-gradient(155deg, #ffbb78 0%, #ff7f7f 35%, #a3476f 68%, #3a2050 100%);
+}
+.dashboard-theme-swatch-aqua .dashboard-theme-swatch {
+  background: radial-gradient(circle at 18% 88%, rgba(79, 218, 210, 0.5), transparent 50%),
+    linear-gradient(160deg, #06202b 0%, #0d3b4d 45%, #146a72 100%);
+}
+.dashboard-theme-label { font-weight: 700; }
+.dashboard-theme-desc { font-size: 0.78rem; color: var(--color-text-muted); }
 
 .weekday-chips { display: flex; flex-wrap: wrap; gap: 8px; }
 .weekday-chip {

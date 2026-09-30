@@ -24,26 +24,29 @@ export const WIDGET_CATALOG = [
 // x/y/w/h are in grid units (12 columns wide). Sized for the "daily
 // briefing" dashboard - today/tomorrow-focused, condensed widgets - rather
 // than the old full-week views; each one expands to full detail on its own
-// tabbed page.
+// tabbed page. `page` (0 or 1) is which of the two swipeable Home pages a
+// widget lives on - every default widget starts on page 0 so an existing,
+// already-customized device sees no change; page 1 starts empty and is
+// populated by moving widgets onto it from Settings -> Dashboard Widgets.
 export const DEFAULT_LAYOUT = [
-  { i: 'calendar', x: 0, y: 0, w: 8, h: 15, minW: 3, minH: 6 },
-  { i: 'weather', x: 8, y: 0, w: 4, h: 5, minW: 2, minH: 3 },
+  { i: 'calendar', x: 0, y: 0, w: 8, h: 15, minW: 3, minH: 6, page: 0 },
+  { i: 'weather', x: 8, y: 0, w: 4, h: 5, minW: 2, minH: 3, page: 0 },
   // Chores/Daily show a status line plus up to 4 items (or one big tile in
   // Carousel mode); Shopping stays at 3 items plus its quick-add row. Meals
   // is taller than it used to be - each of its 5 day boxes now carries a
   // lunch row (see MealPlanner.jsx) on top of the dinner input.
-  { i: 'chores', x: 8, y: 5, w: 4, h: 7, minW: 2, minH: 2 },
-  { i: 'daily', x: 8, y: 12, w: 4, h: 7, minW: 2, minH: 2 },
-  { i: 'meals', x: 8, y: 19, w: 4, h: 9, minW: 2, minH: 4 },
-  { i: 'shopping', x: 8, y: 28, w: 4, h: 6, minW: 2, minH: 2 },
-  { i: 'whiteboard', x: 8, y: 34, w: 4, h: 8, minW: 2, minH: 4 },
-  { i: 'smarthome', x: 8, y: 42, w: 4, h: 7, minW: 2, minH: 3 },
-  { i: 'music', x: 8, y: 49, w: 4, h: 6, minW: 2, minH: 3 },
+  { i: 'chores', x: 8, y: 5, w: 4, h: 7, minW: 2, minH: 2, page: 0 },
+  { i: 'daily', x: 8, y: 12, w: 4, h: 7, minW: 2, minH: 2, page: 0 },
+  { i: 'meals', x: 8, y: 19, w: 4, h: 9, minW: 2, minH: 4, page: 0 },
+  { i: 'shopping', x: 8, y: 28, w: 4, h: 6, minW: 2, minH: 2, page: 0 },
+  { i: 'whiteboard', x: 8, y: 34, w: 4, h: 8, minW: 2, minH: 4, page: 0 },
+  { i: 'smarthome', x: 8, y: 42, w: 4, h: 7, minW: 2, minH: 3, page: 0 },
+  { i: 'music', x: 8, y: 49, w: 4, h: 6, minW: 2, minH: 3, page: 0 },
   // Small enough to tuck into a corner or a narrow column - just a name and
   // a circle, no content that needs real width or height to be useful.
-  { i: 'avatar_member_1', x: 0, y: 15, w: 3, h: 6, minW: 2, minH: 4 },
-  { i: 'avatar_member_2', x: 3, y: 15, w: 3, h: 6, minW: 2, minH: 4 },
-  { i: 'avatar_member_3', x: 6, y: 15, w: 3, h: 6, minW: 2, minH: 4 },
+  { i: 'avatar_member_1', x: 0, y: 15, w: 3, h: 6, minW: 2, minH: 4, page: 0 },
+  { i: 'avatar_member_2', x: 3, y: 15, w: 3, h: 6, minW: 2, minH: 4, page: 0 },
+  { i: 'avatar_member_3', x: 6, y: 15, w: 3, h: 6, minW: 2, minH: 4, page: 0 },
 ];
 
 export function getDashboardLayout() {
@@ -64,15 +67,21 @@ export function getDashboardLayout() {
     const newOnes = [];
     for (const defaultItem of DEFAULT_LAYOUT) {
       const saved = savedById.get(defaultItem.i);
-      if (saved) kept.push(saved);
+      // A layout saved before the swipeable second page existed has no
+      // `page` field at all - treat that the same as page 0, exactly where
+      // every widget already visually was.
+      if (saved) kept.push({ ...saved, page: saved.page ?? 0 });
       else newOnes.push(defaultItem);
     }
     if (newOnes.length === 0) return kept;
 
     // A new widget's raw default x/y can overlap oddly with an already-
-    // customized layout, so stack new ones below everything else instead -
-    // vertical compaction then settles the exact positions.
-    let cursor = kept.reduce((max, item) => Math.max(max, item.y + item.h), 0);
+    // customized layout, so stack new ones below everything else on page 0
+    // (where every new-widget default lives) instead - vertical compaction
+    // then settles the exact positions.
+    let cursor = kept
+      .filter((item) => item.page === 0)
+      .reduce((max, item) => Math.max(max, item.y + item.h), 0);
     for (const item of newOnes) {
       kept.push({ ...item, y: cursor });
       cursor += item.h;
@@ -89,6 +98,27 @@ export function setDashboardLayout(layout) {
   } catch {
     // private browsing / storage blocked - layout just won't persist on this device
   }
+}
+
+// Which of the two swipeable Home pages a widget currently lives on.
+export function getWidgetPage(id) {
+  const item = getDashboardLayout().find((it) => it.i === id);
+  return item?.page ?? 0;
+}
+
+// Moves a widget to the other page without disturbing its x/y/w/h - it keeps
+// its size and just needs a spot on the new page, so it's dropped at the
+// bottom of whatever's already there rather than at its old (likely
+// occupied) coordinates.
+export function setWidgetPage(id, page) {
+  const layout = getDashboardLayout();
+  const item = layout.find((it) => it.i === id);
+  if (!item || item.page === page) return;
+  const cursor = layout
+    .filter((it) => it.page === page)
+    .reduce((max, it) => Math.max(max, it.y + it.h), 0);
+  const next = layout.map((it) => (it.i === id ? { ...it, page, x: 0, y: cursor } : it));
+  setDashboardLayout(next);
 }
 
 // Which widgets show on the Home dashboard at all, separate from where

@@ -113,6 +113,26 @@ shopping list from another device.
   glow (a light halo behind dark text, or a dark halo behind light text in
   night mode) whenever a background photo is on, since their normal muted
   gray washes out over a busy/bright photo.
+- **Dashboard themes** — also in Settings → Dashboard Widgets, four curated
+  looks for the Home dashboard specifically (everywhere else keeps the
+  normal light/dark theme): **Classic** (the original flat-card look, no
+  background), **Midnight** (a navy/violet gradient with cool-blue glass
+  widgets), **Sunset** (a warm dusk gradient with amber-tinted glass), and
+  **Aqua** (an ocean-teal gradient with cyan glass). Each theme bundles a
+  color palette, a background (a gradient, so it renders instantly with no
+  photo fetch needed), and a glass/glossy widget-card style - separate from,
+  and layered under, the background photo above: turning a photo on shows it
+  in place of the theme's own gradient, while the theme's colors and glass
+  styling stay. Per-device, like every other dashboard display choice.
+- **Two swipeable Home pages** — the dashboard now has a second page, side by
+  side with the first. Swipe left/right anywhere on the dashboard background
+  (not on a widget's own draggable header or a Carousel-mode tile, so it
+  never fights with those), or tap the small dots at the bottom, to switch.
+  Every widget starts on Page 1; move one to Page 2 from Settings → Dashboard
+  Widgets → Show/Hide, Page & Colors (a "Page 1"/"Page 2" toggle next to each
+  widget) to spread more widgets across both instead of cramming them onto
+  one. Each page keeps its own scroll position and drag/resize layout,
+  per-device like the rest of the dashboard's layout.
 - **Built-in calendar**, four layouts on the full page (**Agenda / Week /
   Month / Day**, a toggle under the header, remembered per-device) plus an
   **All / Mom / Dad / Child** person filter next to it that narrows every
