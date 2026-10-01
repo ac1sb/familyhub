@@ -92,9 +92,10 @@ shopping list from another device.
   wall display, or its own color scheme, or a different widget style); a
   widget that's undersized for its own content grows itself to fit
   automatically, nudging anything directly in its way further down rather
-  than overlapping it (Carousel-mode widgets are exempt from this, since a
-  carousel tile is designed to fill whatever height it's given rather than
-  ever needing more room). Also in Settings → Dashboard Widgets: a
+  than overlapping it (Carousel- and Squares-mode widgets are exempt from
+  this, since those tiles are designed to fill whatever height they're given
+  rather than ever needing more room, and so are the Calendar and Shopping
+  List, which scroll internally instead). Also in Settings → Dashboard Widgets: a
   **dashboard background photo**, from the same free nature-photo library
   (landscapes/mountains/waterfalls/lakes/forests) the screensaver uses. Off
   by default; **Static** picks one photo and keeps it (a "New photo" button
@@ -287,8 +288,9 @@ shopping list from another device.
   account the appliances are registered to), paste it in Settings → Smart
   Home Setup along with the two-letter country code they're registered in,
   then tap **Discover LG Appliances** to add the washer/dryer it finds.
-  Status is fetched fresh on every request, never cached, so there's nothing
-  to go stale. Its tile shows a live, ticking countdown clock while it's
+  Status is fetched live from LG (shared for about 10 seconds between the
+  header, the Smart Home page and the screensaver, so they don't each call
+  LG separately). Its tile shows a live, ticking countdown clock while it's
   actually running (client-side, between polls) - hidden once it's done or
   idle, since a leftover remaining time on a finished cycle isn't meaningful.
   The header's quick-access strip shows it too, as a read-only status chip
@@ -348,9 +350,10 @@ shopping list from another device.
   page keeps the full width of the screen; tapping it slides the menu down
   over the page, and picking a destination (or tapping outside it) slides it
   away again.
-- **Multi-device sync** — every screen polls the API every 10–30s, so an
+- **Multi-device sync** — every screen polls the API every 5–30s, so an
   event/chore/list item added from a phone shows up on the Pi display
-  shortly after, and vice versa.
+  shortly after, and vice versa. Polling pauses while a browser tab is in
+  the background and catches up the moment it's opened again.
 
 Everything is built as a normal client/server web app (React + Express +
 SQLite) so it can be hosted anywhere with Node.js and reached from any
@@ -462,9 +465,10 @@ process and fight each other.
 ## Configuring household members & weather
 
 Open the app's **Settings → General** tab to rename the three household
-members or change the weather zip code — changes save immediately and take
-effect across the app (agenda columns, lunch tracker, chore assignment) with
-no restart needed.
+members or change the weather zip code, then tap **Save Changes** — they take
+effect across the app (agenda columns, lunch tracker, avatars) with no
+restart needed. If any field is invalid (e.g. a zip that isn't 5 digits),
+nothing on the form is saved.
 
 The `MEMBER_1_NAME` / `MEMBER_2_NAME` / `MEMBER_3_NAME` / `WEATHER_ZIP`
 values in `server/.env` are only the *first-run defaults*; once anything is
@@ -518,7 +522,9 @@ that calendar's Settings in Google Calendar -> "Integrate calendar" -> copy
 its **Secret address in iCal format**, then paste that URL into Settings ->
 Calendar -> "Shared calendar feeds." No Google Cloud project, no sign-in, no
 client ID/secret - the secret URL is the only credential involved, and it's
-read-only (FamilyHub never writes to it).
+read-only (FamilyHub never writes to it). Each feed is re-downloaded at most
+every 5 minutes (Google itself only refreshes these secret addresses every
+few hours), so a change made in Google Calendar can take a while to appear.
 
 You can add more than one - "+ Add another feed" adds another URL/column
 pair, so each family member's own calendar can sync to their own column
@@ -542,7 +548,7 @@ anywhere outside Settings.
    GOOGLE_CLIENT_SECRET=...
    GOOGLE_REDIRECT_URI=http://<host>:4000/api/google/oauth2callback
    ```
-4. Restart the server, open the app's **Settings** tab, and tap
+4. Restart the server, open **Settings → Calendar**, and tap
    **Connect Google Calendar**.
 
 This syncs both ways: that calendar's events show up in the agenda, and
@@ -640,7 +646,7 @@ folders is only ever stored once. Set one up:
    for any other folders.
 4. Turn on **"Show family photos as a corner overlay"** in Settings →
    Screensaver to cycle through them - deliberately a corner element (same
-   idea as the whiteboard sticky note), not the background photo, so it
+   idea as the whiteboard overlay), not the background photo, so it
    doesn't replace whatever theme you've picked there.
 
 Requires the same Google account connected for Calendar sync (Settings →
@@ -841,8 +847,9 @@ seconds.
 ## Data & backups
 
 All data lives in a single SQLite file at `server/data/familyhub.sqlite3`,
-alongside saved flyer photos in `server/uploads/`. Both are gitignored, which
-means:
+alongside uploaded files in `server/uploads/` (flyer photos, the whiteboard
+and its archived notes, handwritten shopping items, avatar photos, and synced
+Family Photos). Both are gitignored, which means:
 
 - **`git pull` on an existing checkout never touches them.** Git only ever
   updates files it tracks; it cannot see or remove untracked/ignored files,
@@ -890,9 +897,9 @@ other file on the Pi.
   already playing elsewhere) also needs librespot installed and configured
   directly on the Pi - something outside FamilyHub's own Settings page,
   covered in the setup section above instead.
-- Google Drive is used for two OCR-driven syncs (Family Photos, Meal Plan
-  Photos) but there's no Google Docs integration - a one-way append of
-  shopping items would be buildable but isn't built yet. No integration with
+- Google Drive is used for two syncs (Family Photos, Meal Plan Photos) and
+  Google Sheets for the shopping list, but there's no Google Docs
+  integration. No integration with
   Life360 either: it has no public API, and the only integrations that exist
   talk to a reverse-engineered private endpoint using your real login, which
   isn't something this project takes on.
