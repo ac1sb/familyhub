@@ -27,7 +27,33 @@ function stripHtml(html) {
   return (html || '').replace(/<[^>]+>/g, '').trim();
 }
 
+// Each rotation only needs one random pick, but listing a category pulls
+// metadata for 50 images - list each category once an hour and pick from
+// that instead of re-listing on every photo change.
+const CATEGORY_TTL_MS = 60 * 60 * 1000;
+const categoryCache = new Map();
+
 async function fetchFromCategory(category) {
+  const cached = categoryCache.get(category);
+  let pages;
+  if (cached && cached.expires > Date.now()) {
+    pages = cached.pages;
+  } else {
+    pages = await listCategoryImages(category);
+    categoryCache.set(category, { pages, expires: Date.now() + CATEGORY_TTL_MS });
+  }
+
+  const pick = pages[Math.floor(Math.random() * pages.length)];
+  const info = pick.imageinfo[0];
+  return {
+    url: info.thumburl || info.url,
+    credit: stripHtml(info.extmetadata?.Artist?.value) || 'Wikimedia Commons',
+    license: stripHtml(info.extmetadata?.LicenseShortName?.value),
+    source: 'wikimedia',
+  };
+}
+
+async function listCategoryImages(category) {
   const url = new URL('https://commons.wikimedia.org/w/api.php');
   url.searchParams.set('action', 'query');
   url.searchParams.set('format', 'json');
@@ -45,15 +71,7 @@ async function fetchFromCategory(category) {
   const data = await resp.json();
   const pages = Object.values(data.query?.pages || {}).filter((p) => p.imageinfo?.[0]?.thumburl);
   if (pages.length === 0) throw new Error('No images in category');
-
-  const pick = pages[Math.floor(Math.random() * pages.length)];
-  const info = pick.imageinfo[0];
-  return {
-    url: info.thumburl || info.url,
-    credit: stripHtml(info.extmetadata?.Artist?.value) || 'Wikimedia Commons',
-    license: stripHtml(info.extmetadata?.LicenseShortName?.value),
-    source: 'wikimedia',
-  };
+  return pages;
 }
 
 function picsumPhoto() {

@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { usePolling } from '../../hooks/usePolling.js';
 import { usePressHold } from '../../hooks/usePressHold.js';
 import { useCountdown, formatCountdown } from '../../hooks/useCountdown.js';
+import { useSmartDeviceControls } from '../../hooks/useSmartDeviceControls.js';
 import { api } from '../../api.js';
 
 const PLATFORM_ICON = { lifx: '💡', caseta: '🔘', lg_thinq: '🧺' };
@@ -124,41 +125,14 @@ export default function SmartHomeWidget({ compact = false, onExpand }) {
   const [deviceError, setDeviceError] = useState(null);
   const devices = data?.devices || [];
 
-  function patchLocal(id, patch) {
-    setData((prev) => ({
-      devices: prev.devices.map((d) => (d.id === id ? { ...d, ...patch } : d)),
-    }));
-  }
+  const controls = useSmartDeviceControls({
+    setData,
+    refresh,
+    onSuccess: () => setDeviceError(null),
+    onError: (device, err) => setDeviceError(`${device.name}: ${err.message}`),
+  });
 
-  // A real LIFX call can fail (bulb offline, bad token, ...) where the old
-  // local-only mock never could - on failure, undo the optimistic patch by
-  // re-fetching the server's actual (unchanged) state instead of leaving
-  // the tile showing something that never really happened.
-  async function applyChange(device, patch) {
-    patchLocal(device.id, patch);
-    try {
-      await api.updateSmartDevice(device.id, patch);
-      setDeviceError(null);
-      refresh();
-    } catch (err) {
-      setDeviceError(`${device.name}: ${err.message}`);
-      refresh();
-    }
-  }
-
-  function toggleOn(device) {
-    return applyChange(device, { is_on: !device.is_on });
-  }
-
-  function setBrightness(device, brightness) {
-    return applyChange(device, { brightness });
-  }
-
-  function setColor(device, color) {
-    return applyChange(device, { color });
-  }
-
-  const tileProps = { onToggle: toggleOn, onBrightness: setBrightness, onColor: setColor };
+  const tileProps = { onToggle: controls.toggle, onBrightness: controls.setBrightness, onColor: controls.setColor };
 
   return (
     <section className={`widget-card${compact ? ' compact' : ''}`}>

@@ -6,6 +6,7 @@ import { stripDailyChoices } from '../../lib/lunchText.js';
 import { getLunchPageView, setLunchPageView } from '../../lib/lunchPageSettings.js';
 
 const WEEKDAYS_ONLY = WEEKDAY_SHORT.slice(0, 5);
+const MENU_SAVE_DELAY_MS = 600;
 
 // A plain <input> can never wrap text - long entree names just scroll out of
 // view. This grows to fit whatever's typed instead of truncating it, and the
@@ -93,6 +94,46 @@ export default function LunchCalendar({ childName }) {
   function toggleStatus(date, currentStatus) {
     updateDay(date, { status: currentStatus === 'school' ? 'home' : 'school' });
   }
+
+  // Menu text is edited as a local draft and saved once typing pauses -
+  // saving (and reloading the whole month) on every keystroke let a slower
+  // reload land after a newer keystroke and wipe letters back out. A draft
+  // also wins over whatever the 30s poll brings back until it's saved.
+  const [menuDrafts, setMenuDrafts] = useState({});
+  const pendingMenuSavesRef = useRef(new Map());
+
+  async function saveMenu(date, value) {
+    pendingMenuSavesRef.current.delete(date);
+    try {
+      await api.setLunchDay(date, { menu_item: value });
+      setData((prev) => ({
+        days: (prev?.days || []).map((d) => (d.date === date ? { ...d, menu_item: value } : d)),
+      }));
+    } finally {
+      setMenuDrafts((prev) => {
+        if (prev[date] !== value) return prev; // typed more since - a newer save is queued
+        const next = { ...prev };
+        delete next[date];
+        return next;
+      });
+    }
+  }
+
+  function editMenu(date, value) {
+    setMenuDrafts((prev) => ({ ...prev, [date]: value }));
+    const pending = pendingMenuSavesRef.current.get(date);
+    if (pending) clearTimeout(pending.timer);
+    const timer = setTimeout(() => saveMenu(date, value), MENU_SAVE_DELAY_MS);
+    pendingMenuSavesRef.current.set(date, { timer, value });
+  }
+
+  // Leaving the page mid-typing still saves what was typed.
+  useEffect(() => () => {
+    for (const [date, { timer, value }] of pendingMenuSavesRef.current) {
+      clearTimeout(timer);
+      api.setLunchDay(date, { menu_item: value }).catch(() => {});
+    }
+  }, []);
 
   async function handleCopyDetails() {
     const el = previewRef.current;
@@ -251,9 +292,9 @@ export default function LunchCalendar({ childName }) {
                     <div className="lunch-cal-noschool-label">No School</div>
                   ) : (
                     <AutoGrowMenuInput
-                      value={stripDailyChoices(day.menu_item)}
+                      value={menuDrafts[date] ?? stripDailyChoices(day.menu_item)}
                       onClick={(e) => e.stopPropagation()}
-                      onChange={(e) => updateDay(date, { menu_item: e.target.value })}
+                      onChange={(e) => editMenu(date, e.target.value)}
                     />
                   )}
                 </div>
@@ -286,8 +327,8 @@ export default function LunchCalendar({ childName }) {
                 ) : (
                   <AutoGrowMenuInput
                     className="lunch-list-menu"
-                    value={stripDailyChoices(day.menu_item)}
-                    onChange={(e) => updateDay(date, { menu_item: e.target.value })}
+                    value={menuDrafts[date] ?? stripDailyChoices(day.menu_item)}
+                    onChange={(e) => editMenu(date, e.target.value)}
                   />
                 )}
 

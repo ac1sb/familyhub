@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { usePolling } from '../hooks/usePolling.js';
 import { usePressHold } from '../hooks/usePressHold.js';
 import { useCountdown, formatCountdown } from '../hooks/useCountdown.js';
+import { useSmartDeviceControls } from '../hooks/useSmartDeviceControls.js';
 import { api } from '../api.js';
 
 function HeaderToggle({ device, onToggle, onSetBrightness }) {
@@ -189,30 +190,7 @@ export default function HeaderSmartHomeToggles() {
   const { data, setData, refresh } = usePolling(() => api.smartDevices(), [], 15000);
   const devices = data?.devices || [];
   const thinqTransitions = useThinqChipTransitions(devices);
-
-  function patchLocal(id, patch) {
-    setData((prev) => ({ devices: prev.devices.map((d) => (d.id === id ? { ...d, ...patch } : d)) }));
-  }
-
-  // A real LIFX call can fail (bulb offline, bad token, ...) where the old
-  // local-only mock never could - on failure, undo the optimistic patch by
-  // re-fetching the server's actual (unchanged) state.
-  async function applyChange(device, patch) {
-    patchLocal(device.id, patch);
-    try {
-      await api.updateSmartDevice(device.id, patch);
-    } catch {
-      refresh();
-    }
-  }
-
-  function toggle(device) {
-    return applyChange(device, { is_on: !device.is_on });
-  }
-
-  function setBrightness(device, brightness) {
-    return applyChange(device, { brightness });
-  }
+  const { toggle, setBrightness } = useSmartDeviceControls({ setData, refresh });
 
   const hasVisibleToggle = devices.some((d) => d.platform !== 'lg_thinq');
   if (!hasVisibleToggle && thinqTransitions.size === 0) return null;

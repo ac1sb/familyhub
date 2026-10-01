@@ -3,6 +3,7 @@ import { fetchThemedPhoto } from '../lib/photoLibrary.js';
 import { api } from '../api.js';
 import { formatTime, todayISO } from '../lib/week.js';
 import { useCountdown, formatCountdown } from '../hooks/useCountdown.js';
+import { useMinuteClock } from '../hooks/useMinuteClock.js';
 
 const BRIEFING_START_HOUR = 5;
 const BRIEFING_ITEM_LIMIT = 5;
@@ -37,7 +38,7 @@ function LaundryStatusRow({ device }) {
 export default function Screensaver({ settings, zip, onDismiss }) {
   const [photo, setPhoto] = useState(null);
   const [weather, setWeather] = useState(null);
-  const [now, setNow] = useState(new Date());
+  const now = useMinuteClock();
   const [whiteboard, setWhiteboard] = useState(null);
   const [todayEvents, setTodayEvents] = useState([]);
   const [familyPhotos, setFamilyPhotos] = useState([]);
@@ -156,14 +157,16 @@ export default function Screensaver({ settings, zip, onDismiss }) {
     };
   }, [settings.showLaundryStatus]);
 
+  // Refreshed periodically - the screensaver can stay up all night, and a
+  // temperature fetched once at bedtime would otherwise still show at breakfast.
   useEffect(() => {
-    api.weather(zip).then(setWeather).catch(() => setWeather(null));
-  }, [zip]);
-
-  useEffect(() => {
-    const id = setInterval(() => setNow(new Date()), 1000);
+    function load() {
+      api.weather(zip).then(setWeather).catch(() => {});
+    }
+    load();
+    const id = setInterval(load, 30 * 60000);
     return () => clearInterval(id);
-  }, []);
+  }, [zip]);
 
   return (
     <div

@@ -41,8 +41,12 @@ const VIEW_LABELS = { agenda: 'Agenda', week: 'Week', month: 'Month', day: 'Day'
 export default function CalendarAgenda({ members, compact = false, onExpand, fillHeight = false }) {
   // Reference date for Agenda (rolling window start)/Week (any day in that
   // week)/Day (the day itself). Month view has its own year/monthIndex
-  // instead, since "a day within the month" isn't otherwise meaningful.
-  const [rangeStart, setRangeStart] = useState(todayISO());
+  // instead, since "a day within the month" isn't otherwise meaningful. The
+  // compact dashboard widget has no paging, so it always starts at today -
+  // re-derived every render (each poll re-renders it), so a display left on
+  // overnight rolls forward at midnight instead of staying on yesterday.
+  const [pagedRangeStart, setRangeStart] = useState(todayISO());
+  const rangeStart = compact ? todayISO() : pagedRangeStart;
   const [monthDate, setMonthDate] = useState(() => {
     const d = new Date();
     return { year: d.getFullYear(), monthIndex: d.getMonth() };

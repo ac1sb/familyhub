@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { DndContext, closestCenter, PointerSensor, TouchSensor, useSensor, useSensors, useDraggable, useDroppable } from '@dnd-kit/core';
 import { CSS } from '@dnd-kit/utilities';
 import { usePolling } from '../../hooks/usePolling.js';
@@ -145,16 +145,22 @@ export default function MealPlanner({ compact = false, onExpand, onExpandLunch, 
   for (const d of lunchData?.days || []) lunchByDate[d.date] = d;
 
   const [namesByKey, setNamesByKey] = useState({});
+  // Slots typed into but not yet saved (saving happens on blur) - a poll
+  // landing mid-typing must not replace what's being typed with the
+  // server's older value.
+  const unsavedSlotsRef = useRef(new Set());
 
   useEffect(() => {
     setNamesByKey((prev) => {
       const next = { ...prev };
-      (data?.meals || []).forEach((m) => {
-        next[slotId(weekStart, m.day_of_week)] = m.name || '';
-      });
-      (nextWeekData?.meals || []).forEach((m) => {
-        next[slotId(nextWeekStart, m.day_of_week)] = m.name || '';
-      });
+      function apply(ws, meals) {
+        (meals || []).forEach((m) => {
+          const key = slotId(ws, m.day_of_week);
+          if (!unsavedSlotsRef.current.has(key)) next[key] = m.name || '';
+        });
+      }
+      apply(weekStart, data?.meals);
+      apply(nextWeekStart, nextWeekData?.meals);
       return next;
     });
   }, [data, nextWeekData, weekStart, nextWeekStart]);
@@ -220,6 +226,7 @@ export default function MealPlanner({ compact = false, onExpand, onExpandLunch, 
   );
 
   function handleNameChange(slot, value) {
+    unsavedSlotsRef.current.add(slot.id);
     setNamesByKey((prev) => ({ ...prev, [slot.id]: value }));
   }
 
@@ -245,7 +252,11 @@ export default function MealPlanner({ compact = false, onExpand, onExpandLunch, 
   }
 
   async function commitName(slot) {
-    await api.setMeal(slot.weekStart, slot.dayOfWeek, namesByKey[slot.id] || '');
+    try {
+      await api.setMeal(slot.weekStart, slot.dayOfWeek, namesByKey[slot.id] || '');
+    } finally {
+      unsavedSlotsRef.current.delete(slot.id);
+    }
     refreshForWeek(slot.weekStart);
   }
 
@@ -257,11 +268,18 @@ export default function MealPlanner({ compact = false, onExpand, onExpandLunch, 
     const fromName = namesByKey[active.id] || '';
     const toName = namesByKey[over.id] || '';
 
+    unsavedSlotsRef.current.add(active.id);
+    unsavedSlotsRef.current.add(over.id);
     setNamesByKey((prev) => ({ ...prev, [active.id]: toName, [over.id]: fromName }));
-    await Promise.all([
-      api.setMeal(from.weekStart, from.dayOfWeek, toName),
-      api.setMeal(to.weekStart, to.dayOfWeek, fromName),
-    ]);
+    try {
+      await Promise.all([
+        api.setMeal(from.weekStart, from.dayOfWeek, toName),
+        api.setMeal(to.weekStart, to.dayOfWeek, fromName),
+      ]);
+    } finally {
+      unsavedSlotsRef.current.delete(active.id);
+      unsavedSlotsRef.current.delete(over.id);
+    }
     refreshForWeek(from.weekStart);
     if (to.weekStart !== from.weekStart) refreshForWeek(to.weekStart);
   }

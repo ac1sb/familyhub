@@ -20,13 +20,25 @@ import { isNightNow } from './lib/theme.js';
 import { getScreensaverSettings, setScreensaverSettings } from './lib/screensaverSettings.js';
 import { getUiStyle, setUiStyle } from './lib/uiStyleSettings.js';
 import { useIdleTimer } from './hooks/useIdleTimer.js';
+import { useMinuteClock } from './hooks/useMinuteClock.js';
 
 const DEFAULT_MEMBERS = { member_1: 'Mom', member_2: 'Dad', member_3: 'Child' };
+
+// Its own component so the per-minute tick only re-renders the clock text,
+// not the whole app (every dashboard widget) along with it.
+function HeaderClock() {
+  const now = useMinuteClock();
+  return (
+    <div className="topbar-datetime">
+      {now.toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' })} &middot;{' '}
+      {now.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' })}
+    </div>
+  );
+}
 
 export default function App() {
   const [active, setActive] = useState('dashboard');
   const [config, setConfig] = useState(null);
-  const [now, setNow] = useState(new Date());
   const [screensaver, setScreensaver] = useState(getScreensaverSettings());
   const [uiStyle, setUiStyleState] = useState(getUiStyle());
   const [menuOpen, setMenuOpen] = useState(false);
@@ -60,14 +72,14 @@ export default function App() {
   }, []);
 
   useEffect(() => {
-    const id = setInterval(() => setNow(new Date()), 60000);
+    function applyTheme() {
+      const dark = isNightNow(config?.theme, new Date());
+      document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light');
+    }
+    applyTheme();
+    const id = setInterval(applyTheme, 60000);
     return () => clearInterval(id);
-  }, []);
-
-  useEffect(() => {
-    const dark = isNightNow(config?.theme, now);
-    document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light');
-  }, [config?.theme, now]);
+  }, [config?.theme]);
 
   useEffect(() => {
     document.documentElement.setAttribute('data-ui-style', uiStyle);
@@ -89,10 +101,7 @@ export default function App() {
             {menuOpen ? '✕' : '☰'}
           </button>
           <HeaderSmartHomeToggles />
-          <div className="topbar-datetime">
-            {now.toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' })} &middot;{' '}
-            {now.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' })}
-          </div>
+          <HeaderClock />
           <HeaderWeather zip={zip} />
         </div>
         <main

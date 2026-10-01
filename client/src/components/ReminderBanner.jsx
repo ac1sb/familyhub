@@ -1,12 +1,13 @@
 import { usePolling } from '../hooks/usePolling.js';
 import { api } from '../api.js';
-import { currentWeekStart, toISODate } from '../lib/week.js';
+import { todayISO, toISODate } from '../lib/week.js';
 
 export default function ReminderBanner({ members }) {
-  const weekStart = currentWeekStart();
-  const { data } = usePolling(() => api.events(weekStart), [weekStart], 30000);
+  // Only today matters here - asking for just today's window keeps this poll
+  // far smaller than the whole week of occurrences it used to request.
+  const todayKey = todayISO();
+  const { data } = usePolling(() => api.eventsRange(todayKey, 1), [todayKey], 30000);
 
-  const todayKey = toISODate(new Date());
   const todaysReminders = (data?.events || []).filter(
     (ev) => ev.is_reminder && toISODate(new Date(ev.occurrence_start)) === todayKey
   );

@@ -46,7 +46,9 @@ export const DEFAULT_LAYOUT = [
   // a circle, no content that needs real width or height to be useful.
   { i: 'avatar_member_1', x: 0, y: 15, w: 3, h: 6, minW: 2, minH: 4, page: 0 },
   { i: 'avatar_member_2', x: 3, y: 15, w: 3, h: 6, minW: 2, minH: 4, page: 0 },
-  { i: 'avatar_member_3', x: 6, y: 15, w: 3, h: 6, minW: 2, minH: 4, page: 0 },
+  // w: 2, not 3 - the three avatars share the calendar's 8 columns; a third
+  // 3-wide tile would spill into column 8 and overlap the right-hand widgets.
+  { i: 'avatar_member_3', x: 6, y: 15, w: 2, h: 6, minW: 2, minH: 4, page: 0 },
 ];
 
 export function getDashboardLayout() {

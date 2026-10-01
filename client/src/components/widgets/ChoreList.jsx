@@ -57,7 +57,7 @@ function canToggleToday(dayOfWeek, todayDayIndex) {
 export default function ChoreList({ compact = false, onExpand }) {
   // Computed fresh every render (not once at module load) so the widget
   // picks up the new day right after midnight instead of needing a page
-  // reload - the parent app already re-renders every minute for the clock.
+  // reload - each 15s poll re-renders it.
   const TODAY_DAY_INDEX = (new Date().getDay() + 6) % 7; // 0=Mon..6=Sun
   const weekStart = currentWeekStartSunday();
   const { data, setData, refresh } = usePolling(() => api.chores(weekStart), [weekStart], 15000);
