@@ -497,6 +497,19 @@ unchecked (trash day, feeding a pet, etc.), add it once in **Settings →
 Chore Setup**. Toggle a chore off there to pause it without losing its
 setup, or delete it to remove it for good.
 
+## Chore & Checklist Tracking
+
+**Settings → Chore & Checklist Tracking** shows a plain yes/no history for
+every active recurring chore and Daily Checklist item - a row of small
+checkmark/x chips, one per expected day (oldest on the left, most recent 14
+shown), so you can tell at a glance whether something's actually getting
+done or just getting skipped. Only recurring, template-backed items have an
+"expected day" to check against, so one-time items added straight from a
+widget's "Add a one-time…" field aren't part of this - set one up in Chore
+Setup or Daily Checklist Setup first if you want it tracked. A day still in
+progress is never shown as a miss - it only ever reports on days that have
+already fully passed.
+
 ## Connecting a shared calendar (easiest option)
 
 If you just want a calendar's events to show up on the agenda and don't need

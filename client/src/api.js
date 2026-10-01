@@ -147,6 +147,9 @@ export const api = {
   updateStatus: () => request('/update/status'),
   updateRun: () => request('/update/run', { method: 'POST' }),
 
+  choreTracking: () => request('/tracking/chores'),
+  dailyTaskTracking: () => request('/tracking/daily-tasks'),
+
   scanFlyer: (file) => {
     const form = new FormData();
     form.append('photo', file);

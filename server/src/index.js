@@ -24,6 +24,7 @@ import mealPlanPhotosRouter from './routes/mealPlanPhotos.js';
 import spotifyRouter from './routes/spotify.js';
 import updateRouter from './routes/update.js';
 import avatarsRouter from './routes/avatars.js';
+import trackingRouter from './routes/tracking.js';
 import {
   getMemberNames, getWeatherZip, getThemeSettings, getIcalFeeds, getGoogleCalendarId,
   getGoogleEventsMember, getGoogleMemberCalendars,
@@ -82,6 +83,7 @@ app.use('/api/meal-plan-photos', mealPlanPhotosRouter);
 app.use('/api/spotify', spotifyRouter);
 app.use('/api/update', updateRouter);
 app.use('/api/avatars', avatarsRouter);
+app.use('/api/tracking', trackingRouter);
 
 // Serve the built client in production (npm run build in /client outputs to /client/dist).
 const clientDist = path.join(__dirname, '..', '..', 'client', 'dist');

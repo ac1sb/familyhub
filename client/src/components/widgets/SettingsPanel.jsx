@@ -8,6 +8,7 @@ import SmartHomeSetup from './SmartHomeSetup.jsx';
 import FamilyPhotosSetup from './FamilyPhotosSetup.jsx';
 import MusicSetup from './MusicSetup.jsx';
 import DashboardWidgetsSetup from './DashboardWidgetsSetup.jsx';
+import TrackingSettings from './TrackingSettings.jsx';
 import UpdatePanel from './UpdatePanel.jsx';
 
 // One family member's avatar row in Settings - a live preview (photo or
@@ -838,6 +839,7 @@ const TABS = [
   { id: 'widgets', label: 'Dashboard Widgets', icon: '🧩' },
   { id: 'chores', label: 'Chore Setup', icon: '✅' },
   { id: 'daily', label: 'Daily Checklist Setup', icon: '📋' },
+  { id: 'tracking', label: 'Chore & Checklist Tracking', icon: '📈' },
   { id: 'smarthome', label: 'Smart Home Setup', icon: '💡' },
   { id: 'familyphotos', label: 'Family Photos', icon: '📷' },
   { id: 'music', label: 'Music', icon: '🎵' },
@@ -886,6 +888,7 @@ export default function SettingsPanel({
       {tab === 'widgets' && <DashboardWidgetsSetup />}
       {tab === 'chores' && <ChoreSetup />}
       {tab === 'daily' && <DailyTaskSetup />}
+      {tab === 'tracking' && <TrackingSettings />}
       {tab === 'smarthome' && <SmartHomeSetup />}
       {tab === 'familyphotos' && <FamilyPhotosSetup />}
       {tab === 'music' && <MusicSetup />}
