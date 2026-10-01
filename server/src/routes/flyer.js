@@ -8,11 +8,16 @@ import { uploadsDir } from '../lib/paths.js';
 
 if (!fs.existsSync(uploadsDir)) fs.mkdirSync(uploadsDir, { recursive: true });
 
+// Uploads are served back from /uploads on the app's own origin, so the
+// saved name never keeps an arbitrary client-supplied extension (an .html
+// "photo" would otherwise be served as a page).
+const IMAGE_EXTENSIONS = new Set(['.jpg', '.jpeg', '.png', '.gif', '.webp', '.heic', '.heif', '.bmp']);
+
 const storage = multer.diskStorage({
   destination: (req, file, cb) => cb(null, uploadsDir),
   filename: (req, file, cb) => {
-    const ext = path.extname(file.originalname) || '.jpg';
-    cb(null, `flyer-${Date.now()}${ext}`);
+    const ext = path.extname(file.originalname || '').toLowerCase();
+    cb(null, `flyer-${Date.now()}${IMAGE_EXTENSIONS.has(ext) ? ext : '.jpg'}`);
   },
 });
 const upload = multer({ storage, limits: { fileSize: 15 * 1024 * 1024 } });
@@ -41,6 +46,7 @@ router.post('/scan', upload.single('photo'), async (req, res) => {
 
   const photo_path = `/uploads/${req.file.filename}`;
 
+  let worker = null;
   try {
     // tesseract.js internally does `throw Error(...)` on a worker-level failure
     // (e.g. a network hiccup downloading its language data) whenever no
@@ -52,7 +58,7 @@ router.post('/scan', upload.single('photo'), async (req, res) => {
     // `createWorker()` can hang forever instead of ever rejecting — wrap it in
     // a timeout so a flaky network fails the request instead of hanging it.
     let workerError = null;
-    const worker = await withTimeout(
+    worker = await withTimeout(
       createWorker('eng', 1, {
         errorHandler: (err) => {
           workerError = err;
@@ -64,7 +70,6 @@ router.post('/scan', upload.single('photo'), async (req, res) => {
     if (workerError) throw new Error(typeof workerError === 'string' ? workerError : JSON.stringify(workerError));
 
     const { data } = await withTimeout(worker.recognize(req.file.path), 30000, 'Timed out reading the photo.');
-    await worker.terminate();
 
     const parsed = parseFlyerText(data.text || '', data.lines || []);
     const foundAnything = !!(parsed.title || parsed.start_datetime);
@@ -82,6 +87,10 @@ router.post('/scan', upload.single('photo'), async (req, res) => {
       photo_path,
       error: `Couldn't automatically read this photo (${err.message}). The picture has been attached below - please fill in the details yourself.`,
     });
+  } finally {
+    // A timed-out or failed scan must still release the worker - each one
+    // holds its own copy of the OCR engine in memory.
+    worker?.terminate().catch(() => {});
   }
 });
 

@@ -1,33 +1,26 @@
 import { Router } from 'express';
-import db from '../db.js';
+import db, { withTransaction } from '../db.js';
 import { fetchMenuItems } from '../lib/menuImport.js';
 import { getMenuImportUrl, setMenuImportUrl } from '../lib/appConfig.js';
+import { addDays, parseDateOnly, toISODate } from '../lib/week.js';
 
 const router = Router();
 
+const MAX_RANGE_DAYS = 400;
+
 function isWeekend(dateStr) {
-  const day = new Date(`${dateStr}T00:00:00`).getDay();
+  const day = parseDateOnly(dateStr).getDay();
   return day === 0 || day === 6;
 }
 
-function addDaysStr(dateStr, n) {
-  const d = new Date(`${dateStr}T00:00:00`);
-  d.setDate(d.getDate() + n);
-  return d.toISOString().slice(0, 10);
-}
+// Weekends default to "no school" since there's usually no lunch to pack;
+// still editable per-day for the rare weekend school event.
+const insertDefaultDay = db.prepare(
+  "INSERT OR IGNORE INTO lunch_days (date, status, no_school, menu_item) VALUES (?, 'home', ?, '')"
+);
 
 function ensureDay(date) {
-  const existing = db.prepare('SELECT * FROM lunch_days WHERE date = ?').get(date);
-  if (existing) return existing;
-  // Weekends default to "no school" since there's usually no lunch to pack;
-  // still editable per-day for the rare weekend school event.
-  const no_school = isWeekend(date) ? 1 : 0;
-  db.prepare('INSERT INTO lunch_days (date, status, no_school, menu_item) VALUES (?, ?, ?, ?)').run(
-    date,
-    'home',
-    no_school,
-    ''
-  );
+  insertDefaultDay.run(date, isWeekend(date) ? 1 : 0);
   return db.prepare('SELECT * FROM lunch_days WHERE date = ?').get(date);
 }
 
@@ -39,16 +32,30 @@ router.get('/', (req, res) => {
     return res.status(400).json({ error: 'start and end are required as YYYY-MM-DD' });
   }
 
-  const days = [];
-  let cursor = start;
-  let guard = 0;
-  while (cursor < end && guard < 400) {
-    days.push(ensureDay(cursor));
-    cursor = addDaysStr(cursor, 1);
-    guard += 1;
+  // Dates are stepped in local time - converting through toISOString() would
+  // shift every date back a day on a server east of UTC.
+  const dates = [];
+  for (let d = parseDateOnly(start); dates.length < MAX_RANGE_DAYS; d = addDays(d, 1)) {
+    const key = toISODate(d);
+    if (key >= end) break;
+    dates.push(key);
+  }
+  if (dates.length === 0) return res.json({ days: [] });
+
+  const select = () =>
+    db.prepare('SELECT * FROM lunch_days WHERE date >= ? AND date <= ? ORDER BY date ASC').all(dates[0], dates[dates.length - 1]);
+  let rows = select();
+  if (rows.length < dates.length) {
+    const existing = new Set(rows.map((r) => r.date));
+    withTransaction(() => {
+      for (const date of dates) {
+        if (!existing.has(date)) insertDefaultDay.run(date, isWeekend(date) ? 1 : 0);
+      }
+    });
+    rows = select();
   }
 
-  res.json({ days: days.map((d) => ({ ...d, no_school: !!d.no_school })) });
+  res.json({ days: rows.map((d) => ({ ...d, no_school: !!d.no_school })) });
 });
 
 // PUT /api/lunch/:date  { status?, no_school?, menu_item? }
@@ -101,12 +108,15 @@ router.post('/import', async (req, res) => {
   }
 
   let imported = 0;
-  for (const item of result.items) {
-    if (!/^\d{4}-\d{2}-\d{2}$/.test(item.date) || !item.entree) continue;
-    ensureDay(item.date);
-    db.prepare('UPDATE lunch_days SET menu_item = ? WHERE date = ?').run(item.entree, item.date);
-    imported += 1;
-  }
+  const setMenu = db.prepare('UPDATE lunch_days SET menu_item = ? WHERE date = ?');
+  withTransaction(() => {
+    for (const item of result.items) {
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(item.date) || !item.entree) continue;
+      insertDefaultDay.run(item.date, isWeekend(item.date) ? 1 : 0);
+      setMenu.run(item.entree, item.date);
+      imported += 1;
+    }
+  });
 
   res.json({ success: true, imported, daysFound: result.daysFound });
 });

@@ -9,8 +9,8 @@ const router = Router();
 // A 'lifx' device with external_id set is wired to a real bulb - toggling/
 // dimming/coloring it calls the LIFX Cloud API (see the try/catch in the
 // PUT route below). A 'lg_thinq' device is read-only - its washer/dryer
-// status is fetched fresh on every list request (see the Promise.all below)
-// rather than cached in this table, so there's nothing here to go stale.
+// status is fetched live from LG (shared across callers for a few seconds,
+// see getCachedThinqStatus) rather than stored in this table.
 // Everything else - no external_id, or platform 'caseta' (no real Lutron
 // integration exists yet) - stays the original mock behavior: only this
 // table is read/written, no network call.
@@ -43,12 +43,27 @@ function updateThinqTransition(row, state) {
   return finishedAt;
 }
 
+// The header strip, the Smart Home widget and the screensaver all poll this
+// list independently, often on the same device - share one LG API call per
+// appliance across all of them for a few seconds instead of making one each.
+const THINQ_STATUS_TTL_MS = 10000;
+const thinqStatusCache = new Map();
+
+function getCachedThinqStatus(settings, deviceId) {
+  const cached = thinqStatusCache.get(deviceId);
+  if (cached && cached.expires > Date.now()) return cached.promise;
+  const promise = getThinqDeviceStatus(settings, deviceId);
+  thinqStatusCache.set(deviceId, { promise, expires: Date.now() + THINQ_STATUS_TTL_MS });
+  promise.catch(() => thinqStatusCache.delete(deviceId));
+  return promise;
+}
+
 async function withThinqStatus(row) {
   if (row.platform !== 'lg_thinq' || !row.external_id) return row;
   const settings = getLgThinqSettings();
   if (!settings.pat) return { ...row, thinq_error: 'Not connected' };
   try {
-    const status = await getThinqDeviceStatus(settings, row.external_id);
+    const status = await getCachedThinqStatus(settings, row.external_id);
     const { state, remainMinutes } = humanizeThinqStatus(status);
     const thinq_finished_at = updateThinqTransition(row, state);
     return { ...row, state, remainMinutes, thinq_finished_at };

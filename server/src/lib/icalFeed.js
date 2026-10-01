@@ -1,5 +1,21 @@
 import ical from 'node-ical';
 
+// Every open screen polls the agenda every 20-30s, and each poll used to
+// re-download and re-parse every subscribed feed. Google only refreshes a
+// secret iCal address every few hours anyway, so a short cache costs nothing
+// in freshness. Concurrent callers share one in-flight download.
+const FEED_TTL_MS = 5 * 60 * 1000;
+const feedCache = new Map();
+
+function loadFeed(url) {
+  const cached = feedCache.get(url);
+  if (cached && cached.expires > Date.now()) return cached.promise;
+  const promise = ical.async.fromURL(url);
+  feedCache.set(url, { promise, expires: Date.now() + FEED_TTL_MS });
+  promise.catch(() => feedCache.delete(url));
+  return promise;
+}
+
 // Pulls events from a plain read-only .ics feed (a calendar's "secret address
 // in iCal format") and shapes them the same way fetchGoogleEvents() does, so
 // routes/events.js can merge both sources into the agenda identically. No
@@ -7,7 +23,7 @@ import ical from 'node-ical';
 // which is the whole point: no Google Cloud project or sign-in required.
 export async function fetchIcalEvents(url, rangeStart, rangeEnd, member = 'family') {
   if (!url) return [];
-  const data = await ical.async.fromURL(url);
+  const data = await loadFeed(url);
   const results = [];
 
   function pushOccurrence(item, start, end) {

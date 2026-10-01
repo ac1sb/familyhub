@@ -129,42 +129,31 @@ router.get('/', async (req, res) => {
     if (ev.ical_uid) seenICalUids.add(ev.ical_uid);
   }
 
-  // Read each parent's own personal calendar first (if configured), so an
-  // event that lives there is attributed to that specific member rather than
-  // whatever single "Show its events under" choice the connected account's
-  // own primary-calendar sync below uses.
-  try {
-    const memberGoogleEvents = await fetchMemberCalendarEvents(rangeStart, rangeEnd);
-    const fresh = memberGoogleEvents.filter(isFresh);
+  // All sources are fetched in parallel, then merged strictly in this
+  // priority order: each parent's own calendar first (so an event there is
+  // attributed to that specific member rather than the connected account's
+  // single "Show its events under" choice), then the connected account's
+  // primary calendar, then each iCal feed. Any source failing (not
+  // connected, unreachable, misconfigured) just contributes nothing. Feed
+  // results are namespaced with the feed's index so two feeds can never
+  // collide on id even if they share a UID (a copy-pasted .ics template).
+  const feeds = getIcalFeeds();
+  const [memberResult, primaryResult, ...feedResults] = await Promise.allSettled([
+    fetchMemberCalendarEvents(rangeStart, rangeEnd),
+    fetchGoogleEvents(rangeStart, rangeEnd),
+    ...feeds.map((feed) => fetchIcalEvents(feed.url, rangeStart, rangeEnd, feed.member)),
+  ]);
+
+  function merge(result, mapEvent = (ev) => ev) {
+    if (result.status !== 'fulfilled') return;
+    const fresh = result.value.filter(isFresh);
     fresh.forEach(remember);
-    occurrences = occurrences.concat(fresh);
-  } catch (err) {
-    // One or more member calendars unreachable/misconfigured - agenda still works with everything else
+    occurrences = occurrences.concat(fresh.map(mapEvent));
   }
 
-  try {
-    const googleEvents = await fetchGoogleEvents(rangeStart, rangeEnd);
-    const fresh = googleEvents.filter(isFresh);
-    fresh.forEach(remember);
-    occurrences = occurrences.concat(fresh);
-  } catch (err) {
-    // Google not connected or failed - agenda still works with local events only
-  }
-
-  // Each feed is independent - one unreachable/misconfigured feed shouldn't
-  // sink the others or the rest of the agenda. Results are namespaced with
-  // the feed's index so two different feeds can never collide on id even if
-  // they happen to share a UID (a copy-pasted .ics template, say).
-  for (const [i, feed] of getIcalFeeds().entries()) {
-    try {
-      const feedEvents = await fetchIcalEvents(feed.url, rangeStart, rangeEnd, feed.member);
-      const fresh = feedEvents.filter(isFresh);
-      fresh.forEach(remember);
-      occurrences = occurrences.concat(fresh.map((ev) => ({ ...ev, id: `${i}-${ev.id}` })));
-    } catch (err) {
-      // Feed unreachable/misconfigured - agenda still works with everything else
-    }
-  }
+  merge(memberResult);
+  merge(primaryResult);
+  feedResults.forEach((result, i) => merge(result, (ev) => ({ ...ev, id: `${i}-${ev.id}` })));
 
   occurrences.sort((a, b) => new Date(a.occurrence_start) - new Date(b.occurrence_start));
   res.json({ range_start: rangeStart.toISOString(), range_end: rangeEnd.toISOString(), events: occurrences });
@@ -246,6 +235,9 @@ router.put('/:id', async (req, res) => {
   if (req.body.recurrence_type !== undefined && !['weekly', 'monthly'].includes(req.body.recurrence_type)) {
     return res.status(400).json({ error: 'recurrence_type must be weekly or monthly' });
   }
+  if (req.body.member !== undefined && !MEMBERS.includes(req.body.member)) {
+    return res.status(400).json({ error: 'invalid member' });
+  }
 
   const merged = {
     title: req.body.title ?? existing.title,
@@ -253,7 +245,9 @@ router.put('/:id', async (req, res) => {
     location: req.body.location ?? existing.location,
     member: req.body.member ?? existing.member,
     start_datetime: req.body.start_datetime ?? existing.start_datetime,
-    end_datetime: req.body.end_datetime ?? existing.end_datetime,
+    // An explicit null clears the end time (the edit form sends null when the
+    // "Ends" field is emptied) - only an omitted field keeps the old one.
+    end_datetime: req.body.end_datetime !== undefined ? req.body.end_datetime : existing.end_datetime,
     all_day: req.body.all_day !== undefined ? (req.body.all_day ? 1 : 0) : existing.all_day,
     recurring: req.body.recurring !== undefined ? (req.body.recurring ? 1 : 0) : existing.recurring,
     recurrence_days: req.body.recurrence_days ? JSON.stringify(req.body.recurrence_days) : existing.recurrence_days,

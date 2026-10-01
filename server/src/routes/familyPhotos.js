@@ -6,6 +6,7 @@ import db from '../db.js';
 import { uploadsDir } from '../lib/paths.js';
 import { getFamilyPhotoFolders, setFamilyPhotoFolders } from '../lib/appConfig.js';
 import { getDriveFolderName, listDriveFolderPhotos, downloadDriveFile, extensionForMimeType } from './google.js';
+import { singleFlight } from '../lib/singleFlight.js';
 
 const router = Router();
 
@@ -61,7 +62,7 @@ function rowToPhoto(row) {
 // uploads/family-photos/, and records it in the family_photos table. Never
 // removes a previously-synced photo, even one no longer in its folder - see
 // the family_photos table comment in db.js.
-export async function runFamilyPhotoSync() {
+export const runFamilyPhotoSync = singleFlight(async () => {
   const folders = getFamilyPhotoFolders();
   if (folders.length === 0) return { success: true, added: 0, total: 0, folders: [] };
 
@@ -106,7 +107,7 @@ export async function runFamilyPhotoSync() {
   }
 
   return { success: true, added, total, folders: perFolder };
-}
+});
 
 // GET /api/family-photos -> every synced photo, for the Settings gallery and
 // the screensaver's family-photos overlay.

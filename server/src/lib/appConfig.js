@@ -155,11 +155,9 @@ export function setGoogleMemberCalendars({ member_1, member_2 }) {
 // The Google Sheet the shopping list syncs with (the "Sync with Sheet"
 // button on the full page) - just the spreadsheet ID/URL, same
 // DB-wins-over-.env pattern as the lunch menu import URL. The sync itself
-// always reads/writes a dedicated "FamilyHub" tab inside that spreadsheet
-// (created if it doesn't exist yet) rather than whatever tab the person
-// might already be using for something else, and only ever adds rows/items
-// on either side - never clobbers unrelated content sitting in the same
-// sheet, and never deletes anything already synced.
+// only touches columns F/G of the spreadsheet's first tab (see
+// routes/google.js), and only ever fills in blank cells on either side -
+// never clobbers unrelated content in the same sheet, never deletes anything.
 export function getShoppingSheetId() {
   return getSetting('shopping_sheet_id') || process.env.SHOPPING_SHEET_ID || '';
 }
@@ -236,11 +234,6 @@ export function setLifxToken(token) {
   setSetting('lifx_token', token);
 }
 
-// Which agenda column events from the OAuth-connected Google Calendar land
-// in (each iCal feed above carries its own member instead). Defaults to
-// 'family', which the agenda shows in every column - fine for a household-
-// wide calendar, but a single person's own Google Calendar usually reads
-// better pinned to just their column instead of appearing three times over.
 // LG ThinQ Connect (thinq.developer.lge.com) - a Personal Access Token plus a
 // self-chosen client ID (any random UUID; LG just asks that each integration
 // use its own, generated once and reused, rather than a fresh one per
@@ -263,6 +256,11 @@ export function setLgThinqSettings({ pat, country }) {
   return getLgThinqSettings();
 }
 
+// Which agenda column events from the OAuth-connected Google Calendar land
+// in (each iCal feed above carries its own member instead). Defaults to
+// 'family', which the agenda shows in every column - fine for a household-
+// wide calendar, but a single person's own Google Calendar usually reads
+// better pinned to just their column instead of appearing three times over.
 export function getGoogleEventsMember() {
   return getSetting('google_events_member') || 'family';
 }

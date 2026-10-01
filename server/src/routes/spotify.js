@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { getJSON, setJSON } from '../lib/settings.js';
+import { singleFlight } from '../lib/singleFlight.js';
 
 const router = Router();
 
@@ -32,7 +33,12 @@ async function getAccessToken() {
   if (tokens.expires_at && Date.now() < tokens.expires_at - 30000) {
     return tokens.access_token;
   }
+  return refreshAccessToken(tokens);
+}
 
+// Every open Music widget polls at once when the token expires - share one
+// refresh between them instead of each making its own.
+const refreshAccessToken = singleFlight(async (tokens) => {
   const resp = await fetch('https://accounts.spotify.com/api/token', {
     method: 'POST',
     headers: {
@@ -55,7 +61,7 @@ async function getAccessToken() {
   };
   setJSON('spotify_tokens', merged);
   return merged.access_token;
-}
+});
 
 // Every call into the Spotify Web API goes through here - attaches the
 // (auto-refreshed) bearer token and turns Spotify's "204/no body" and error

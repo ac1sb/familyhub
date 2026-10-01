@@ -45,6 +45,9 @@ function clothingHint(day) {
 }
 
 let cache = { key: null, expires: 0, data: null };
+// The header, the dashboard card and the Weather page all request this at
+// once on page load - share one upstream fetch instead of making three.
+const inFlight = new Map();
 
 async function geocodeZip(zip, country) {
   const resp = await fetch(`https://api.zippopotam.us/${country}/${zip}`);
@@ -68,78 +71,85 @@ router.get('/', async (req, res) => {
     return res.json(cache.data);
   }
 
+  if (!inFlight.has(cacheKey)) {
+    inFlight.set(cacheKey, fetchForecast(zip, country).finally(() => inFlight.delete(cacheKey)));
+  }
   try {
-    const { lat, lon, label } = await geocodeZip(zip, country);
-    const url = new URL('https://api.open-meteo.com/v1/forecast');
-    url.searchParams.set('latitude', lat);
-    url.searchParams.set('longitude', lon);
-    url.searchParams.set(
-      'daily',
-      'weathercode,temperature_2m_max,temperature_2m_min,precipitation_probability_max,windspeed_10m_max'
-    );
-    url.searchParams.set('hourly', 'temperature_2m,precipitation_probability,weathercode');
-    url.searchParams.set('current_weather', 'true');
-    url.searchParams.set('temperature_unit', 'fahrenheit');
-    url.searchParams.set('windspeed_unit', 'mph');
-    url.searchParams.set('timezone', 'auto');
-    url.searchParams.set('forecast_days', '7');
-
-    const resp = await fetch(url);
-    if (!resp.ok) throw new Error('Forecast request failed');
-    const raw = await resp.json();
-
-    const daily = raw.daily.time.map((date, i) => ({
-      date,
-      code: raw.daily.weathercode[i],
-      condition: WEATHER_CODES[raw.daily.weathercode[i]]?.label || 'Unknown',
-      icon: WEATHER_CODES[raw.daily.weathercode[i]]?.icon || 'cloud',
-      high: Math.round(raw.daily.temperature_2m_max[i]),
-      low: Math.round(raw.daily.temperature_2m_min[i]),
-      precipitation_chance: raw.daily.precipitation_probability_max?.[i] ?? null,
-      wind_speed: raw.daily.windspeed_10m_max ? Math.round(raw.daily.windspeed_10m_max[i]) : null,
-    }));
-
-    const todayDate = raw.daily.time[0];
-    function pickHour(targetHour) {
-      const idx = raw.hourly.time.findIndex(
-        (t) => t.startsWith(todayDate) && Number(t.slice(11, 13)) === targetHour
-      );
-      if (idx === -1) return null;
-      const code = raw.hourly.weathercode[idx];
-      return {
-        time: raw.hourly.time[idx],
-        temperature: Math.round(raw.hourly.temperature_2m[idx]),
-        precipitation_chance: raw.hourly.precipitation_probability[idx],
-        icon: WEATHER_CODES[code]?.icon || 'cloud',
-      };
-    }
-    const timeline = [
-      { label: 'Morning', ...pickHour(9) },
-      { label: 'Afternoon', ...pickHour(14) },
-      { label: 'Evening', ...pickHour(19) },
-    ].filter((t) => t.temperature !== undefined);
-
-    const today = { ...daily[0], timeline, clothing_hint: clothingHint(daily[0]) };
-
-    const data = {
-      location: label,
-      zip,
-      current: {
-        temperature: Math.round(raw.current_weather.temperature),
-        code: raw.current_weather.weathercode,
-        condition: WEATHER_CODES[raw.current_weather.weathercode]?.label || 'Unknown',
-        icon: WEATHER_CODES[raw.current_weather.weathercode]?.icon || 'cloud',
-      },
-      today,
-      daily,
-      updated_at: new Date().toISOString(),
-    };
-
+    const data = await inFlight.get(cacheKey);
     cache = { key: cacheKey, expires: Date.now() + 30 * 60 * 1000, data };
     res.json(data);
   } catch (err) {
     res.status(502).json({ error: err.message });
   }
 });
+
+async function fetchForecast(zip, country) {
+  const { lat, lon, label } = await geocodeZip(zip, country);
+  const url = new URL('https://api.open-meteo.com/v1/forecast');
+  url.searchParams.set('latitude', lat);
+  url.searchParams.set('longitude', lon);
+  url.searchParams.set(
+    'daily',
+    'weathercode,temperature_2m_max,temperature_2m_min,precipitation_probability_max,windspeed_10m_max'
+  );
+  url.searchParams.set('hourly', 'temperature_2m,precipitation_probability,weathercode');
+  url.searchParams.set('current_weather', 'true');
+  url.searchParams.set('temperature_unit', 'fahrenheit');
+  url.searchParams.set('windspeed_unit', 'mph');
+  url.searchParams.set('timezone', 'auto');
+  url.searchParams.set('forecast_days', '7');
+
+  const resp = await fetch(url);
+  if (!resp.ok) throw new Error('Forecast request failed');
+  const raw = await resp.json();
+
+  const daily = raw.daily.time.map((date, i) => ({
+    date,
+    code: raw.daily.weathercode[i],
+    condition: WEATHER_CODES[raw.daily.weathercode[i]]?.label || 'Unknown',
+    icon: WEATHER_CODES[raw.daily.weathercode[i]]?.icon || 'cloud',
+    high: Math.round(raw.daily.temperature_2m_max[i]),
+    low: Math.round(raw.daily.temperature_2m_min[i]),
+    precipitation_chance: raw.daily.precipitation_probability_max?.[i] ?? null,
+    wind_speed: raw.daily.windspeed_10m_max ? Math.round(raw.daily.windspeed_10m_max[i]) : null,
+  }));
+
+  const todayDate = raw.daily.time[0];
+  function pickHour(targetHour) {
+    const idx = raw.hourly.time.findIndex(
+      (t) => t.startsWith(todayDate) && Number(t.slice(11, 13)) === targetHour
+    );
+    if (idx === -1) return null;
+    const code = raw.hourly.weathercode[idx];
+    return {
+      time: raw.hourly.time[idx],
+      temperature: Math.round(raw.hourly.temperature_2m[idx]),
+      precipitation_chance: raw.hourly.precipitation_probability[idx],
+      icon: WEATHER_CODES[code]?.icon || 'cloud',
+    };
+  }
+  const timeline = [
+    { label: 'Morning', ...pickHour(9) },
+    { label: 'Afternoon', ...pickHour(14) },
+    { label: 'Evening', ...pickHour(19) },
+  ].filter((t) => t.temperature !== undefined);
+
+  const today = { ...daily[0], timeline, clothing_hint: clothingHint(daily[0]) };
+
+  const data = {
+    location: label,
+    zip,
+    current: {
+      temperature: Math.round(raw.current_weather.temperature),
+      code: raw.current_weather.weathercode,
+      condition: WEATHER_CODES[raw.current_weather.weathercode]?.label || 'Unknown',
+      icon: WEATHER_CODES[raw.current_weather.weathercode]?.icon || 'cloud',
+    },
+    today,
+    daily,
+    updated_at: new Date().toISOString(),
+  };
+  return data;
+}
 
 export default router;

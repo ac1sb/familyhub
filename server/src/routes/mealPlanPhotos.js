@@ -5,9 +5,10 @@ import { uploadsDir } from '../lib/paths.js';
 import fs from 'node:fs';
 import crypto from 'node:crypto';
 import { getMealPlanPhotoSettings, setMealPlanPhotoSettings } from '../lib/appConfig.js';
-import { getDriveFolderName, listDriveFolderPhotos, downloadDriveFile, extensionForMimeType } from './google.js';
+import { listDriveFolderPhotos, downloadDriveFile, extensionForMimeType } from './google.js';
 import { parseMealPlanRecipes, extractDeliveryDate } from '../lib/mealPlanOcr.js';
 import { startOfWeek, toISODate, addDays } from '../lib/week.js';
+import { singleFlight } from '../lib/singleFlight.js';
 
 const router = Router();
 
@@ -28,16 +29,22 @@ function withTimeout(promise, ms, message) {
   return Promise.race([promise, timeout]).finally(() => clearTimeout(timer));
 }
 
-async function ocrRecipeWords(filePath) {
+async function startOcrWorker() {
   let workerError = null;
   const worker = await withTimeout(
     createWorker('eng', 1, { errorHandler: (err) => { workerError = err; } }),
     30000,
     'Timed out starting the OCR engine'
   );
-  if (workerError) throw new Error(typeof workerError === 'string' ? workerError : JSON.stringify(workerError));
+  if (workerError) {
+    worker.terminate().catch(() => {});
+    throw new Error(typeof workerError === 'string' ? workerError : JSON.stringify(workerError));
+  }
+  return worker;
+}
+
+async function ocrRecipeWords(worker, filePath) {
   const { data } = await withTimeout(worker.recognize(filePath), 30000, 'Timed out reading the photo');
-  await worker.terminate();
   return data.words || [];
 }
 
@@ -100,51 +107,65 @@ function applyRecipesToMenu(recipeNames, skipDay, deliveryDate) {
 // onto the upcoming Dinner Menu - there is no review step, so a misread
 // photo (or an unrelated one saved to the same folder) can land on the menu
 // unreviewed; that trade was made deliberately in exchange for zero taps.
-export async function runMealPlanPhotoSync() {
+export const runMealPlanPhotoSync = singleFlight(async () => {
   const { folderId, skipDay } = getMealPlanPhotoSettings();
   if (!folderId) return { success: true, added: 0, total: 0 };
 
   const existingGuids = new Set(db.prepare('SELECT guid FROM meal_plan_syncs').all().map((r) => r.guid));
-  const [, photos] = await Promise.all([
-    getDriveFolderName(folderId).catch(() => null),
-    listDriveFolderPhotos(folderId),
-  ]);
+  const photos = await listDriveFolderPhotos(folderId);
 
   let added = 0;
   const results = [];
+  // One OCR worker for the whole run, started only once there's actually a
+  // new photo - loading the engine is the slow part, not reading a photo.
+  let worker = null;
 
-  for (const photo of photos) {
-    if (existingGuids.has(photo.id)) continue;
+  try {
+    for (const photo of photos) {
+      if (existingGuids.has(photo.id)) continue;
 
-    const scratchPath = `${scratchDir}/${crypto.randomUUID()}.${extensionForMimeType(photo.mimeType)}`;
-    try {
-      const buffer = await downloadDriveFile(photo.id);
-      fs.writeFileSync(scratchPath, buffer);
+      const scratchPath = `${scratchDir}/${crypto.randomUUID()}.${extensionForMimeType(photo.mimeType)}`;
+      try {
+        const buffer = await downloadDriveFile(photo.id);
+        fs.writeFileSync(scratchPath, buffer);
 
-      const words = await ocrRecipeWords(scratchPath);
-      const recipes = parseMealPlanRecipes(words);
-      const deliveryDate = extractDeliveryDate(words);
+        if (!worker) worker = await startOcrWorker();
+        let words;
+        try {
+          words = await ocrRecipeWords(worker, scratchPath);
+        } catch (err) {
+          // A worker that timed out mid-read can't be trusted for the next
+          // photo - drop it so the next one starts fresh.
+          worker.terminate().catch(() => {});
+          worker = null;
+          throw err;
+        }
+        const recipes = parseMealPlanRecipes(words);
+        const deliveryDate = extractDeliveryDate(words);
 
-      let appliedDates = [];
-      if (recipes.length > 0) {
-        appliedDates = applyRecipesToMenu(recipes, skipDay, deliveryDate);
-        added++;
+        let appliedDates = [];
+        if (recipes.length > 0) {
+          appliedDates = applyRecipesToMenu(recipes, skipDay, deliveryDate);
+          added++;
+        }
+
+        db.prepare(
+          'INSERT INTO meal_plan_syncs (guid, recipe_names, applied_dates) VALUES (?, ?, ?)'
+        ).run(photo.id, JSON.stringify(recipes), JSON.stringify(appliedDates));
+        existingGuids.add(photo.id);
+        results.push({ name: photo.name, recipes, appliedDates });
+      } catch (err) {
+        results.push({ name: photo.name, error: err.message });
+      } finally {
+        fs.rm(scratchPath, () => {}); // best-effort - the photo itself isn't kept, only what OCR found
       }
-
-      db.prepare(
-        'INSERT INTO meal_plan_syncs (guid, recipe_names, applied_dates) VALUES (?, ?, ?)'
-      ).run(photo.id, JSON.stringify(recipes), JSON.stringify(appliedDates));
-      existingGuids.add(photo.id);
-      results.push({ name: photo.name, recipes, appliedDates });
-    } catch (err) {
-      results.push({ name: photo.name, error: err.message });
-    } finally {
-      fs.rm(scratchPath, () => {}); // best-effort - the photo itself isn't kept, only what OCR found
     }
+  } finally {
+    worker?.terminate().catch(() => {});
   }
 
   return { success: true, added, total: photos.length, results };
-}
+});
 
 // GET /api/meal-plan-photos/settings -> the saved Drive folder + skip day,
 // same shape as the other Drive-folder settings.

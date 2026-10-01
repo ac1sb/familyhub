@@ -39,7 +39,10 @@ router.put('/:member/color', requireMember, (req, res) => {
 router.post('/:member/photo', requireMember, upload.single('photo'), (req, res) => {
   if (!req.file) return res.status(400).json({ error: 'photo file is required' });
 
-  const ext = path.extname(req.file.originalname || '') || '.png';
+  // Served back from /uploads on the app's own origin - never keep an
+  // arbitrary client-supplied extension (an .html "photo" would be served as a page).
+  const rawExt = path.extname(req.file.originalname || '').toLowerCase();
+  const ext = ['.jpg', '.jpeg', '.png', '.gif', '.webp'].includes(rawExt) ? rawExt : '.png';
   const filename = `${req.params.member}-${Date.now()}${ext}`;
   fs.writeFileSync(path.join(avatarsDir, filename), req.file.buffer);
 

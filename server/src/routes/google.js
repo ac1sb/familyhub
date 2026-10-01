@@ -165,19 +165,18 @@ export async function fetchMemberCalendarEvents(rangeStart, rangeEnd) {
   if (targets.length === 0) return [];
 
   const calendar = google.calendar({ version: 'v3', auth: client });
-  const results = [];
-  for (const { member, calendarId } of targets) {
-    try {
-      const result = await calendar.events.list({
-        calendarId,
-        timeMin: rangeStart.toISOString(),
-        timeMax: rangeEnd.toISOString(),
-        singleEvents: true,
-        orderBy: 'startTime',
-        maxResults: 100,
-      });
-      for (const ev of result.data.items || []) {
-        results.push({
+  const perCalendar = await Promise.all(
+    targets.map(async ({ member, calendarId }) => {
+      try {
+        const result = await calendar.events.list({
+          calendarId,
+          timeMin: rangeStart.toISOString(),
+          timeMax: rangeEnd.toISOString(),
+          singleEvents: true,
+          orderBy: 'startTime',
+          maxResults: 100,
+        });
+        return (result.data.items || []).map((ev) => ({
           id: `google-${calendarId}-${ev.id}`,
           title: ev.summary || '(untitled)',
           description: ev.description || '',
@@ -191,15 +190,16 @@ export async function fetchMemberCalendarEvents(rangeStart, rangeEnd) {
           recurrence_days: [],
           occurrence_start: ev.start?.dateTime || `${ev.start?.date}T00:00:00`,
           occurrence_end: ev.end?.dateTime || (ev.end?.date ? `${ev.end.date}T00:00:00` : null),
-        });
+        }));
+      } catch (err) {
+        // One parent's calendar being unreachable/misconfigured shouldn't
+        // block the other's, or the rest of the agenda.
+        console.error(`Failed to read events from ${member}'s calendar (${calendarId}):`, err.message);
+        return [];
       }
-    } catch (err) {
-      // One parent's calendar being unreachable/misconfigured shouldn't
-      // block the other's, or the rest of the agenda.
-      console.error(`Failed to read events from ${member}'s calendar (${calendarId}):`, err.message);
-    }
-  }
-  return results;
+    })
+  );
+  return perCalendar.flat();
 }
 
 export function isGoogleWriteEnabled() {

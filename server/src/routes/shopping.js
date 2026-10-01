@@ -1,8 +1,9 @@
 import { Router } from 'express';
 import multer from 'multer';
 import fs from 'node:fs';
-import db from '../db.js';
+import db, { withTransaction } from '../db.js';
 import { uploadsDir } from '../lib/paths.js';
+import { singleFlight } from '../lib/singleFlight.js';
 import { getShoppingSheetId, setShoppingSheetId } from '../lib/appConfig.js';
 import { readShoppingSheetRows, writeShoppingSheetUpdates } from './google.js';
 
@@ -136,18 +137,24 @@ router.post('/sheet-settings', (req, res) => {
 // anything on either side - existing rows and existing items are only ever
 // added to, and a row already linked to an item that's since been checked
 // off or deleted is just left alone, not removed.
-export async function runShoppingSheetSync(sheetId) {
+// Single-flight: the "Sync with Sheet" button and the background timer can
+// fire at the same moment, and two overlapping runs would both see the same
+// unlinked sheet rows and import each of them twice.
+export const runShoppingSheetSync = singleFlight(async (sheetId) => {
   const sheetRows = await readShoppingSheetRows(sheetId);
   const allItems = db.prepare('SELECT * FROM shopping_items ORDER BY sort_order ASC, id ASC').all();
   const { toInsert, idUpdatesForExisting, linkedIds } = planShoppingSheetLinks(sheetRows, allItems);
 
   const idUpdates = [...idUpdatesForExisting];
-  for (const row of toInsert) {
-    const maxOrder = db.prepare('SELECT COALESCE(MAX(sort_order), -1) as m FROM shopping_items').get().m;
-    const info = db.prepare('INSERT INTO shopping_items (name, sort_order) VALUES (?, ?)').run(row.name, maxOrder + 1);
-    linkedIds.add(info.lastInsertRowid);
-    idUpdates.push({ rowNumber: row.rowNumber, id: info.lastInsertRowid });
-  }
+  withTransaction(() => {
+    let nextOrder = db.prepare('SELECT COALESCE(MAX(sort_order), -1) as m FROM shopping_items').get().m + 1;
+    const insert = db.prepare('INSERT INTO shopping_items (name, sort_order) VALUES (?, ?)');
+    for (const row of toInsert) {
+      const info = insert.run(row.name, nextOrder++);
+      linkedIds.add(info.lastInsertRowid);
+      idUpdates.push({ rowNumber: row.rowNumber, id: info.lastInsertRowid });
+    }
+  });
 
   // New sheet rows go right after the last row this column already uses -
   // writeShoppingSheetUpdates writes to these exact cells, so this is the
@@ -160,7 +167,7 @@ export async function runShoppingSheetSync(sheetId) {
 
   await writeShoppingSheetUpdates(sheetId, { idUpdates, newRows });
   return { success: true, imported: toInsert.length, pushed: newRows.length };
-}
+});
 
 // POST /api/shopping/sync-sheet  { sheetId? } -> runs a sync right now (see
 // runShoppingSheetSync above), for the "Sync with Sheet" button - the same

@@ -291,6 +291,16 @@ for (const column of ['thinq_last_state', 'thinq_finished_at']) {
   }
 }
 
+// Every poll of the chores/checklist/meals widgets looks rows up by week or
+// date, and the tracking page groups by template - without these each of
+// those is a full-table scan that grows forever, since past weeks are kept.
+db.exec(`
+CREATE INDEX IF NOT EXISTS idx_chores_week ON chores(week_start);
+CREATE INDEX IF NOT EXISTS idx_chores_template ON chores(template_id);
+CREATE INDEX IF NOT EXISTS idx_daily_tasks_date ON daily_tasks(date);
+CREATE INDEX IF NOT EXISTS idx_daily_tasks_template ON daily_tasks(template_id);
+`);
+
 // Seed a handful of example smart-home devices once, so the header quick-
 // toggle strip and the Smart Home widget have something to show out of the
 // box instead of starting empty. Guarded by a settings flag (not just "is
